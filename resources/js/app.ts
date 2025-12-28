@@ -1,10 +1,13 @@
 import '../css/app.css';
+import { ZiggyVue } from 'ziggy-js';
 
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, Link } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import AppLayout from '@/pages/layout/AppLayout.vue';
+
+
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -32,6 +35,8 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
             .use(plugin)
+            .use(ZiggyVue)
+            .component('ILink',Link)
             .mount(el);
     },
     progress: {

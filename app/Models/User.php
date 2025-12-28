@@ -21,6 +21,35 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'registration_type',
+        'username',
+        'marriage_type',
+        'marriage_status',
+        'age',
+        'child_count',
+        'residence',
+        'nationality',
+        'city',
+        'religion',
+        'ethnicity',
+        'weight',
+        'height',
+        'skin_color',
+        'body_shape',
+        'devotion',
+        'prayer',
+        'smoking',
+        'beard',
+        'education_level',
+        'financial_status',
+        'field_of_work',
+        'job',
+        'monthly_income',
+        'health_status',
+        'about_partner',
+        'about_self',
+        'full_name',
+        'phone_number',
     ];
 
     /**
@@ -43,6 +72,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'age' => 'integer',
+            'child_count' => 'integer',
+            'weight' => 'decimal:2',
+            'height' => 'decimal:2',
+            'monthly_income' => 'decimal:2',
         ];
     }
 }

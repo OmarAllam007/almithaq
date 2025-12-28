@@ -1,4 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { Link, router } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
+</script>
 
 <template>
     <div
@@ -34,30 +37,32 @@
                         data-kt-menu="true"
                     >
                         <!--begin:Menu item-->
-                        <div
-                            data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
+                        <Link
+                            :href="route('signup')"
                             data-kt-menu-placement="bottom-start"
-                            class="menu-item here show menu-here-bg menu-lg-down-accordion me-lg-2 me-0">
+                            class="menu-item here show menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                        >
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-title">Sign up</span>
                                 <span class="menu-arrow d-lg-none"></span>
                             </span>
                             <!--end:Menu link-->
-                        </div>
+                        </Link>
                         <!--end:Menu item-->
 
-                        <div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start" class="menu-item menu-lg-down-accordion me-0 me-lg-2">
+                        <div
+                            data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
+                            data-kt-menu-placement="bottom-start"
+                            class="menu-item menu-lg-down-accordion me-lg-2 me-0"
+                        >
                             <!--begin:Menu link-->
                             <span class="menu-link">
-											<span class="menu-title">Login</span>
-											<span class="menu-arrow d-lg-none"></span>
-										</span>
+                                <span class="menu-title">Login</span>
+                                <span class="menu-arrow d-lg-none"></span>
+                            </span>
                             <!--end:Menu link-->
                         </div>
-
-
-
                     </div>
                     <!--end::Menu-->
                 </div>
@@ -79,6 +84,27 @@
                 <!--end::Logo wrapper-->
                 <!--begin::Navbar-->
                 <div class="app-navbar flex-shrink-0">
+                    <div class="app-navbar-item ms-1 ms-md-3">
+                        <!--begin::Menu- wrapper-->
+                        <div class="btn btn-icon btn-custom btn-color-gray-500 btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px"
+                             data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-setting-3 fs-2"></i>
+                        </div>
+                        <!--begin::My apps-->
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-1" data-kt-menu="true" style="">
+                            <div class="menu-item px-3">
+                                <div class="menu-content text-muted pb-1 px-3 fs-7 text-uppercase">Payments</div>
+                            </div>
+                            <!--end::Heading-->
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3">Create Invoice</a>
+                            </div>
+
+                        </div>
+                        <!--end::My apps-->
+                        <!--end::Menu wrapper-->
+                    </div>
                     <!--begin::Chat-->
                     <div class="app-navbar-item ms-lg-3 ms-1">
                         <!--begin::Menu wrapper-->

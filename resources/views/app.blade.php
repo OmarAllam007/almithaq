@@ -19,7 +19,8 @@
 <body id="kt_app_body" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true"
       data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true"
       data-kt-app-sidebar-push-footer="true" class="app-default font-sans antialiased">
-<!--begin::Theme mode setup on page load-->
+@routes
+
 <script>var defaultThemeMode = 'light';
     var themeMode;
     if (document.documentElement) {
