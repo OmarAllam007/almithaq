@@ -1,16 +1,21 @@
 <script setup lang="ts">
 defineProps({
+    countries: { type: Array, required: true, },
+
     form: {
         type: Object,
         required: true,
     },
 });
-
+let weightRange = Array.from({ length: 126 }, (_, i) => i + 45);
+let heightRange = Array.from({ length: 100 }, (_, i) => i + 120);
+let skinColors = ['White','Light Brown','Brown','Dark Brown','Black'];
+let bodyShapes = ['Slim','Sporty','Average','Muscular','Overweight'];
 </script>
 
 <template>
     <!-- Step 3 -->
-    <div data-kt-stepper-element="content">
+    <div data-kt-stepper-element="content" >
         <div class="w-100">
             <div class="pb-lg-10 pb-5">
                 <h2 class="fw-bold fs-3 fs-lg-2 text-gray-900">Personal Information</h2>
@@ -18,9 +23,12 @@ defineProps({
             </div>
 
             <div class="fv-row mb-5">
-                <label class="required form-label">Residence</label>
+                <label class="required form-label">Country of residence</label>
                 <select class="form-select form-select-lg" v-model="form.residence">
                     <option value="">Select...</option>
+                    <option v-for="country in countries" :key="country.id" :value="country.id">
+                        {{ country.name }}
+                    </option>
                 </select>
                 <div v-if="form.errors.residence" class="fv-plugins-message-container">
                     <div class="fv-help-block">
@@ -33,6 +41,9 @@ defineProps({
                 <label class="required form-label">Nationality</label>
                 <select class="form-select form-select-lg" v-model="form.nationality">
                     <option value="">Select...</option>
+                    <option v-for="country in countries" :key="country.id" :value="country.id">
+                        {{ country.name }}
+                    </option>
                 </select>
                 <div v-if="form.errors.nationality" class="fv-plugins-message-container">
                     <div class="fv-help-block">
@@ -53,8 +64,10 @@ defineProps({
 
             <div class="fv-row mb-5">
                 <label class="required form-label">Religion</label>
-                <select class="form-select form-select-lg" v-model="form.religion">
+                <select class="form-select form-select-lg" v-model="form.religion" disabled>
                     <option value="">Select...</option>
+                    <option value="1">Islamic only</option>
+
                 </select>
                 <div v-if="form.errors.religion" class="fv-plugins-message-container">
                     <div class="fv-help-block">
@@ -64,25 +77,14 @@ defineProps({
             </div>
 
             <div class="fv-row mb-5">
-                <label class="required form-label">Ethnicity</label>
-                <select class="form-select form-select-lg" v-model="form.ethnicity">
-                    <option value="">Select...</option>
-                </select>
-                <div v-if="form.errors.ethnicity" class="fv-plugins-message-container">
-                    <div class="fv-help-block">
-                        <span role="alert">{{ form.errors.ethnicity }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="fv-row mb-5">
                 <label class="required form-label">Weight (kg)</label>
-                <input
-                    type="number"
-                    step="0.01"
-                    class="form-control form-control-lg rounded-2"
-                    v-model="form.weight"
-                />
+                <select class="form-select form-select-lg" v-model="form.weight">
+                    <option value="">Select...</option>
+                    <option v-for="weight in weightRange" :key="weight" :value="weight">
+                        {{ weight }}
+                    </option>
+                </select>
+
                 <div v-if="form.errors.weight" class="fv-plugins-message-container">
                     <div class="fv-help-block">
                         <span role="alert">{{ form.errors.weight }}</span>
@@ -92,12 +94,12 @@ defineProps({
 
             <div class="fv-row mb-5">
                 <label class="required form-label">Height (cm)</label>
-                <input
-                    type="number"
-                    step="0.01"
-                    class="form-control form-control-lg rounded-2"
-                    v-model="form.height"
-                />
+                <select class="form-select form-select-lg" v-model="form.height">
+                    <option value="">Select...</option>
+                    <option v-for="height in heightRange" :key="height" :value="height">
+                        {{ height }}
+                    </option>
+                </select>
                 <div v-if="form.errors.height" class="fv-plugins-message-container">
                     <div class="fv-help-block">
                         <span role="alert">{{ form.errors.height }}</span>
@@ -109,6 +111,9 @@ defineProps({
                 <label class="required form-label">Skin Color</label>
                 <select class="form-select form-select-lg" v-model="form.skin_color">
                     <option value="">Select...</option>
+                    <option v-for="skinColor in skinColors" :key="skinColor" :value="skinColor">
+                        {{ skinColor }}
+                    </option>
                 </select>
                 <div v-if="form.errors.skin_color" class="fv-plugins-message-container">
                     <div class="fv-help-block">
@@ -121,6 +126,9 @@ defineProps({
                 <label class="required form-label">Body Shape</label>
                 <select class="form-select form-select-lg" v-model="form.body_shape">
                     <option value="">Select...</option>
+                    <option v-for="bodyShape in bodyShapes" :key="bodyShape" :value="bodyShape">
+                        {{ bodyShape }}
+                    </option>
                 </select>
                 <div v-if="form.errors.body_shape" class="fv-plugins-message-container">
                     <div class="fv-help-block">

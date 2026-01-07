@@ -2,21 +2,29 @@
 import { check } from '@/actions/App/Http/Controllers/Api/UsernameCheckController';
 import { store } from '@/actions/App/Http/Controllers/Auth/RegisterController';
 import { showAlertError } from '@/lib/utils';
+import StepFour from '@/pages/Auth/_Wizard/StepFour.vue';
 import StepOne from '@/pages/Auth/_Wizard/StepOne.vue';
+import StepThree from '@/pages/Auth/_Wizard/StepThree.vue';
 import StepTwo from '@/pages/Auth/_Wizard/StepTwo.vue';
 import { useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, onMounted, ref, watch } from 'vue';
-import StepThree from '@/pages/Auth/_Wizard/StepThree.vue';
-import StepFour from '@/pages/Auth/_Wizard/StepFour.vue';
+import StepFive from '@/pages/Auth/_Wizard/StepFive.vue';
 
+let props = defineProps({
+    countries: { type: Array, required: true },
+    devotions: { type: Array, required: true },
+    prayer_commitments: { type: Array, required: true },
+    yes_no_list: { type: Array, required: true },
+    education_levels: { type: Array, required: true },
+    financial_statuses: { type: Array, required: true },
+    fields_of_work: { type: Array, required: true },
+});
 const currentStep = ref(1);
 const completedSteps = ref(new Set<number>([1])); // Step 1 is always accessible
 const usernameAvailable = ref<boolean | null>(null);
 const checkingUsername = ref(false);
 let stepperInstance: any = null;
-
-
 
 const form = useForm({
     // Step 1
@@ -36,10 +44,10 @@ const form = useForm({
     residence: '',
     nationality: '',
     city: '',
-    religion: '',
+    religion: '1',
     ethnicity: '',
-    weight: null,
-    height: null,
+    weight: '',
+    height: '',
     skin_color: '',
     body_shape: '',
 
@@ -221,8 +229,8 @@ function validateCurrentStep(): boolean {
         const baseValid = !!(
             form.username &&
             isUsernameLengthValid() &&
-            usernameAvailable.value === true &&
-            !checkingUsername.value &&
+            // usernameAvailable.value === true &&
+            // !checkingUsername.value &&
             form.password &&
             form.confirm_password &&
             form.password == form.confirm_password &&
@@ -242,7 +250,7 @@ function validateCurrentStep(): boolean {
             form.nationality &&
             form.city &&
             form.religion &&
-            form.ethnicity &&
+            // form.ethnicity &&
             form.weight &&
             form.height &&
             form.skin_color &&
@@ -307,7 +315,7 @@ function handleSubmit() {
 </script>
 
 <template>
-    <div class="d-flex flex-column flex-root" id="kt_app_root">
+    <div class="d-flex flex-column flex-root" id="kt_app_root" style="margin-bottom: 150px; padding-bottom: 20px">
         <div class="d-flex flex-column flex-column-fluid">
             <div class="d-flex flex-column flex-lg-row-fluid p-lg-10 w-100 p-5">
                 <div class="d-flex flex-center flex-column w-100">
@@ -368,13 +376,24 @@ function handleSubmit() {
                                 <form class="form w-100" @submit.prevent="handleSubmit">
                                     <!-- Step 1 -->
 
-                                    <StepOne :form="form"/>
+                                    <StepOne :form="form" />
                                     <!-- Step 2 -->
                                     <StepTwo :form="form" />
 
-                                    <StepThree :form="form" />
+                                    <StepThree :form="form" :countries="countries" />
 
-                                    <StepFour :form="form" />
+                                    <StepFour
+                                        :form="form"
+                                        :devotions="devotions"
+                                        :prayer_commitments="prayer_commitments"
+                                        :yes_no_list="yes_no_list"
+                                        :education_levels="education_levels"
+                                        :financial_statuses="financial_statuses"
+                                        :fields_of_work="fields_of_work"
+                                        :showBeardField="showBeardField"
+                                    />
+
+                                    <StepFive :form="form" />
 
                                     <!-- Actions -->
                                     <div class="d-flex flex-stack pt-lg-10 pt-5">
@@ -390,7 +409,7 @@ function handleSubmit() {
                                             </button>
                                         </div>
 
-                                        <div>
+                                        <div class="mb-10">
                                             <button
                                                 type="button"
                                                 class="btn btn-lg btn-primary"

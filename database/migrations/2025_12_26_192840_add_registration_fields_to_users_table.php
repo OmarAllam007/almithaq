@@ -16,43 +16,48 @@ return new class extends Migration
             $table->string('email')->nullable()->change();
 
             // Step 1: Account Type
-            $table->enum('registration_type', ['wife', 'husband'])->nullable();
+            $table->unsignedTinyInteger('registration_type')->nullable(); // ['wife', 'husband']
 
             // Step 2: Basic Account Information
             $table->string('username')->unique()->nullable();
-            $table->string('marriage_type')->nullable();
-            $table->string('marriage_status')->nullable();
-            $table->integer('age')->nullable();
-            $table->integer('child_count')->default(0)->nullable();
+            $table->unsignedTinyInteger('marriage_type')->nullable();
+            $table->unsignedTinyInteger('marriage_status')->nullable();
+            $table->unsignedTinyInteger('age')->nullable();
+            $table->unsignedTinyInteger('child_count')->default(0)->nullable();
 
             // Step 3: Personal Information
-            $table->string('residence')->nullable();
-            $table->string('nationality')->nullable();
-            $table->string('city')->nullable();
-            $table->string('religion')->nullable();
-            $table->string('ethnicity')->nullable();
-            $table->decimal('weight', 5, 2)->nullable();
-            $table->decimal('height', 5, 2)->nullable();
-            $table->string('skin_color')->nullable();
-            $table->string('body_shape')->nullable();
+            $table->unsignedInteger('residence')->nullable();
+            $table->unsignedInteger('nationality')->nullable();
+            $table->unsignedTinyInteger('city')->nullable();
+            $table->unsignedTinyInteger('religion')->nullable();
+            $table->unsignedTinyInteger('ethnicity')->nullable();
+            $table->unsignedInteger('weight')->nullable();
+            $table->unsignedInteger('height')->nullable();
+            $table->unsignedTinyInteger('skin_color')->nullable();
+            $table->unsignedTinyInteger('body_shape')->nullable();
 
             // Step 4: Lifestyle & Work
-            $table->string('devotion')->nullable();
-            $table->string('prayer')->nullable();
-            $table->string('smoking')->nullable();
-            $table->string('beard')->nullable();
-            $table->string('education_level')->nullable();
-            $table->string('financial_status')->nullable();
-            $table->string('field_of_work')->nullable();
+            $table->unsignedTinyInteger('devotion')->nullable();
+            $table->unsignedTinyInteger('prayer')->nullable();
+            $table->boolean('smoking')->nullable();
+            $table->boolean('beard')->nullable();
+            $table->unsignedTinyInteger('education_level')->nullable();
+            $table->unsignedTinyInteger('financial_status')->nullable();
+            $table->unsignedTinyInteger('field_of_work')->nullable();
             $table->string('job')->nullable();
 
             // Step 5: Additional Information
-            $table->decimal('monthly_income', 10, 2)->nullable();
-            $table->string('health_status')->nullable();
+            $table->unsignedTinyInteger('monthly_income')->nullable();
+            $table->unsignedTinyInteger('health_status')->nullable();
             $table->text('about_partner')->nullable();
             $table->text('about_self')->nullable();
             $table->string('full_name')->nullable();
-            $table->string('phone_number')->nullable();
+            $table->string('country_code', 5);
+            $table->string('phone_number', 20);
+            $table->boolean('is_verified')->default(false)->nullable();
+            $table->boolean('is_active')->default(false)->nullable();
+            $table->unique(['country_code', 'phone_number']);
+            $table->softDeletes();
         });
     }
 
@@ -94,6 +99,10 @@ return new class extends Migration
                 'about_self',
                 'full_name',
                 'phone_number',
+                'country_code',
+                'is_verified',
+                'is_active',
+                'deleted_at',
             ]);
         });
     }

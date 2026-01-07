@@ -29,7 +29,7 @@ let childCount = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 <template>
     <!-- Step 2 -->
-    <div data-kt-stepper-element="content">
+    <div data-kt-stepper-element="content" >
         <div class="w-100">
             <div class="pb-lg-10 pb-5">
                 <h2 class="fw-bold fs-3 fs-lg-2 text-gray-900">Basic Account Information</h2>
