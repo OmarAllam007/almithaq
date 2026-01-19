@@ -1,21 +1,21 @@
 <script setup lang="ts">
 defineProps({
-    countries: { type: Array, required: true, },
+    countries: { type: Array, required: true },
 
     form: {
         type: Object,
         required: true,
     },
 });
-let weightRange = Array.from({ length: 126 }, (_, i) => i + 45);
-let heightRange = Array.from({ length: 100 }, (_, i) => i + 120);
-let skinColors = ['White','Light Brown','Brown','Dark Brown','Black'];
-let bodyShapes = ['Slim','Sporty','Average','Muscular','Overweight'];
+const weightRange = Array.from({ length: 126 }, (_, i) => i + 45);
+const heightRange = Array.from({ length: 100 }, (_, i) => i + 120);
+const skinColors = ['White', 'Light Brown', 'Brown', 'Dark Brown', 'Black'];
+const bodyShapes = ['Slim', 'Sporty', 'Average', 'Muscular', 'Overweight'];
 </script>
 
 <template>
     <!-- Step 3 -->
-    <div data-kt-stepper-element="content" >
+    <div data-kt-stepper-element="content">
         <div class="w-100">
             <div class="pb-lg-10 pb-5">
                 <h2 class="fw-bold fs-3 fs-lg-2 text-gray-900">Personal Information</h2>
@@ -67,7 +67,6 @@ let bodyShapes = ['Slim','Sporty','Average','Muscular','Overweight'];
                 <select class="form-select form-select-lg" v-model="form.religion" disabled>
                     <option value="">Select...</option>
                     <option value="1">Islamic only</option>
-
                 </select>
                 <div v-if="form.errors.religion" class="fv-plugins-message-container">
                     <div class="fv-help-block">
@@ -138,7 +137,6 @@ let bodyShapes = ['Slim','Sporty','Average','Muscular','Overweight'];
             </div>
         </div>
     </div>
-
 </template>
 
 <style scoped></style>

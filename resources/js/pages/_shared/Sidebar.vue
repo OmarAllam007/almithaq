@@ -1,4 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { vueLang } from '@erag/lang-sync-inertia';
+import { Link } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
+const { __ } = vueLang();
+</script>
 
 <template>
     <!--begin::Sidebar-->
@@ -16,10 +21,10 @@
         <!--begin::Logo-->
         <div class="d-flex flex-stack px-lg-6 py-lg-8 px-4 py-3" id="kt_app_sidebar_logo">
             <!--begin::Logo image-->
-            <a href="index.html">
+            <Link href="/">
                 <img alt="Logo" src="assets/media/logos/demo23.svg" class="h-20px h-lg-25px theme-light-show" />
                 <img alt="Logo" src="assets/media/logos/demo23-dark.svg" class="h-20px h-lg-25px theme-dark-show" />
-            </a>
+            </Link>
             <!--end::Logo image-->
             <!--begin::User menu-->
             <div class="ms-3">
@@ -30,7 +35,7 @@
                     data-kt-menu-attach="parent"
                     data-kt-menu-placement="bottom-end"
                 >
-                    <img src="assets/media/avatars/300-2.jpg" alt="user" />
+                    <img :src="$page.props.auth?.profile_image" alt="user" />
                     <div class="position-absolute rounded-circle bg-success h-8px w-8px ms-n3 mt-n3 start-100 top-100"></div>
                 </div>
                 <!--begin::User account menu-->
@@ -43,15 +48,18 @@
                         <div class="menu-content d-flex align-items-center px-3">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-50px me-5">
-                                <img alt="Logo" src="assets/media/avatars/300-2.jpg" />
+                                <img alt="Logo" :src="$page.props.auth?.profile_image" />
                             </div>
                             <!--end::Avatar-->
                             <!--begin::Username-->
                             <div class="d-flex flex-column">
                                 <div class="fw-bold d-flex align-items-center fs-5">
-                                    Max Smith <span class="badge badge-light-success fw-bold fs-8 ms-2 px-2 py-1">Pro</span>
+                                    {{ $page.props.auth?.user.name
+                                    }}<span class="badge badge-light-success fw-bold fs-8 ms-2 px-2 py-1">{{
+                                        $page.props.auth?.user.subcription_type
+                                    }}</span>
                                 </div>
-                                <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">max@kt.com</a>
+                                <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">{{ $page.props.auth?.user.email }}</a>
                             </div>
                             <!--end::Username-->
                         </div>
@@ -62,7 +70,13 @@
                     <!--end::Menu separator-->
                     <!--begin::Menu item-->
                     <div class="menu-item px-5">
-                        <a href="account/overview.html" class="menu-link px-5">My Profile</a>
+                        <Link :href="route('profile')" class="menu-link px-5">My Profile</Link>
+                    </div>
+                    <!--end::Menu item-->
+
+                    <!--begin::Menu item-->
+                    <div class="menu-item px-5">
+                        <Link :href="route('profile.gallery')" class="menu-link px-5">My Gallery</Link>
                     </div>
                     <!--end::Menu item-->
                     <!--begin::Menu item-->
@@ -218,6 +232,16 @@
                             <div class="menu-item px-3">
                                 <a href="account/settings.html" class="menu-link d-flex active px-5">
                                     <span class="symbol symbol-20px me-4">
+                                        <img class="rounded-1" src="assets/media/flags/saudi-arabia.svg" alt="" /> </span
+                                    >Arabic</a
+                                >
+                            </div>
+                            <!--end::Menu item-->
+
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-3">
+                                <a href="account/settings.html" class="menu-link d-flex px-5">
+                                    <span class="symbol symbol-20px me-4">
                                         <img class="rounded-1" src="assets/media/flags/united-states.svg" alt="" /> </span
                                     >English</a
                                 >
@@ -226,35 +250,7 @@
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
                                 <a href="account/settings.html" class="menu-link d-flex px-5">
-                                    <span class="symbol symbol-20px me-4">
-                                        <img class="rounded-1" src="assets/media/flags/spain.svg" alt="" /> </span
-                                    >Spanish</a
-                                >
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="account/settings.html" class="menu-link d-flex px-5">
-                                    <span class="symbol symbol-20px me-4">
-                                        <img class="rounded-1" src="assets/media/flags/germany.svg" alt="" /> </span
-                                    >German</a
-                                >
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="account/settings.html" class="menu-link d-flex px-5">
-                                    <span class="symbol symbol-20px me-4">
-                                        <img class="rounded-1" src="assets/media/flags/japan.svg" alt="" /> </span
-                                    >Japanese</a
-                                >
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="account/settings.html" class="menu-link d-flex px-5">
-                                    <span class="symbol symbol-20px me-4">
-                                        <img class="rounded-1" src="assets/media/flags/france.svg" alt="" /> </span
+                                    <span class="symbol symbol-20px me-4"> <img class="rounded-1" src="assets/media/flags/france.svg" alt="" /> </span
                                     >French</a
                                 >
                             </div>
@@ -270,7 +266,7 @@
                     <!--end::Menu item-->
                     <!--begin::Menu item-->
                     <div class="menu-item px-5">
-                        <a href="authentication/layouts/corporate/sign-in.html" class="menu-link px-5">Sign Out</a>
+                        <Link :href="route('logout')" method="post" class="menu-link text-danger w-100 px-5">{{ __('Logout') }}</Link>
                     </div>
                     <!--end::Menu item-->
                 </div>
@@ -313,214 +309,111 @@
                     </div>
                 </div>
                 <!--end::Progress-->
-                <!--begin::Stats-->
-                <div class="d-flex mb-lg-6 mb-3">
-                    <!--begin::Stat-->
-                    <div class="min-w-100px me-6 w-100 rounded border border-dashed border-gray-300 px-4 py-2">
-                        <!--begin::Date-->
-                        <span class="fs-6 fw-bold text-gray-500">Budget</span>
-                        <!--end::Date-->
-                        <!--begin::Label-->
-                        <div class="fs-2 fw-bold text-success">$14,350</div>
-                        <!--end::Label-->
-                    </div>
-                    <!--end::Stat-->
-                    <!--begin::Stat-->
-                    <div class="min-w-100px w-100 rounded border border-dashed border-gray-300 px-4 py-2">
-                        <!--begin::Date-->
-                        <span class="fs-6 fw-bold text-gray-500">Spent</span>
-                        <!--end::Date-->
-                        <!--begin::Label-->
-                        <div class="fs-2 fw-bold text-danger">$8,029</div>
-                        <!--end::Label-->
-                    </div>
-                    <!--end::Stat-->
-                </div>
-                <!--end::Stats-->
+
                 <!--begin::Links-->
                 <div class="mb-6">
                     <!--begin::Title-->
-                    <h3 class="fw-bold mb-8 text-gray-800">Services</h3>
+                    <h3 class="fw-bold mb-8 text-gray-800"></h3>
                     <!--end::Title-->
                     <!--begin::Row-->
                     <div class="row row-cols-3" data-kt-buttons="true" data-kt-buttons-target="[data-kt-button]">
                         <!--begin::Col-->
                         <div class="col mb-4">
                             <!--begin::Link-->
-                            <a
-                                href="apps/calendar.html"
+                            <Link
+                                :href="route('inbox.index')"
                                 class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
                                 data-kt-button="true"
                             >
                                 <!--begin::Icon-->
                                 <span class="mb-2">
-                                    <i class="ki-outline ki-calendar fs-1"></i>
+                                    <i class="ki-outline ki-messages fs-1"></i>
                                 </span>
                                 <!--end::Icon-->
                                 <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Events</span>
+                                <span class="fs-7 fw-bold">Inbox</span>
                                 <!--end::Label-->
-                            </a>
+                            </Link>
                             <!--end::Link-->
                         </div>
                         <!--end::Col-->
                         <!--begin::Col-->
                         <div class="col mb-4">
                             <!--begin::Link-->
-                            <a
-                                href="apps/support-center/licenses.html"
+                            <Link
+                                :href="route('who-liked-me')"
                                 class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
                                 data-kt-button="true"
                             >
                                 <!--begin::Icon-->
                                 <span class="mb-2">
-                                    <i class="ki-outline ki-security-check fs-1"></i>
+                                    <i class="ki-outline ki-heart fs-1"></i>
                                 </span>
                                 <!--end::Icon-->
                                 <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Insurance</span>
+                                <span class="fs-7 fw-bold">Who Liked Me</span>
                                 <!--end::Label-->
-                            </a>
+                            </Link>
                             <!--end::Link-->
                         </div>
                         <!--end::Col-->
                         <!--begin::Col-->
                         <div class="col mb-4">
                             <!--begin::Link-->
-                            <a
-                                href="apps/support-center/overview.html"
+                            <Link
+                                :href="route('who-visited-me')"
                                 class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
                                 data-kt-button="true"
                             >
                                 <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-wifi-square fs-1"></i>
-                                </span>
+                                <i class="ki-outline ki-eye fs-1"></i>
+                                <span class="mb-2"> </span>
                                 <!--end::Icon-->
                                 <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Network</span>
+                                <span class="fs-7 fw-bold">Who Visit Me?</span>
                                 <!--end::Label-->
-                            </a>
+                            </Link>
                             <!--end::Link-->
                         </div>
                         <!--end::Col-->
                         <!--begin::Col-->
                         <div class="col mb-4">
                             <!--begin::Link-->
-                            <a
-                                href="apps/projects/budget.html"
+                            <Link
+                                :href="route('my-interactions')"
                                 class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
                                 data-kt-button="true"
                             >
                                 <!--begin::Icon-->
                                 <span class="mb-2">
-                                    <i class="ki-outline ki-chart-line-up-2 fs-1"></i>
+                                    <i class="ki-outline ki-like-2 fs-1"></i>
                                 </span>
                                 <!--end::Icon-->
                                 <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Financial</span>
+                                <span class="fs-7 fw-bold">Like and Ignore List</span>
                                 <!--end::Label-->
-                            </a>
+                            </Link>
                             <!--end::Link-->
                         </div>
                         <!--end::Col-->
+
                         <!--begin::Col-->
                         <div class="col mb-4">
                             <!--begin::Link-->
-                            <a
-                                href="apps/subscriptions/getting-started.html"
+                            <Link
+                                :href="route('smart-search.index')"
                                 class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
                                 data-kt-button="true"
                             >
                                 <!--begin::Icon-->
                                 <span class="mb-2">
-                                    <i class="ki-outline ki-shield-tick fs-1"></i>
+                                    <i class="ki-outline ki-filter-search fs-1"></i>
                                 </span>
                                 <!--end::Icon-->
                                 <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Technical</span>
+                                <span class="fs-7 fw-bold">Smart Search</span>
                                 <!--end::Label-->
-                            </a>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <a
-                                href="apps/contacts/getting-started.html"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                data-kt-button="true"
-                            >
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-rocket fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">CareCal</span>
-                                <!--end::Label-->
-                            </a>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <a
-                                href="apps/projects/list.html"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                data-kt-button="true"
-                            >
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-geolocation fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Hospitality</span>
-                                <!--end::Label-->
-                            </a>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <a
-                                href="apps/file-manager/folders.html"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                data-kt-button="true"
-                            >
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-abstract-28 fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Utilities</span>
-                                <!--end::Label-->
-                            </a>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <a
-                                href="apps/contacts/add-contact.html"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px active border-primary border-dashed"
-                                data-kt-button="true"
-                            >
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-plus fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Add New</span>
-                                <!--end::Label-->
-                            </a>
+                            </Link>
                             <!--end::Link-->
                         </div>
                         <!--end::Col-->
@@ -534,406 +427,6 @@
         <!--end::Sidebar nav-->
         <!--begin::Footer-->
         <div class="flex-column-auto d-flex flex-center px-lg-8 py-lg-8 px-4 py-3" id="kt_app_sidebar_footer">
-            <!--begin::Apps-->
-            <div class="app-footer-item me-6">
-                <!--begin::Menu- wrapper-->
-                <div
-                    class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px"
-                    data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                    data-kt-menu-attach="parent"
-                    data-kt-menu-placement="bottom-start"
-                >
-                    <i class="ki-outline ki-abstract-26 fs-2"></i>
-                </div>
-                <!--begin::My apps-->
-                <div class="menu menu-sub menu-sub-dropdown menu-column w-sm-350px w-100" data-kt-menu="true">
-                    <!--begin::Card-->
-                    <div class="card">
-                        <!--begin::Card header-->
-                        <div class="card-header">
-                            <!--begin::Card title-->
-                            <div class="card-title">My Apps</div>
-                            <!--end::Card title-->
-                            <!--begin::Card toolbar-->
-                            <div class="card-toolbar">
-                                <!--begin::Menu-->
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-icon btn-active-light-primary me-n3"
-                                    data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                                    data-kt-menu-placement="bottom-end"
-                                >
-                                    <i class="ki-outline ki-setting-3 fs-2"></i>
-                                </button>
-                                <!--begin::Menu 3-->
-                                <div
-                                    class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-3"
-                                    data-kt-menu="true"
-                                >
-                                    <!--begin::Heading-->
-                                    <div class="menu-item px-3">
-                                        <div class="menu-content text-muted fs-7 text-uppercase px-3 pb-2">Payments</div>
-                                    </div>
-                                    <!--end::Heading-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3">Create Invoice</a>
-                                    </div>
-                                    <!--end::Menu item-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link flex-stack px-3"
-                                            >Create Payment
-                                            <span class="ms-2" data-bs-toggle="tooltip" title="Specify a target name for future usage and reference">
-                                                <i class="ki-outline ki-information fs-6"></i> </span
-                                        ></a>
-                                    </div>
-                                    <!--end::Menu item-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3">Generate Bill</a>
-                                    </div>
-                                    <!--end::Menu item-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3" data-kt-menu-trigger="hover" data-kt-menu-placement="right-end">
-                                        <a href="#" class="menu-link px-3">
-                                            <span class="menu-title">Subscription</span>
-                                            <span class="menu-arrow"></span>
-                                        </a>
-                                        <!--begin::Menu sub-->
-                                        <div class="menu-sub menu-sub-dropdown w-175px py-4">
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="#" class="menu-link px-3">Plans</a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="#" class="menu-link px-3">Billing</a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="#" class="menu-link px-3">Statements</a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                            <!--begin::Menu separator-->
-                                            <div class="separator my-2"></div>
-                                            <!--end::Menu separator-->
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <div class="menu-content px-3">
-                                                    <!--begin::Switch-->
-                                                    <label class="form-check form-switch form-check-custom form-check-solid">
-                                                        <!--begin::Input-->
-                                                        <input
-                                                            class="form-check-input w-30px h-20px"
-                                                            type="checkbox"
-                                                            value="1"
-                                                            checked="checked"
-                                                            name="notifications"
-                                                        />
-                                                        <!--end::Input-->
-                                                        <!--end::Label-->
-                                                        <span class="form-check-label text-muted fs-6">Recuring</span>
-                                                        <!--end::Label-->
-                                                    </label>
-                                                    <!--end::Switch-->
-                                                </div>
-                                            </div>
-                                            <!--end::Menu item-->
-                                        </div>
-                                        <!--end::Menu sub-->
-                                    </div>
-                                    <!--end::Menu item-->
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item my-1 px-3">
-                                        <a href="#" class="menu-link px-3">Settings</a>
-                                    </div>
-                                    <!--end::Menu item-->
-                                </div>
-                                <!--end::Menu 3-->
-                                <!--end::Menu-->
-                            </div>
-                            <!--end::Card toolbar-->
-                        </div>
-                        <!--end::Card header-->
-                        <!--begin::Card body-->
-                        <div class="card-body py-5">
-                            <!--begin::Scroll-->
-                            <div class="mh-450px scroll-y me-n5 pe-5">
-                                <!--begin::Row-->
-                                <div class="row g-2">
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/amazon.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">AWS</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/angular-icon-1.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">AngularJS</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/atica.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Atica</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/beats-electronics.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Music</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/codeigniter.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Codeigniter</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/bootstrap-4.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Bootstrap</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/google-tag-manager.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">GTM</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/disqus.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Disqus</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/dribbble-icon-1.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Dribble</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/google-play-store.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Play Store</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/google-podcasts.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Podcasts</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/figma-1.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Figma</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/github.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Github</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/gitlab.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Gitlab</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/instagram-2-1.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Instagram</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-4">
-                                        <a
-                                            href="#"
-                                            class="d-flex flex-column flex-center text-hover-primary bg-hover-light mb-3 rounded px-3 py-4 text-center text-gray-800"
-                                        >
-                                            <img src="assets/media/svg/brand-logos/pinterest-p.svg" class="w-25px h-25px mb-2" alt="" />
-                                            <span class="fw-semibold">Pinterest</span>
-                                        </a>
-                                    </div>
-                                    <!--end::Col-->
-                                </div>
-                                <!--end::Row-->
-                            </div>
-                            <!--end::Scroll-->
-                        </div>
-                        <!--end::Card body-->
-                    </div>
-                    <!--end::Card-->
-                </div>
-                <!--end::My apps-->
-                <!--end::Menu wrapper-->
-            </div>
-            <!--end::Apps-->
-            <!--begin::Quick links-->
-            <div class="app-footer-item me-6">
-                <!--begin::Menu- wrapper-->
-                <div
-                    class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px"
-                    data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                    data-kt-menu-attach="parent"
-                    data-kt-menu-placement="bottom-start"
-                >
-                    <i class="ki-outline ki-notification-status fs-2"></i>
-                </div>
-                <!--begin::Menu-->
-                <div class="menu menu-sub menu-sub-dropdown menu-column w-250px w-lg-325px" data-kt-menu="true">
-                    <!--begin::Heading-->
-                    <div
-                        class="d-flex flex-column flex-center bgi-no-repeat rounded-top px-9 py-10"
-                        style="background-image: url('assets/media/misc/menu-header-bg.jpg')"
-                    >
-                        <!--begin::Title-->
-                        <h3 class="fw-semibold mb-3 text-white">Quick Links</h3>
-                        <!--end::Title-->
-                        <!--begin::Status-->
-                        <span class="badge bg-primary text-inverse-primary px-3 py-2">25 pending tasks</span>
-                        <!--end::Status-->
-                    </div>
-                    <!--end::Heading-->
-                    <!--begin:Nav-->
-                    <div class="row g-0">
-                        <!--begin:Item-->
-                        <div class="col-6">
-                            <a
-                                href="apps/projects/budget.html"
-                                class="d-flex flex-column flex-center bg-hover-light border-end border-bottom h-100 p-6"
-                            >
-                                <i class="ki-outline ki-dollar fs-3x text-primary mb-2"></i>
-                                <span class="fs-5 fw-semibold mb-0 text-gray-800">Accounting</span>
-                                <span class="fs-7 text-gray-500">eCommerce</span>
-                            </a>
-                        </div>
-                        <!--end:Item-->
-                        <!--begin:Item-->
-                        <div class="col-6">
-                            <a href="apps/projects/settings.html" class="d-flex flex-column flex-center bg-hover-light border-bottom h-100 p-6">
-                                <i class="ki-outline ki-sms fs-3x text-primary mb-2"></i>
-                                <span class="fs-5 fw-semibold mb-0 text-gray-800">Administration</span>
-                                <span class="fs-7 text-gray-500">Console</span>
-                            </a>
-                        </div>
-                        <!--end:Item-->
-                        <!--begin:Item-->
-                        <div class="col-6">
-                            <a href="apps/projects/list.html" class="d-flex flex-column flex-center bg-hover-light border-end h-100 p-6">
-                                <i class="ki-outline ki-abstract-41 fs-3x text-primary mb-2"></i>
-                                <span class="fs-5 fw-semibold mb-0 text-gray-800">Projects</span>
-                                <span class="fs-7 text-gray-500">Pending Tasks</span>
-                            </a>
-                        </div>
-                        <!--end:Item-->
-                        <!--begin:Item-->
-                        <div class="col-6">
-                            <a href="apps/projects/users.html" class="d-flex flex-column flex-center bg-hover-light h-100 p-6">
-                                <i class="ki-outline ki-briefcase fs-3x text-primary mb-2"></i>
-                                <span class="fs-5 fw-semibold mb-0 text-gray-800">Customers</span>
-                                <span class="fs-7 text-gray-500">Latest cases</span>
-                            </a>
-                        </div>
-                        <!--end:Item-->
-                    </div>
-                    <!--end:Nav-->
-                    <!--begin::View more-->
-                    <div class="border-top py-2 text-center">
-                        <a href="pages/user-profile/activity.html" class="btn btn-color-gray-600 btn-active-color-primary"
-                            >View All <i class="ki-outline ki-arrow-right fs-5"></i
-                        ></a>
-                    </div>
-                    <!--end::View more-->
-                </div>
-                <!--end::Menu-->
-                <!--end::Menu wrapper-->
-            </div>
-            <!--end::Quick links-->
             <!--begin::Settings-->
             <div class="app-footer-item">
                 <!--begin::Menu- wrapper-->

@@ -2,6 +2,7 @@
 import { check } from '@/actions/App/Http/Controllers/Api/UsernameCheckController';
 import { store } from '@/actions/App/Http/Controllers/Auth/RegisterController';
 import { showAlertError } from '@/lib/utils';
+import StepFive from '@/pages/Auth/_Wizard/StepFive.vue';
 import StepFour from '@/pages/Auth/_Wizard/StepFour.vue';
 import StepOne from '@/pages/Auth/_Wizard/StepOne.vue';
 import StepThree from '@/pages/Auth/_Wizard/StepThree.vue';
@@ -9,9 +10,8 @@ import StepTwo from '@/pages/Auth/_Wizard/StepTwo.vue';
 import { useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, onMounted, ref, watch } from 'vue';
-import StepFive from '@/pages/Auth/_Wizard/StepFive.vue';
 
-let props = defineProps({
+const props = defineProps({
     countries: { type: Array, required: true },
     devotions: { type: Array, required: true },
     prayer_commitments: { type: Array, required: true },
@@ -167,7 +167,7 @@ onMounted(() => {
     }
 });
 
-let canContinue = computed(() => {
+const canContinue = computed(() => {
     return validateCurrentStep();
 });
 

@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,7 +19,7 @@ class User extends Authenticatable
         'height', 'skin_color', 'body_shape', 'devotion', 'prayer', 'smoking',
         'beard', 'education_level', 'financial_status', 'field_of_work', 'job',
         'monthly_income', 'health_status', 'about_partner', 'about_self',
-        'full_name', 'phone_number', ];
+        'full_name', 'phone_number', 'last_seen_at', ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -44,6 +46,104 @@ class User extends Authenticatable
             'weight' => 'decimal:2',
             'height' => 'decimal:2',
             'monthly_income' => 'decimal:2',
+            'last_seen_at' => 'datetime',
         ];
+    }
+
+    public function conversations()
+    {
+        return Conversation::where('user_one_id', $this->id)
+            ->orWhere('user_two_id', $this->id);
+    }
+
+    public function conversationsAsUserOne(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'user_one_id');
+    }
+
+    public function conversationsAsUserTwo(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'user_two_id');
+    }
+
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
+            ->withTimestamps();
+    }
+
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function ignores(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'ignores', 'user_id', 'ignored_user_id')
+            ->withTimestamps();
+    }
+
+    public function ignoredBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'ignores', 'ignored_user_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function visitedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'profile_visits', 'visited_user_id', 'visitor_id')
+            ->withTimestamps()
+            ->distinct();
+    }
+
+    public function profileImages(): HasMany
+    {
+        return $this->hasMany(ProfileImage::class);
+    }
+
+    public function mainProfileImage(): HasMany
+    {
+        return $this->hasMany(ProfileImage::class)->where('is_main', true);
+    }
+
+    public function isOnline(): bool
+    {
+        if (! $this->last_seen_at) {
+            return false;
+        }
+
+        return $this->last_seen_at->gt(now()->subMinutes(5));
+    }
+
+    public function isFavoritedBy(int $userId): bool
+    {
+        return $this->favoritedBy()->where('user_id', $userId)->exists();
+    }
+
+    public function isIgnored(int $userId): bool
+    {
+        return $this->ignoredBy()->where('user_id', $userId)->exists();
+    }
+
+    public function getConversationWith(int $userId): ?Conversation
+    {
+        return Conversation::where(function ($query) use ($userId) {
+            $query->where('user_one_id', $this->id)
+                ->where('user_two_id', $userId);
+        })->orWhere(function ($query) use ($userId) {
+            $query->where('user_one_id', $userId)
+                ->where('user_two_id', $this->id);
+        })->first();
+    }
+
+    public function updateLastSeen(): void
+    {
+        $this->update(['last_seen_at' => now()]);
     }
 }

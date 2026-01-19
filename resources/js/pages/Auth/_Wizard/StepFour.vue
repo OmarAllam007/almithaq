@@ -1,18 +1,17 @@
 <script setup lang="ts">
 defineProps({
-    devotions: { type: Array, required: true, },
-    prayer_commitments: { type: Array, required: true, },
-    yes_no_list: { type: Array, required: true, },
-    education_levels: { type: Array, required: true, },
-    financial_statuses: { type: Array, required: true, },
-    fields_of_work: { type: Array, required: true, },
-    showBeardField: { type: Boolean, required: true, },
+    devotions: { type: Array, required: true },
+    prayer_commitments: { type: Array, required: true },
+    yes_no_list: { type: Array, required: true },
+    education_levels: { type: Array, required: true },
+    financial_statuses: { type: Array, required: true },
+    fields_of_work: { type: Array, required: true },
+    showBeardField: { type: Boolean, required: true },
     form: {
         type: Object,
         required: true,
     },
 });
-
 </script>
 
 <template>
@@ -28,7 +27,7 @@ defineProps({
                 <label class="required form-label">Devotion</label>
                 <select class="form-select form-select-lg" v-model="form.devotion">
                     <option value="">Select...</option>
-                    <option v-for="(devotion,index) in devotions" :key="index" :value="index">
+                    <option v-for="(devotion, index) in devotions" :key="index" :value="index">
                         {{ devotion }}
                     </option>
                 </select>
@@ -43,7 +42,7 @@ defineProps({
                 <label class="required form-label">Prayer</label>
                 <select class="form-select form-select-lg" v-model="form.prayer">
                     <option value="">Select...</option>
-                    <option v-for="(prayer,index) in prayer_commitments" :key="index" :value="index">
+                    <option v-for="(prayer, index) in prayer_commitments" :key="index" :value="index">
                         {{ prayer }}
                     </option>
                 </select>
@@ -58,7 +57,7 @@ defineProps({
                 <label class="required form-label">Smoking</label>
                 <select class="form-select form-select-lg" v-model="form.smoking">
                     <option value="">Select...</option>
-                    <option v-for="(smoking,index) in yes_no_list" :key="index" :value="index">
+                    <option v-for="(smoking, index) in yes_no_list" :key="index" :value="index">
                         {{ smoking }}
                     </option>
                 </select>
@@ -73,7 +72,7 @@ defineProps({
                 <label class="required form-label">Beard</label>
                 <select class="form-select form-select-lg rounded-2" v-model="form.beard">
                     <option value="">Select...</option>
-                    <option v-for="(beard,index) in yes_no_list" :key="index" :value="index">
+                    <option v-for="(beard, index) in yes_no_list" :key="index" :value="index">
                         {{ beard }}
                     </option>
                 </select>
@@ -88,7 +87,7 @@ defineProps({
                 <label class="required form-label">Education Level</label>
                 <select class="form-select form-select-lg rounded-2" v-model="form.education_level">
                     <option value="">Select...</option>
-                    <option v-for="(education_level,index) in education_levels" :key="index" :value="index">
+                    <option v-for="(education_level, index) in education_levels" :key="index" :value="index">
                         {{ education_level }}
                     </option>
                 </select>
@@ -103,7 +102,7 @@ defineProps({
                 <label class="required form-label">Financial Status</label>
                 <select class="form-select form-select-lg rounded-2" v-model="form.financial_status">
                     <option value="">Select...</option>
-                    <option v-for="(financial_status,index) in financial_statuses" :key="index" :value="index">
+                    <option v-for="(financial_status, index) in financial_statuses" :key="index" :value="index">
                         {{ financial_status }}
                     </option>
                 </select>
@@ -118,7 +117,7 @@ defineProps({
                 <label class="required form-label">Field of Work</label>
                 <select class="form-select form-select-lg rounded-2" v-model="form.field_of_work">
                     <option value="">Select...</option>
-                    <option v-for="(field_of_work,index) in fields_of_work" :key="index" :value="index">
+                    <option v-for="(field_of_work, index) in fields_of_work" :key="index" :value="index">
                         {{ field_of_work }}
                     </option>
                 </select>
@@ -140,7 +139,6 @@ defineProps({
             </div>
         </div>
     </div>
-
 </template>
 
 <style scoped></style>

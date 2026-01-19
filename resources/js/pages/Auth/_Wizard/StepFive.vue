@@ -18,12 +18,7 @@ defineProps({
 
             <div class="fv-row mb-5">
                 <label class="required form-label">Monthly Income</label>
-                <input
-                    type="number"
-                    step="0.01"
-                    class="form-control form-control-lg rounded-2"
-                    v-model="form.monthly_income"
-                />
+                <input type="number" step="0.01" class="form-control form-control-lg rounded-2" v-model="form.monthly_income" />
                 <div v-if="form.errors.monthly_income" class="fv-plugins-message-container">
                     <div class="fv-help-block">
                         <span role="alert">{{ form.errors.monthly_income }}</span>
@@ -84,7 +79,6 @@ defineProps({
             </div>
         </div>
     </div>
-
 </template>
 
 <style scoped></style>

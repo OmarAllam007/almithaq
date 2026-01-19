@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Conversation;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class ConversationController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $conversations = Conversation::where('user_one_id', $user->id)
+            ->orWhere('user_two_id', $user->id)
+            ->with(['userOne', 'userTwo', 'latestMessage.sender'])
+            ->orderByDesc('last_message_at')
+            ->get()
+            ->map(function ($conversation) use ($user) {
+                $otherUser = $conversation->getOtherUser($user->id);
+
+                return [
+                    'id' => $conversation->id,
+                    'other_user' => [
+                        'id' => $otherUser->id,
+                        'name' => $otherUser->name,
+                        'username' => $otherUser->username,
+                        'is_online' => $otherUser->isOnline(),
+                        'last_seen_at' => $otherUser->last_seen_at,
+                    ],
+                    'latest_message' => $conversation->latestMessage->first(),
+                    'last_message_at' => $conversation->last_message_at,
+                ];
+            });
+
+        return response()->json($conversations);
+    }
+
+    public function show(Request $request, Conversation $conversation): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $conversation->hasUser($user->id)) {
+            abort(403, 'Unauthorized');
+        }
+
+        $messages = $conversation->messages()->with('sender')->get();
+
+        // Mark messages as read
+        $conversation->messages()
+            ->where('sender_id', '!=', $user->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        $otherUser = $conversation->getOtherUser($user->id);
+
+        return response()->json([
+            'conversation' => [
+                'id' => $conversation->id,
+                'other_user' => [
+                    'id' => $otherUser->id,
+                    'name' => $otherUser->name,
+                    'username' => $otherUser->username,
+                    'age' => $otherUser->age,
+                    'nationality' => $otherUser->nationality,
+                    'residence' => $otherUser->residence,
+                    'is_online' => $otherUser->isOnline(),
+                    'last_seen_at' => $otherUser->last_seen_at,
+                ],
+            ],
+            'messages' => $messages,
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'recipient_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $user = $request->user();
+        $recipientId = $request->input('recipient_id');
+
+        if ($user->id === $recipientId) {
+            return response()->json(['error' => 'Cannot start conversation with yourself'], 422);
+        }
+
+        // Check if conversation already exists
+        $existingConversation = $user->getConversationWith($recipientId);
+
+        if ($existingConversation) {
+            return response()->json(['conversation_id' => $existingConversation->id]);
+        }
+
+        // Create new conversation
+        $conversation = Conversation::create([
+            'user_one_id' => $user->id,
+            'user_two_id' => $recipientId,
+        ]);
+
+        return response()->json(['conversation_id' => $conversation->id], 201);
+    }
+
+    public function destroy(Request $request, Conversation $conversation): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $conversation->hasUser($user->id)) {
+            abort(403, 'Unauthorized');
+        }
+
+        $conversation->delete();
+
+        return response()->json(['message' => 'Conversation deleted successfully']);
+    }
+}

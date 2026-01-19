@@ -1,5 +1,5 @@
 <script setup lang="ts">
-let props = defineProps({
+const props = defineProps({
     label: {
         type: String,
         required: true,
@@ -14,18 +14,17 @@ let props = defineProps({
     },
 });
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue']);
 
 const updateModelValue = (value: string | undefined) => {
-    emit('update:modelValue', value)
-}
+    emit('update:modelValue', value);
+};
 </script>
 
 <template>
     <div class="fv-row mb-5">
         <label class="required form-label">{{ label }}</label>
-        <select class="form-select form-select-lg rounded-2" :value="modelValue"
-            @input="updateModelValue($event?.target?.value)">
+        <select class="form-select form-select-lg rounded-2" :value="modelValue" @input="updateModelValue($event?.target?.value)">
             <option value="">Select...</option>
             <option v-for="option in options" :key="option" :value="option">{{ option }}</option>
         </select>

@@ -1,13 +1,22 @@
-import '../css/app.css';
 import { ZiggyVue } from 'ziggy-js';
+import '../css/app.css';
+import { createPinia } from 'pinia';
 
+import AppLayout from '@/pages/layout/AppLayout.vue';
 import { createInertiaApp, Link } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
-import AppLayout from '@/pages/layout/AppLayout.vue';
+import { configureEcho } from '@laravel/echo-vue';
 
-
+configureEcho({
+    broadcaster: 'reverb',
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
+    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    enabledTransports: ['ws', 'wss'],
+});
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -23,8 +32,7 @@ createInertiaApp({
 
         if (name.includes('Admin')) {
             page.default.layout = AppLayout;
-        } else if (name.includes('Login') || name.includes('Register') ||
-            name.includes('ForgotPassword') || name.includes('Auth/ResetPassword')) {
+        } else if (name.includes('Login') || name.includes('Register') || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword')) {
             page.default.layout = null;
         } else {
             page.default.layout = AppLayout;
@@ -36,7 +44,8 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
-            .component('ILink',Link)
+            .use(createPinia())
+            .component('ILink', Link)
             .mount(el);
     },
     progress: {

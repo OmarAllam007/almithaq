@@ -18,7 +18,7 @@
 </head>
 <body id="kt_app_body" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true"
       data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true"
-      data-kt-app-sidebar-push-footer="true" class="app-default font-sans antialiased">
+      data-kt-app-sidebar-push-footer="true" class="app-default font-sans antialiased h-full">
 @routes
 
 <script>var defaultThemeMode = 'light';

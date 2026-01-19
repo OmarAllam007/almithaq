@@ -1,14 +1,88 @@
 <?php
 
+use App\Http\Controllers\Api\UsernameCheckController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\IgnoreController;
+use App\Http\Controllers\InboxController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NewMembersController;
+use App\Http\Controllers\OnlineMembersController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileImageController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SmartSearchController;
+use App\Http\Controllers\UserInteractionsController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home');
-})->name('home');
+Route::group(['middleware' => 'guest'], function () {
+    Route::get('signup', [RegisterController::class, 'showSignupForm'])->name('signup');
+    Route::post('signup', [RegisterController::class, 'store'])->name('signup.store');
+    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [LoginController::class, 'store'])->name('login.store');
 
-Route::get('signup', [\App\Http\Controllers\Auth\RegisterController::class, 'showSignupForm'])->name('signup');
-Route::post('signup', [\App\Http\Controllers\Auth\RegisterController::class, 'store'])->name('signup.store');
+});
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+
+    // Debug routes (remove in production)
+    if (app()->environment('local')) {
+        Route::get('/test-broadcast', [\App\Http\Controllers\TestBroadcastController::class, 'testBroadcast']);
+        Route::get('/echo-test', [\App\Http\Controllers\TestBroadcastController::class, 'echoTest']);
+    }
+
+    Route::get('profile', [ProfileController::class, 'index'])->name('profile');
+    Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('users/{user}', [ProfileController::class, 'show'])->name('users.show');
+    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+    // Profile Gallery
+    Route::get('profile/gallery', [ProfileImageController::class, 'index'])->name('profile.gallery');
+    Route::post('profile/gallery', [ProfileImageController::class, 'store'])->name('profile.gallery.store');
+    Route::delete('profile/gallery/{image}', [ProfileImageController::class, 'destroy'])->name('profile.gallery.destroy');
+    Route::patch('profile/gallery/{image}/set-main', [ProfileImageController::class, 'setMain'])->name('profile.gallery.set-main');
+    Route::get('profile/images/{image}/thumbnail', [ProfileImageController::class, 'serveThumbnail'])->name('profile.images.thumbnail');
+
+    // New Members
+    Route::get('new-members', [NewMembersController::class, 'index'])->name('new-members');
+    Route::get('online-members', [OnlineMembersController::class, 'index'])->name('members-online');
+
+    // Conversations & Messages
+    Route::get('conversations', [ConversationController::class, 'index'])->name('conversations.index');
+    Route::post('conversations', [ConversationController::class, 'store'])->name('conversations.store');
+    Route::get('conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
+    Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy'])->name('conversations.destroy');
+    Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('conversations/{conversation}/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.mark-as-read');
+    Route::post('conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('messages.typing');
+
+    //    Route::post('/online')
+    //    Route::post('/offline')
+    // Favorites
+    Route::post('users/{user}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    // Ignore
+    Route::post('users/{user}/ignore', [IgnoreController::class, 'toggle'])->name('ignores.toggle');
+
+    // Report
+    Route::post('users/{user}/report', [ReportController::class, 'store'])->name('reports.store');
+
+    // Inbox
+    Route::get('inbox', [InboxController::class, 'index'])->name('inbox.index');
+    Route::get('who-liked-me', [UserInteractionsController::class, 'whoLikedMe'])->name('who-liked-me');
+    Route::get('who-visited-me', [UserInteractionsController::class, 'whoVisitedMe'])->name('who-visited-me');
+    Route::get('my-interactions', [UserInteractionsController::class, 'myInteractions'])->name('my-interactions');
+
+    // Smart Search
+    Route::get('smart-search', [SmartSearchController::class, 'index'])->name('smart-search.index');
+    Route::post('smart-search/search', [SmartSearchController::class, 'search'])->name('smart-search.search');
+    Route::post('smart-search/clear', [SmartSearchController::class, 'clearFilters'])->name('smart-search.clear');
+
+});
 
 // API routes for validation
-Route::post('api/check-username', [\App\Http\Controllers\Api\UsernameCheckController::class, 'check'])->name('api.check-username');
+Route::post('api/check-username', [UsernameCheckController::class, 'check'])->name('api.check-username');

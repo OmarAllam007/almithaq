@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 </script>
 
@@ -41,6 +41,7 @@ import { route } from 'ziggy-js';
                             :href="route('signup')"
                             data-kt-menu-placement="bottom-start"
                             class="menu-item here show menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            v-if="!$page.props.auth?.user"
                         >
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -51,10 +52,12 @@ import { route } from 'ziggy-js';
                         </Link>
                         <!--end:Menu item-->
 
-                        <div
+                        <Link
+                            :href="route('login')"
                             data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
                             data-kt-menu-placement="bottom-start"
                             class="menu-item menu-lg-down-accordion me-lg-2 me-0"
+                            v-if="!$page.props.auth?.user"
                         >
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -62,7 +65,67 @@ import { route } from 'ziggy-js';
                                 <span class="menu-arrow d-lg-none"></span>
                             </span>
                             <!--end:Menu link-->
-                        </div>
+                        </Link>
+
+                        <!--begin:Menu item-->
+                        <Link
+                            :href="route('signup')"
+                            data-kt-menu-placement="bottom-start"
+                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            v-if="$page.props.auth?.user"
+                        >
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-title"> <i class="fa fa-home fs-4 me-1 text-hover-primary"></i> Home</span>
+                            </span>
+                            <!--end:Menu link-->
+                        </Link>
+                        <!--end:Menu item-->
+
+                        <!--begin:Menu item-->
+                        <Link
+                            :href="route('members-online')"
+                            data-kt-menu-placement="bottom-start"
+                            class="menu-item  menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            v-if="$page.props.auth?.user"
+                        >
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-title"> <i class="fa fa-users fs-4 me-1 text-hover-primary"></i> Online Members</span>
+                            </span>
+                            <!--end:Menu link-->
+                        </Link>
+                        <!--end:Menu item-->
+
+                        <!--begin:Menu item-->
+                        <Link
+                            :href="route('new-members')"
+                            data-kt-menu-placement="bottom-start"
+                            class="menu-item  menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            v-if="$page.props.auth?.user"
+                        >
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-title"> <i class="fa fa-users-rays fs-4 me-1 text-hover-primary"></i> New Members</span>
+                            </span>
+                            <!--end:Menu link-->
+                        </Link>
+                        <!--end:Menu item-->
+
+                        <!--begin:Menu item-->
+                        <Link
+                            :href="route('signup')"
+                            data-kt-menu-placement="bottom-start"
+                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            v-if="$page.props.auth?.user"
+                        >
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-title"> <i class="fa fa-search fs-4 me-1 text-hover-primary"></i> Search</span>
+                            </span>
+                            <!--end:Menu link-->
+                        </Link>
+                        <!--end:Menu item-->
                     </div>
                     <!--end::Menu-->
                 </div>
@@ -84,23 +147,30 @@ import { route } from 'ziggy-js';
                 <!--end::Logo wrapper-->
                 <!--begin::Navbar-->
                 <div class="app-navbar flex-shrink-0">
-                    <div class="app-navbar-item ms-1 ms-md-3">
+                    <div class="app-navbar-item ms-md-3 ms-1">
                         <!--begin::Menu- wrapper-->
-                        <div class="btn btn-icon btn-custom btn-color-gray-500 btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px"
-                             data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+                        <div
+                            class="btn btn-icon btn-custom btn-color-gray-500 btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px"
+                            data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
+                            data-kt-menu-attach="parent"
+                            data-kt-menu-placement="bottom-end"
+                        >
                             <i class="ki-outline ki-setting-3 fs-2"></i>
                         </div>
                         <!--begin::My apps-->
-                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-1" data-kt-menu="true" style="">
+                        <div
+                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-1"
+                            data-kt-menu="true"
+                            style=""
+                        >
                             <div class="menu-item px-3">
-                                <div class="menu-content text-muted pb-1 px-3 fs-7 text-uppercase">Payments</div>
+                                <div class="menu-content text-muted fs-7 text-uppercase px-3 pb-1">Payments</div>
                             </div>
                             <!--end::Heading-->
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3">Create Invoice</a>
                             </div>
-
                         </div>
                         <!--end::My apps-->
                         <!--end::Menu wrapper-->
