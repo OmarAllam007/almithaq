@@ -67,4 +67,20 @@ class MessageController extends Controller
             'status' => 'typing broadcasted!',
         ]);
     }
+
+    public function markAllAsRead(Request $request)
+    {
+        $user = $request->user();
+
+        $conversationIds = Conversation::where('user_one_id', $user->id)
+            ->orWhere('user_two_id', $user->id)
+            ->pluck('id');
+
+        Message::whereIn('conversation_id', $conversationIds)
+            ->where('sender_id', '!=', $user->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        //        return response()->json(['success' => true, 'message' => 'All messages marked as read']);
+    }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\UsernameCheckController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\DeleteAccountController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IgnoreController;
@@ -11,10 +12,12 @@ use App\Http\Controllers\InboxController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NewMembersController;
 use App\Http\Controllers\OnlineMembersController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileImageController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SmartSearchController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserInteractionsController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +40,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('profile', [ProfileController::class, 'index'])->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('profile/delete-account', DeleteAccountController::class)->name('profile.delete-account');
     Route::get('users/{user}', [ProfileController::class, 'show'])->name('users.show');
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -54,11 +58,13 @@ Route::group(['middleware' => 'auth'], function () {
     // Conversations & Messages
     Route::get('conversations', [ConversationController::class, 'index'])->name('conversations.index');
     Route::post('conversations', [ConversationController::class, 'store'])->name('conversations.store');
+    Route::delete('conversations/bulk-delete', [ConversationController::class, 'bulkDestroy'])->name('conversations.bulk-destroy');
     Route::get('conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
     Route::delete('conversations/{conversation}', [ConversationController::class, 'destroy'])->name('conversations.destroy');
     Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])->name('messages.store');
     Route::post('conversations/{conversation}/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.mark-as-read');
     Route::post('conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('messages.typing');
+    Route::post('messages/mark-all-as-read', [MessageController::class, 'markAllAsRead'])->name('messages.mark-all-as-read');
 
     //    Route::post('/online')
     //    Route::post('/offline')
@@ -82,7 +88,22 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('smart-search/search', [SmartSearchController::class, 'search'])->name('smart-search.search');
     Route::post('smart-search/clear', [SmartSearchController::class, 'clearFilters'])->name('smart-search.clear');
 
+    // Subscription
+    Route::get('subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::post('subscription/initiate', [SubscriptionController::class, 'initiate'])->name('subscription.initiate');
+    Route::get('subscription/status', [SubscriptionController::class, 'status'])->name('subscription.status');
+
+    // Payment
+    Route::get('payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+    Route::get('payment/create', [PaymentController::class, 'create'])->name('payment.create');
+    Route::get('payment/{payment}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('payment/process', [PaymentController::class, 'process'])->name('payment.process');
+    Route::post('payment/{payment}/process', [PaymentController::class, 'process'])->name('payment.process.existing');
+
 });
+
+// Payment webhook (no auth required)
+Route::post('payment/webhook', [PaymentController::class, 'webhook'])->name('payment.webhook');
 
 // API routes for validation
 Route::post('api/check-username', [UsernameCheckController::class, 'check'])->name('api.check-username');

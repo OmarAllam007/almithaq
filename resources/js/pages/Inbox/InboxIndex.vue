@@ -3,8 +3,10 @@ import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserProfileModal from '@/components/UserProfileModal.vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { usePresenceStore } from '@/stores/useUserStore';
+import { markAllAsRead } from '@/actions/App/Http/Controllers/MessageController';
+import { bulkDestroy, destroy } from '@/actions/App/Http/Controllers/ConversationController';
 
 interface Message {
     id: number;
@@ -72,16 +74,6 @@ const handleMessageFromModal = (userId: number) => {
     }
 };
 
-const deleteConversation = async (conversationId: number) => {
-    if (!confirm('Are you sure you want to delete this conversation?')) {
-        return;
-    }
-
-    router.delete(`/conversations/${conversationId}`, {
-        preserveScroll: true,
-    });
-};
-
 const formatMessageDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -109,6 +101,111 @@ const truncateMessage = (message: string, maxLength: number = 50) => {
     }
     return message.substring(0, maxLength) + '...';
 };
+
+// Selection state
+const selectedConversations = ref<number[]>([]);
+const selectAll = ref(false);
+
+const toggleSelectAll = () => {
+    if (selectAll.value) {
+        selectedConversations.value = props.conversations.data.map((c) => c.id);
+    } else {
+        selectedConversations.value = [];
+    }
+};
+
+const toggleConversationSelection = (conversationId: number) => {
+    const index = selectedConversations.value.indexOf(conversationId);
+    if (index > -1) {
+        selectedConversations.value.splice(index, 1);
+    } else {
+        selectedConversations.value.push(conversationId);
+    }
+    selectAll.value = selectedConversations.value.length === props.conversations.data.length;
+};
+
+const hasSelectedConversations = computed(() => selectedConversations.value.length > 0);
+
+// Delete modal state
+const showDeleteModal = ref(false);
+const deleteTarget = ref<'single' | 'bulk'>('single');
+const conversationToDelete = ref<number | null>(null);
+const isDeleting = ref(false);
+
+const openDeleteModal = (conversationId: number) => {
+    conversationToDelete.value = conversationId;
+    deleteTarget.value = 'single';
+    showDeleteModal.value = true;
+};
+
+const openBulkDeleteModal = () => {
+    if (selectedConversations.value.length === 0) return;
+    deleteTarget.value = 'bulk';
+    showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false;
+    conversationToDelete.value = null;
+};
+
+const confirmDelete = async () => {
+    isDeleting.value = true;
+
+    if (deleteTarget.value === 'single' && conversationToDelete.value) {
+        router.delete(destroy(conversationToDelete.value).url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeDeleteModal();
+            },
+            onFinish: () => {
+                isDeleting.value = false;
+                router.reload({ only: ['conversations'] });
+            },
+        });
+    } else if (deleteTarget.value === 'bulk') {
+        router.delete(bulkDestroy().url, {
+            data: { conversation_ids: selectedConversations.value },
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedConversations.value = [];
+                selectAll.value = false;
+                closeDeleteModal();
+            },
+            onFinish: () => {
+                isDeleting.value = false;
+                router.reload({ only: ['conversations'] });
+            },
+        });
+    }
+};
+
+// Mark all as read
+const isMarkingAllAsRead = ref(false);
+
+const handleMarkAllAsRead = async () => {
+    isMarkingAllAsRead.value = true;
+    router.post(markAllAsRead().url, {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            isMarkingAllAsRead.value = false;
+        },
+    });
+};
+
+const deleteModalTitle = computed(() => {
+    if (deleteTarget.value === 'single') {
+        return 'Delete Conversation';
+    }
+    return `Delete ${selectedConversations.value.length} Conversation(s)`;
+});
+
+const deleteModalMessage = computed(() => {
+    if (deleteTarget.value === 'single') {
+        return 'Are you sure you want to delete this conversation? This action cannot be undone.';
+    }
+    return `Are you sure you want to delete ${selectedConversations.value.length} conversation(s)? This action cannot be undone.`;
+});
 </script>
 
 <template>
@@ -162,36 +259,49 @@ const truncateMessage = (message: string, maxLength: number = 50) => {
                             <div class="card">
                                 <div class="card-header align-items-center gap-md-5 gap-2 py-5">
                                     <!--begin::Actions-->
-                                    <div class="d-flex flex-wrap gap-2">
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
                                         <!--begin::Checkbox-->
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid me-lg-7 me-4">
+                                        <div class="form-check form-check-sm form-check-custom form-check-solid me-lg-4 me-2">
                                             <input
                                                 class="form-check-input"
                                                 type="checkbox"
-                                                data-kt-check="true"
-                                                data-kt-check-target="#kt_inbox_listing .form-check-input"
-                                                value="1"
+                                                v-model="selectAll"
+                                                @change="toggleSelectAll"
                                             />
                                         </div>
                                         <!--end::Checkbox-->
 
-                                        <!--begin::Delete-->
-                                        <a
-                                            href="#"
-                                            class="btn btn-sm btn-icon btn-light btn-active-light-primary"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-dismiss="click"
-                                            data-bs-placement="top"
-                                            aria-label="Delete"
-                                            data-bs-original-title="Delete"
-                                            data-kt-initialized="1"
+                                        <!--begin::Delete Selected-->
+                                        <button
+                                            @click="openBulkDeleteModal"
+                                            class="btn btn-sm btn-icon btn-light btn-active-light-danger"
+                                            :class="{ 'opacity-50': !hasSelectedConversations }"
+                                            :disabled="!hasSelectedConversations"
+                                            title="Delete Selected"
                                         >
                                             <i class="ki-outline ki-trash fs-2"></i>
-                                        </a>
-                                        <!--end::Delete-->
+                                        </button>
+                                        <!--end::Delete Selected-->
+
+                                        <!--begin::Mark All Read-->
+                                        <button
+                                            @click="handleMarkAllAsRead"
+                                            class="btn btn-sm btn-light btn-active-light-primary"
+                                            :disabled="isMarkingAllAsRead"
+                                            title="Mark All as Read"
+                                        >
+                                            <span v-if="isMarkingAllAsRead" class="spinner-border spinner-border-sm me-1"></span>
+                                            <i v-else class="ki-outline ki-double-check fs-2 me-1"></i>
+                                            Mark All Read
+                                        </button>
+                                        <!--end::Mark All Read-->
+
+                                        <span v-if="hasSelectedConversations" class="text-muted fs-7 ms-2">
+                                            {{ selectedConversations.length }} selected
+                                        </span>
                                     </div>
 
-                                    <p>Current Conversations: {{ conversations.data.length }}</p>
+                                    <p class="mb-0">Conversations: {{ conversations.data.length }}</p>
                                     <!--end::Actions-->
                                 </div>
 
@@ -274,13 +384,18 @@ const truncateMessage = (message: string, maxLength: number = 50) => {
                                                     <tr v-for="conversation in conversations.data" :key="conversation.id" class="cursor-pointer">
                                                         <td class="ps-9">
                                                             <div class="form-check form-check-sm form-check-custom form-check-solid mt-3">
-                                                                <input class="form-check-input" type="checkbox" value="1" @click.stop />
+                                                                <input
+                                                                    class="form-check-input"
+                                                                    type="checkbox"
+                                                                    :checked="selectedConversations.includes(conversation.id)"
+                                                                    @click.stop="toggleConversationSelection(conversation.id)"
+                                                                />
                                                             </div>
                                                         </td>
                                                         <td class="min-w-80px">
                                                             <!--begin::Delete-->
                                                             <button
-                                                                @click.stop="deleteConversation(conversation.id)"
+                                                                @click.stop="openDeleteModal(conversation.id)"
                                                                 class="btn btn-icon btn-color-gray-500 btn-active-color-danger w-35px h-35px"
                                                                 title="Delete conversation"
                                                             >
@@ -348,7 +463,8 @@ const truncateMessage = (message: string, maxLength: number = 50) => {
                                                         </td>
                                                         <td @click="openChatDrawer(conversation.id)">
                                                             <div v-if="conversation.lastMessage" class="gap-1 pt-2 text-gray-900">
-                                                                <div class="fs-6 text-gray-700">
+
+                                                                <div class="fs-6  badge " :class="conversation.lastMessage.isRead ? 'text-gray-700' : 'badge-primary text-white'">
                                                                     {{ truncateMessage(conversation.lastMessage.message) }}
                                                                 </div>
                                                             </div>
@@ -392,6 +508,43 @@ const truncateMessage = (message: string, maxLength: number = 50) => {
 
         <!-- User Profile Modal -->
         <UserProfileModal :is-open="isProfileModalOpen" :user-id="selectedUserId" @close="closeProfileModal" @message="handleMessageFromModal" />
+
+        <!-- Delete Confirmation Modal -->
+        <div
+            v-if="showDeleteModal"
+            class="modal fade show d-block"
+            tabindex="-1"
+            style="background-color: rgba(0, 0, 0, 0.5)"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">
+                            <i class="ki-outline ki-trash fs-2 text-danger me-2"></i>
+                            {{ deleteModalTitle }}
+                        </h5>
+                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="isDeleting"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger d-flex align-items-center p-5">
+                            <i class="ki-outline ki-information-5 fs-2hx text-danger me-4"></i>
+                            <div class="d-flex flex-column">
+                                <span>{{ deleteModalMessage }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" @click="closeDeleteModal" :disabled="isDeleting">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete" :disabled="isDeleting">
+                            <span v-if="isDeleting" class="spinner-border spinner-border-sm me-2"></span>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 

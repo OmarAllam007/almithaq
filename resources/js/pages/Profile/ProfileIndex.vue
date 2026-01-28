@@ -4,6 +4,7 @@ import { useForm, usePage } from '@inertiajs/vue3';
 import ProfileSection from '@/components/Profile/ProfileSection.vue';
 import ProfileField from '@/components/Profile/ProfileField.vue';
 import { update } from '@/actions/App/Http/Controllers/ProfileController';
+import DeleteAccountController from '@/actions/App/Http/Controllers/DeleteAccountController';
 
 interface Props {
     countries: Array<{ id: number; name: string; ar_name: string; flag: string }>;
@@ -13,6 +14,7 @@ interface Props {
     education_levels: string[];
     financial_statuses: string[];
     fields_of_work: string[];
+    delete_account_reasons: Array<{ value: number; label: string }>;
 }
 
 const props = defineProps<Props>();
@@ -113,6 +115,30 @@ const getCountryName = (id: number | string) => {
 const getOptionLabel = (options: string[], value: number | string) => {
     return options[Number(value)] || value;
 };
+
+// Delete Account
+const showDeleteModal = ref(false);
+const deleteForm = useForm({
+    reason: '' as string | number,
+    message: '',
+});
+
+const openDeleteModal = () => {
+    showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false;
+    deleteForm.reset();
+};
+
+const submitDeleteAccount = () => {
+    deleteForm.submit(DeleteAccountController(), {
+        onSuccess: () => {
+            closeDeleteModal();
+        },
+    });
+};
 </script>
 
 <template>
@@ -200,6 +226,14 @@ const getOptionLabel = (options: string[], value: number | string) => {
                                                     Cancel
                                                 </button>
                                             </template>
+                                            <button
+                                                v-if="!isEditing"
+                                                @click="openDeleteModal"
+                                                class="btn btn-sm btn-light-danger"
+                                            >
+                                                <i class="ki-outline ki-trash fs-3"></i>
+                                                Delete Account
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="d-flex flex-stack flex-wrap">
@@ -512,6 +546,87 @@ const getOptionLabel = (options: string[], value: number | string) => {
                             :error="form.errors.about_partner"
                         />
                     </ProfileSection>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Modal -->
+        <div
+            v-if="showDeleteModal"
+            class="modal fade show d-block"
+            tabindex="-1"
+            style="background-color: rgba(0, 0, 0, 0.5)"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">
+                            <i class="ki-outline ki-information-5 fs-2 text-danger me-2"></i>
+                            Delete Account
+                        </h5>
+                        <button type="button" class="btn-close" @click="closeDeleteModal"></button>
+                    </div>
+                    <form @submit.prevent="submitDeleteAccount">
+                        <div class="modal-body">
+                            <div class="alert alert-danger d-flex align-items-center p-5 mb-5">
+                                <i class="ki-outline ki-shield-cross fs-2hx text-danger me-4"></i>
+                                <div class="d-flex flex-column">
+                                    <h4 class="mb-1 text-danger">Warning</h4>
+                                    <span>This action is permanent. Your account and all associated data will be deleted.</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="form-label required">Why are you deleting your account?</label>
+                                <select
+                                    v-model="deleteForm.reason"
+                                    class="form-select"
+                                    :class="{ 'is-invalid': deleteForm.errors.reason }"
+                                >
+                                    <option value="" disabled>Select a reason</option>
+                                    <option
+                                        v-for="reason in props.delete_account_reasons"
+                                        :key="reason.value"
+                                        :value="reason.value"
+                                    >
+                                        {{ reason.label }}
+                                    </option>
+                                </select>
+                                <div v-if="deleteForm.errors.reason" class="invalid-feedback">
+                                    {{ deleteForm.errors.reason }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Additional feedback (optional)</label>
+                                <textarea
+                                    v-model="deleteForm.message"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': deleteForm.errors.message }"
+                                    rows="4"
+                                    placeholder="Tell us more about why you're leaving..."
+                                    maxlength="1000"
+                                ></textarea>
+                                <div v-if="deleteForm.errors.message" class="invalid-feedback">
+                                    {{ deleteForm.errors.message }}
+                                </div>
+                                <div class="form-text text-end">
+                                    {{ deleteForm.message?.length || 0 }}/1000
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" @click="closeDeleteModal">Cancel</button>
+                            <button
+                                type="submit"
+                                class="btn btn-danger"
+                                :disabled="deleteForm.processing || !deleteForm.reason"
+                            >
+                                <span v-if="deleteForm.processing" class="spinner-border spinner-border-sm me-2"></span>
+                                Delete My Account
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

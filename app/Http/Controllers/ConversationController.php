@@ -102,7 +102,7 @@ class ConversationController extends Controller
         return response()->json(['conversation_id' => $conversation->id], 201);
     }
 
-    public function destroy(Request $request, Conversation $conversation): JsonResponse
+    public function destroy(Request $request, Conversation $conversation): void
     {
         $user = $request->user();
 
@@ -112,6 +112,29 @@ class ConversationController extends Controller
 
         $conversation->delete();
 
-        return response()->json(['message' => 'Conversation deleted successfully']);
+    }
+
+    public function bulkDestroy(Request $request): void
+    {
+        $request->validate([
+            'conversation_ids' => ['required', 'array'],
+            'conversation_ids.*' => ['required', 'integer', 'exists:conversations,id'],
+        ]);
+
+        $user = $request->user();
+        $conversationIds = $request->input('conversation_ids');
+
+        Conversation::whereIn('id', $conversationIds)
+            ->where(function ($query) use ($user) {
+                $query->where('user_one_id', $user->id)
+                    ->orWhere('user_two_id', $user->id);
+            })
+            ->delete();
+
+        //        return response()->json([
+        //            'success' => true,
+        //            'message' => "{$deleted} conversation(s) deleted successfully",
+        //            'deleted_count' => $deleted,
+        //        ]);
     }
 }

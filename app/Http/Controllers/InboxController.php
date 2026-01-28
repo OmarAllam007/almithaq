@@ -29,6 +29,7 @@ class InboxController extends Controller
                     'id' => $lastMessage->first()->id,
                     'message' => $lastMessage->message,
                     'created_at' => $lastMessage->created_at,
+                    'isRead' => $lastMessage->isRead(auth()->id()),
                 ] : null,
                 'otherUser' => array_merge(
                     $otherUser->only('id', 'name', 'username', 'marriage_status', 'age', 'nationality'),

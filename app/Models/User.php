@@ -6,12 +6,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = ['name', 'email', 'password', 'registration_type',
         'username', 'marriage_type', 'marriage_status', 'age', 'child_count',
@@ -19,7 +21,7 @@ class User extends Authenticatable
         'height', 'skin_color', 'body_shape', 'devotion', 'prayer', 'smoking',
         'beard', 'education_level', 'financial_status', 'field_of_work', 'job',
         'monthly_income', 'health_status', 'about_partner', 'about_self',
-        'full_name', 'phone_number', 'last_seen_at', ];
+        'full_name', 'phone_number', 'last_seen_at', 'is_active', ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -145,5 +147,37 @@ class User extends Authenticatable
     public function updateLastSeen(): void
     {
         $this->update(['last_seen_at' => now()]);
+    }
+
+    public function accountDeletion(): HasOne
+    {
+        return $this->hasOne(AccountDeletion::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscriptions()
+            ->where('status', \App\Models\Enums\SubscriptionStatus::ACTIVE)
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', \App\Models\Enums\SubscriptionStatus::ACTIVE)
+            ->where('expires_at', '>', now())
+            ->latest('expires_at')
+            ->first();
     }
 }
