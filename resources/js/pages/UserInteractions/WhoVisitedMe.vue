@@ -5,6 +5,9 @@ import { ref } from 'vue';
 import axios from 'axios';
 import Pagination from '@/components/Pagination.vue';
 import { PaginationData } from '@/types/pagination';
+import { useLang } from '@/composables/useLang';
+
+const { trans } = useLang();
 
 const props = defineProps<Props>();
 interface Props {
@@ -65,14 +68,14 @@ const handleMessageFromModal = async (userId: number) => {
                     <!--begin::Page title-->
                     <div class="page-title d-flex flex-column justify-content-center me-3">
                         <!--begin::Title-->
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">Who visited me</h1>
+                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">{{ trans('user_interactions.who_visited_me') }}</h1>
                         <!--end::Title-->
 
                         <!--begin::Breadcrumb-->
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
                             <!--begin::Item-->
                             <li class="breadcrumb-item text-muted">
-                                <a href="/metronic8/demo23/?page=index" class="text-muted text-hover-primary"> Home </a>
+                                <a href="/metronic8/demo23/?page=index" class="text-muted text-hover-primary">{{ trans('user_interactions.home') }}</a>
                             </li>
                             <!--end::Item-->
                             <!--begin::Item-->
@@ -82,7 +85,7 @@ const handleMessageFromModal = async (userId: number) => {
                             <!--end::Item-->
 
                             <!--begin::Item-->
-                            <li class="breadcrumb-item text-muted">Who visited me</li>
+                            <li class="breadcrumb-item text-muted">{{ trans('user_interactions.who_visited_me') }}</li>
                             <!--end::Item-->
                         </ul>
                         <!--end::Breadcrumb-->
@@ -105,7 +108,7 @@ const handleMessageFromModal = async (userId: number) => {
                             <div class="card">
                                 <div class="card-header align-items-center gap-md-5 gap-2 py-5">
                                     <div class="d-flex flex-wrap gap-2"></div>
-                                    <p> Total Visits:  {{ users.data.length }}</p>
+                                    <p>{{ trans('user_interactions.total_visits') }}:  {{ users.data.length }}</p>
                                 </div>
 
                                 <div class="card-body p-0">
@@ -122,7 +125,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                     <tr>
                                                         <th data-dt-column="0" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc p-5">
                                                             <div>
-                                                                <span class="dt-column-title">Member</span
+                                                                <span class="dt-column-title">{{ trans('user_interactions.member') }}</span>
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
@@ -133,7 +136,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                         </th>
                                                         <th data-dt-column="1" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div >
-                                                                <span class="dt-column-title">Visit Date</span
+                                                                <span class="dt-column-title">{{ trans('user_interactions.visit_date') }}</span>
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
@@ -159,7 +162,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                                         v-if="user.is_favourite"
                                                                         class="position-absolute top-0 start-0 translate-middle d-flex align-items-center justify-content-center rounded-circle bg-danger border border-2 border-white"
                                                                         style="width: 20px; height: 20px; z-index: 1"
-                                                                        title="Favorited"
+                                                                        :title="trans('user_interactions.favorited')"
                                                                     >
                                                                         <i class="fa fa-heart text-white" style="font-size: 10px"></i>
                                                                     </div>
@@ -169,7 +172,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                                         v-if="user.is_ignored"
                                                                         class="position-absolute top-0 start-0 translate-middle d-flex align-items-center justify-content-center rounded-circle bg-warning border border-2 border-white"
                                                                         style="width: 20px; height: 20px; z-index: 1"
-                                                                        title="Ignored"
+                                                                        :title="trans('user_interactions.ignored')"
                                                                     >
                                                                         <i class="fa fa-ban text-white" style="font-size: 10px"></i>
                                                                     </div>
@@ -191,7 +194,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                                         <span class="badge badge-light-primary fs-8">{{
                                                                             user?.marriage_status
                                                                         }}</span>
-                                                                        <span class="text-muted fs-7">{{ user?.age }} yrs</span>
+                                                                        <span class="text-muted fs-7">{{ user?.age }} {{ trans('user_interactions.yrs') }}</span>
                                                                         <span class="text-muted fs-7">{{ user?.nationality }}</span>
                                                                     </div>
                                                                 </div>

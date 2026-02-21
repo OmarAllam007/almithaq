@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use App\Http\Resources\UserProfileResource;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -28,15 +30,11 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
-    /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
-     * @return array<string, mixed>
-     */
     public function share(Request $request): array
     {
+        $locale = Session::get('locale', App::getLocale());
+        App::setLocale($locale);
+
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $user = $request->user();
@@ -48,6 +46,25 @@ class HandleInertiaRequests extends Middleware
                 'user' => UserProfileResource::make($user)->toArray($request),
                 'profile_image' => $user?->mainProfileImage()?->first()?->thumbnail_url,
             ] : null,
+            'locale' => $locale,
+            'lang' => $this->getLanguageData($locale),
         ];
+    }
+
+    private function getLanguageData($locale)
+    {
+        $langPath = resource_path("lang/{$locale}");
+
+        $langData = [];
+
+        if (is_dir($langPath)) {
+            $files = glob($langPath . '/*.php');
+            foreach ($files as $file) {
+                $key = basename($file, '.php');
+                $langData[$key] = require $file;
+            }
+        }
+
+        return $langData;
     }
 }

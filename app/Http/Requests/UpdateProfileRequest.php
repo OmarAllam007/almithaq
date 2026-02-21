@@ -30,41 +30,38 @@ class UpdateProfileRequest extends FormRequest
 
             // Personal Information
             'age' => ['nullable', 'integer', 'min:18', 'max:100'],
-            'marriage_type' => ['nullable', 'string', 'max:255'],
-            'marriage_status' => ['nullable', 'string', 'max:255'],
+            'marriage_type' => ['nullable', 'integer'],
+            'marriage_status' => ['nullable', 'integer'],
             'child_count' => ['nullable', 'integer', 'min:0', 'max:50'],
 
             // Location Information
-            'residence' => ['nullable', 'string', 'max:255'],
-            'nationality' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:255'],
+            'residence' => ['nullable', 'integer', 'exists:countries,id'],
+            'nationality' => ['nullable', 'integer', 'exists:countries,id'],
+            'city' => ['nullable', 'max:255'],
 
             // Physical Attributes
             'weight' => ['nullable', 'numeric', 'min:30', 'max:300'],
             'height' => ['nullable', 'numeric', 'min:100', 'max:250'],
-            'skin_color' => ['nullable', 'string', 'max:255'],
-            'body_shape' => ['nullable', 'string', 'max:255'],
+            'skin_color' => ['nullable', 'integer'],
+            'body_shape' => ['nullable', 'integer'],
 
             // Religious & Social Information
-            'religion' => ['nullable', 'string', 'max:255'],
-            'ethnicity' => ['nullable', 'string', 'max:255'],
-            'devotion' => ['nullable', 'string', 'max:255'],
-            'prayer' => ['nullable', 'string', 'max:255'],
-            'smoking' => ['nullable', 'string', 'max:255'],
-            'beard' => ['nullable', 'string', 'max:255'],
+            'devotion' => ['nullable', 'integer'],
+            'prayer' => ['nullable', 'integer'],
+            'smoking' => ['nullable', 'boolean'],
+            'beard' => ['nullable', 'boolean'],
 
             // Professional Information
-            'education_level' => ['nullable', 'string', 'max:255'],
-            'financial_status' => ['nullable', 'string', 'max:255'],
-            'field_of_work' => ['nullable', 'string', 'max:255'],
+            'education_level' => ['nullable', 'integer'],
+            'financial_status' => ['nullable', 'integer'],
+            'field_of_work' => ['nullable', 'integer'],
             'job' => ['nullable', 'string', 'max:255'],
             'monthly_income' => ['nullable', 'numeric', 'min:0'],
-            'health_status' => ['nullable', 'string', 'max:255'],
+            'health_status' => ['nullable', 'integer'],
 
             // About Section
             'about_partner' => ['nullable', 'string', 'max:5000'],
             'about_self' => ['nullable', 'string', 'max:5000'],
-            'full_name' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

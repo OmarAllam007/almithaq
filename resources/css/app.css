@@ -15,3 +15,74 @@ body {
 #app {
     height: 100%;
 }
+
+/* RTL Support for Sidebar */
+[dir="rtl"] .app-sidebar {
+    left: auto !important;
+    right: 0 !important;
+}
+
+@media (min-width: 992px) {
+    [dir="rtl"] .app-sidebar {
+        margin-right: 1rem !important;
+        margin-left: 1rem !important;
+    }
+}
+
+[dir="rtl"] .app-wrapper {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+@media (min-width: 992px) {
+    [dir="rtl"] .app-wrapper {
+        padding-right: calc(275px + 2rem) !important;
+        margin-right: 0 !important;
+    }
+
+    /* Prevent header from sitting behind the sidebar in RTL */
+    [dir="rtl"] .app-page:has(.app-wrapper) .app-header {
+        margin-right: calc(275px + 2rem) !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    [dir="rtl"] .app-wrapper {
+        padding-right: 0 !important;
+    }
+}
+
+/* RTL border radius fixes */
+[dir="rtl"] .rounded-start {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: var(--bs-border-radius) !important;
+    border-bottom-right-radius: var(--bs-border-radius) !important;
+}
+
+[dir="rtl"] .rounded-end {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: var(--bs-border-radius) !important;
+    border-bottom-left-radius: var(--bs-border-radius) !important;
+}
+
+/* RTL fixes for margins and spacing */
+[dir="rtl"] .ms-auto {
+    margin-left: unset !important;
+    margin-right: auto !important;
+}
+
+[dir="rtl"] .me-auto {
+    margin-right: unset !important;
+    margin-left: auto !important;
+}
+
+/* RTL text alignment */
+[dir="rtl"] .text-start {
+    text-align: right !important;
+}
+
+[dir="rtl"] .text-end {
+    text-align: left !important;
+}

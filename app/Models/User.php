@@ -58,6 +58,16 @@ class User extends Authenticatable
             ->orWhere('user_two_id', $this->id);
     }
 
+    public function loginLogs(): HasMany
+    {
+        return $this->hasMany(UserLoginLog::class);
+    }
+
+    public function getLastLoginLog()
+    {
+        return $this->loginLogs()->latest('logged_at')->first();
+    }
+
     public function conversationsAsUserOne(): HasMany
     {
         return $this->hasMany(Conversation::class, 'user_one_id');

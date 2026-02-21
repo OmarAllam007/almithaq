@@ -50,6 +50,9 @@ const isReportModalOpen = ref(false);
 const reportReason = ref('');
 const reportDescription = ref('');
 const isSubmittingReport = ref(false);
+const loginLocation = ref<{ country: string | null; city: string | null } | null>(null);
+const isLoadingLocation = ref(false);
+const showLoginLocation = ref(false);
 
 const loadUserProfile = async () => {
     if (!props.userId) {
@@ -76,6 +79,26 @@ const handleClose = () => {
     user.value = null;
     isFavorited.value = false;
     isIgnored.value = false;
+    loginLocation.value = null;
+    showLoginLocation.value = false;
+};
+
+const fetchLoginLocation = async () => {
+    if (!user.value || showLoginLocation.value) {
+        return;
+    }
+
+    isLoadingLocation.value = true;
+
+    try {
+        const response = await axios.get(`/users/${user.value.id}/login-location`);
+        loginLocation.value = response.data;
+        showLoginLocation.value = true;
+    } catch (error) {
+        console.error('Failed to fetch login location:', error);
+    } finally {
+        isLoadingLocation.value = false;
+    }
 };
 
 const handleMessage = () => {
@@ -256,7 +279,37 @@ watch(
                                     {{ user.nationality.flag }}
                                 </span></h4>
                                 <p class="text-muted mb-2">{{ user.age }} years old</p>
-                                <span class="badge badge-light-primary">{{ user.marriage_status }}</span>
+                                <span class="badge badge-light-primary">{{ user.marriage_status_label }}</span>
+                                <div class="col-12">
+                                    <div v-if="!showLoginLocation">
+                                        <button
+                                            @click="fetchLoginLocation"
+                                            class="btn btn-sm btn-light-primary"
+                                            :disabled="isLoadingLocation"
+                                        >
+                                                    <span v-if="isLoadingLocation">
+                                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                        Loading...
+                                                    </span>
+                                            <span v-else>
+                                                        <i class="ki-outline ki-geolocation-home fs-4 me-1"></i>
+                                                        Show Actual Location
+                                                    </span>
+                                        </button>
+                                    </div>
+                                    <div v-else class="d-flex align-items-center gap-2">
+                                        <i class="ki-outline ki-geolocation-home fs-3 text-gray-600"></i>
+                                        <div>
+                                            <div class="text-muted fs-7">Login Location</div>
+                                            <div class="fw-semibold text-gray-800">
+                                                        <span v-if="loginLocation?.city || loginLocation?.country">
+                                                            {{ [loginLocation?.city, loginLocation?.country].filter(Boolean).join(', ') }}
+                                                        </span>
+                                                <span v-else class="text-muted">Not available</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Profile Details -->
@@ -331,7 +384,7 @@ watch(
                                                 <i class="ki-outline ki-color-swatch fs-3 text-gray-600"></i>
                                                 <div>
                                                     <div class="text-muted fs-7">Skin Color</div>
-                                                    <div class="fw-semibold text-gray-800">{{ user.skin_color }}</div>
+                                                    <div class="fw-semibold text-gray-800">{{ user.skin_color_label }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -340,7 +393,7 @@ watch(
                                                 <i class="ki-outline ki-profile-user fs-3 text-gray-600"></i>
                                                 <div>
                                                     <div class="text-muted fs-7">Body Shape</div>
-                                                    <div class="fw-semibold text-gray-800">{{ user.body_shape }}</div>
+                                                    <div class="fw-semibold text-gray-800">{{ user.body_shape_label }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -356,7 +409,7 @@ watch(
                                                 <i class="ki-outline ki-graduation-cap fs-3 text-gray-600"></i>
                                                 <div>
                                                     <div class="text-muted fs-7">Education</div>
-                                                    <div class="fw-semibold text-gray-800">{{ user.education_level }}</div>
+                                                    <div class="fw-semibold text-gray-800">{{ user.education_level_label }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -374,7 +427,7 @@ watch(
                                                 <i class="ki-outline ki-chart-simple fs-3 text-gray-600"></i>
                                                 <div>
                                                     <div class="text-muted fs-7">Field of Work</div>
-                                                    <div class="fw-semibold text-gray-800">{{ user.field_of_work }}</div>
+                                                    <div class="fw-semibold text-gray-800">{{ user.field_of_work_label }}</div>
                                                 </div>
                                             </div>
                                         </div>

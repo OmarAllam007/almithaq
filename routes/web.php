@@ -9,6 +9,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IgnoreController;
 use App\Http\Controllers\InboxController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NewMembersController;
 use App\Http\Controllers\OnlineMembersController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserInteractionsController;
 use Illuminate\Support\Facades\Route;
 
+//Auth::loginUsingId(1);
 Route::group(['middleware' => 'guest'], function () {
     Route::get('signup', [RegisterController::class, 'showSignupForm'])->name('signup');
     Route::post('signup', [RegisterController::class, 'store'])->name('signup.store');
@@ -31,7 +33,8 @@ Route::group(['middleware' => 'guest'], function () {
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-
+    Route::get('/language/{locale}', [LanguageController::class, 'switchLanguage'])->name('language.switch');
+    Route::get('/language', [LanguageController::class, 'getCurrentLanguage'])->name('language.current');
     // Debug routes (remove in production)
     if (app()->environment('local')) {
         Route::get('/test-broadcast', [\App\Http\Controllers\TestBroadcastController::class, 'testBroadcast']);
@@ -42,6 +45,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('profile/delete-account', DeleteAccountController::class)->name('profile.delete-account');
     Route::get('users/{user}', [ProfileController::class, 'show'])->name('users.show');
+    Route::get('users/{user}/login-location', [ProfileController::class, 'loginLocation'])->name('users.login-location');
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     // Profile Gallery

@@ -4,6 +4,7 @@ import { computed } from 'vue';
 interface Props {
     label: string;
     value?: string | number | null;
+    displayValue?: string | number | null;
     isEditing?: boolean;
     error?: string;
     type?: 'text' | 'email' | 'number' | 'textarea' | 'select';
@@ -21,11 +22,25 @@ const emit = defineEmits<{
     'update:value': [value: string | number];
 }>();
 
-const displayValue = computed(() => {
-    if (props.value === null || props.value === undefined || props.value === '') {
+const computedDisplayValue = computed(() => {
+    const val = props.displayValue ?? props.value;
+    if (val === null || val === undefined || val === '') {
         return 'Not specified';
     }
-    return props.value;
+    return val;
+});
+
+const selectValue = computed(() => {
+    if (props.value === null || props.value === undefined) {
+        return '';
+    }
+    // Handle object values (extract id or name)
+    if (typeof props.value === 'object') {
+        return (props.value as { id?: number; name?: string }).id?.toString()
+            ?? (props.value as { id?: number; name?: string }).name?.toString()
+            ?? '';
+    }
+    return props.value.toString();
 });
 
 const handleInput = (event: Event) => {
@@ -41,7 +56,7 @@ const handleInput = (event: Event) => {
         </label>
         <div :class="[colSpan === 'full' ? 'col-lg-8' : 'col-lg-4']">
             <template v-if="!isEditing">
-                <span class="fw-bold fs-6 text-gray-800">{{ displayValue }}</span>
+                <span class="fw-bold fs-6 text-gray-800">{{ computedDisplayValue }}</span>
             </template>
             <template v-else>
                 <textarea
@@ -53,7 +68,7 @@ const handleInput = (event: Event) => {
                 />
                 <select
                     v-else-if="type === 'select'"
-                    :value="value"
+                    :value="selectValue"
                     @change="handleInput"
                     class="form-select form-select-solid"
                 >

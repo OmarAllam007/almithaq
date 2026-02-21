@@ -13,7 +13,7 @@ class PruneOnlineUsers extends Command
 
     public function handle()
     {
-        $tenMinutesAgo = now()->subMinutes(10)->timestamp;
+        $tenMinutesAgo = now()->subMinutes(1)->timestamp;
         $removed = Redis::zremrangebyscore('online_users', '-inf', $tenMinutesAgo);
         $this->info("Pruned $removed inactive users.");
     }

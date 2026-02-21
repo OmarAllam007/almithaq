@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { vueLang } from '@erag/lang-sync-inertia';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
-const { __ } = vueLang();
+import { computed } from 'vue';
+
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
+
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
+const drawerDirection = computed(() => isRtl.value ? 'end' : 'start');
+const menuPlacement = computed(() => isRtl.value ? 'left-end' : 'left-start');
+const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-start');
 </script>
 
 <template>
@@ -15,7 +23,7 @@ const { __ } = vueLang();
         data-kt-drawer-activate="{default: true, lg: false}"
         data-kt-drawer-overlay="true"
         data-kt-drawer-width="275px"
-        data-kt-drawer-direction="start"
+        :data-kt-drawer-direction="drawerDirection"
         data-kt-drawer-toggle="#kt_app_sidebar_toggle"
     >
         <!--begin::Logo-->
@@ -33,7 +41,7 @@ const { __ } = vueLang();
                     class="position-relative symbol symbol-circle symbol-40px cursor-pointer"
                     data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
                     data-kt-menu-attach="parent"
-                    data-kt-menu-placement="bottom-end"
+                    :data-kt-menu-placement="isRtl ? 'bottom-start' : 'bottom-end'"
                 >
                     <img :src="$page.props.auth?.profile_image" alt="user" />
                     <div class="position-absolute rounded-circle bg-success h-8px w-8px ms-n3 mt-n3 start-100 top-100"></div>
@@ -70,7 +78,7 @@ const { __ } = vueLang();
                     <!--end::Menu separator-->
                     <!--begin::Menu item-->
                     <div class="menu-item px-5">
-                        <Link :href="route('profile')" class="menu-link px-5">My Profile</Link>
+                        <Link :href="route('profile')" class="menu-link px-5"> {{ trans('sidebar.My Profile') }}</Link>
                     </div>
                     <!--end::Menu item-->
 
@@ -79,21 +87,12 @@ const { __ } = vueLang();
                         <Link :href="route('profile.gallery')" class="menu-link px-5">My Gallery</Link>
                     </div>
                     <!--end::Menu item-->
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5">
-                        <a href="apps/projects/list.html" class="menu-link px-5">
-                            <span class="menu-text">My Projects</span>
-                            <span class="menu-badge">
-                                <span class="badge badge-light-danger badge-circle fw-bold fs-7">3</span>
-                            </span>
-                        </a>
-                    </div>
-                    <!--end::Menu item-->
+
                     <!--begin::Menu item-->
                     <div
                         class="menu-item px-5"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                        data-kt-menu-placement="left-start"
+                        :data-kt-menu-placement="subMenuPlacement"
                         data-kt-menu-offset="-15px, 0"
                     >
                         <a href="#" class="menu-link px-5">
@@ -116,19 +115,12 @@ const { __ } = vueLang();
                         <!--end::Menu sub-->
                     </div>
                     <!--end::Menu item-->
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5">
-                        <a href="account/statements.html" class="menu-link px-5">My Statements</a>
-                    </div>
-                    <!--end::Menu item-->
-                    <!--begin::Menu separator-->
-                    <div class="separator my-2"></div>
-                    <!--end::Menu separator-->
+
                     <!--begin::Menu item-->
                     <div
                         class="menu-item px-5"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                        data-kt-menu-placement="left-start"
+                        :data-kt-menu-placement="subMenuPlacement"
                         data-kt-menu-offset="-15px, 0"
                     >
                         <a href="#" class="menu-link px-5">
@@ -183,7 +175,7 @@ const { __ } = vueLang();
                     <div
                         class="menu-item px-5"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                        data-kt-menu-placement="left-start"
+                        :data-kt-menu-placement="subMenuPlacement"
                         data-kt-menu-offset="-15px, 0"
                     >
                         <a href="#" class="menu-link px-5">
@@ -197,21 +189,20 @@ const { __ } = vueLang();
                         <div class="menu-sub menu-sub-dropdown w-175px py-4">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="account/settings.html" class="menu-link d-flex active px-5">
+                                <Link :href="`/language/ar`" class="menu-link d-flex active px-5">
                                     <span class="symbol symbol-20px me-4">
                                         <img class="rounded-1" src="assets/media/flags/saudi-arabia.svg" alt="" /> </span
-                                    >Arabic</a
+                                    >{{ trans('sidebar.Arabic') }}</Link
                                 >
                             </div>
                             <!--end::Menu item-->
 
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="account/settings.html" class="menu-link d-flex px-5">
+                                <Link :href="`/language/en`" class="menu-link d-flex px-5">
                                     <span class="symbol symbol-20px me-4">
                                         <img class="rounded-1" src="assets/media/flags/united-states.svg" alt="" /> </span
-                                    >English</a
-                                >
+                                    >{{ trans('sidebar.English') }}</Link>
                             </div>
                             <!--end::Menu item-->
                             <!--begin::Menu item-->
@@ -233,7 +224,7 @@ const { __ } = vueLang();
                     <!--end::Menu item-->
                     <!--begin::Menu item-->
                     <div class="menu-item px-5">
-                        <Link :href="route('logout')" method="post" class="menu-link text-danger w-100 px-5">{{ __('Logout') }}</Link>
+                        <Link :href="route('logout')" method="post" class="menu-link text-danger w-100 px-5">{{ trans('sidebar.Logout') }}</Link>
                     </div>
                     <!--end::Menu item-->
                 </div>
@@ -256,26 +247,7 @@ const { __ } = vueLang();
                 data-kt-scroll-wrappers="#kt_app_sidebar, #kt_app_sidebar_nav"
                 data-kt-scroll-offset="5px"
             >
-                <!--begin::Progress-->
-                <div class="d-flex align-items-center flex-column mb-6 w-100">
-                    <div class="d-flex justify-content-between fw-bolder fs-6 mt-auto mb-3 w-100 text-gray-800">
-                        <span>Your Goal</span>
-                    </div>
-                    <div class="bg-light-primary mb-2 w-100 rounded" style="height: 24px">
-                        <div
-                            class="bg-primary rounded"
-                            role="progressbar"
-                            style="height: 24px; width: 37%"
-                            aria-valuenow="50"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                        ></div>
-                    </div>
-                    <div class="fw-semibold fs-7 text-primary mt-auto w-100">
-                        <span>reached 37% of your target</span>
-                    </div>
-                </div>
-                <!--end::Progress-->
+
 
                 <!--begin::Links-->
                 <div class="mb-6">
@@ -298,7 +270,7 @@ const { __ } = vueLang();
                                 </span>
                                 <!--end::Icon-->
                                 <!--begin::Label-->
-                                <span class="fs-7 fw-bold">Inbox</span>
+                                <span class="fs-7 fw-bold">{{ trans('sidebar.inbox') }}</span>
                                 <!--end::Label-->
                             </Link>
                             <!--end::Link-->
@@ -392,22 +364,7 @@ const { __ } = vueLang();
             <!--end::Nav wrapper-->
         </div>
         <!--end::Sidebar nav-->
-        <!--begin::Footer-->
-        <div class="flex-column-auto d-flex flex-center px-lg-8 py-lg-8 px-4 py-3" id="kt_app_sidebar_footer">
-            <!--begin::Settings-->
-            <div class="app-footer-item">
-                <!--begin::Menu- wrapper-->
-                <a
-                    href="account/settings.html"
-                    class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px"
-                >
-                    <i class="ki-outline ki-setting-2 fs-2"></i>
-                </a>
-                <!--end::Menu wrapper-->
-            </div>
-            <!--begin::Settings-->
-        </div>
-        <!--end::Footer-->
+
     </div>
     <!--end::Sidebar-->
 </template>

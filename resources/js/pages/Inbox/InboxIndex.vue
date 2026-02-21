@@ -7,6 +7,9 @@ import { ref, computed } from 'vue';
 import { usePresenceStore } from '@/stores/useUserStore';
 import { markAllAsRead } from '@/actions/App/Http/Controllers/MessageController';
 import { bulkDestroy, destroy } from '@/actions/App/Http/Controllers/ConversationController';
+import { useLang } from '@/composables/useLang';
+
+const { trans } = useLang();
 
 interface Message {
     id: number;
@@ -80,16 +83,16 @@ const formatMessageDate = (dateString: string) => {
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
 
     if (diffMinutes < 1) {
-        return 'Just now';
+        return trans('inbox.just_now');
     }
     if (diffMinutes < 60) {
-        return `${diffMinutes}m ago`;
+        return trans('inbox.m_ago', { minutes: diffMinutes });
     }
     if (diffMinutes < 1440) {
-        return `${Math.floor(diffMinutes / 60)}h ago`;
+        return trans('inbox.h_ago', { hours: Math.floor(diffMinutes / 60) });
     }
     if (diffMinutes < 10080) {
-        return `${Math.floor(diffMinutes / 1440)}d ago`;
+        return trans('inbox.d_ago', { days: Math.floor(diffMinutes / 1440) });
     }
 
     return date.toLocaleDateString();
@@ -195,16 +198,16 @@ const handleMarkAllAsRead = async () => {
 
 const deleteModalTitle = computed(() => {
     if (deleteTarget.value === 'single') {
-        return 'Delete Conversation';
+        return trans('inbox.delete_conversation');
     }
-    return `Delete ${selectedConversations.value.length} Conversation(s)`;
+    return trans('inbox.delete_conversations', { count: selectedConversations.value.length });
 });
 
 const deleteModalMessage = computed(() => {
     if (deleteTarget.value === 'single') {
-        return 'Are you sure you want to delete this conversation? This action cannot be undone.';
+        return trans('inbox.delete_conversation_confirm');
     }
-    return `Are you sure you want to delete ${selectedConversations.value.length} conversation(s)? This action cannot be undone.`;
+    return trans('inbox.delete_conversations_confirm', { count: selectedConversations.value.length });
 });
 </script>
 
@@ -219,14 +222,14 @@ const deleteModalMessage = computed(() => {
                     <!--begin::Page title-->
                     <div class="page-title d-flex flex-column justify-content-center me-3">
                         <!--begin::Title-->
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">Inbox</h1>
+                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">{{ trans('inbox.inbox') }}</h1>
                         <!--end::Title-->
 
                         <!--begin::Breadcrumb-->
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
                             <!--begin::Item-->
                             <li class="breadcrumb-item text-muted">
-                                <a href="/metronic8/demo23/?page=index" class="text-muted text-hover-primary"> Home </a>
+                                <a href="/metronic8/demo23/?page=index" class="text-muted text-hover-primary">{{ trans('inbox.home') }}</a>
                             </li>
                             <!--end::Item-->
                             <!--begin::Item-->
@@ -236,7 +239,7 @@ const deleteModalMessage = computed(() => {
                             <!--end::Item-->
 
                             <!--begin::Item-->
-                            <li class="breadcrumb-item text-muted">Inbox</li>
+                            <li class="breadcrumb-item text-muted">{{ trans('inbox.inbox') }}</li>
                             <!--end::Item-->
                         </ul>
                         <!--end::Breadcrumb-->
@@ -277,7 +280,7 @@ const deleteModalMessage = computed(() => {
                                             class="btn btn-sm btn-icon btn-light btn-active-light-danger"
                                             :class="{ 'opacity-50': !hasSelectedConversations }"
                                             :disabled="!hasSelectedConversations"
-                                            title="Delete Selected"
+                                            :title="trans('inbox.delete_selected')"
                                         >
                                             <i class="ki-outline ki-trash fs-2"></i>
                                         </button>
@@ -288,20 +291,20 @@ const deleteModalMessage = computed(() => {
                                             @click="handleMarkAllAsRead"
                                             class="btn btn-sm btn-light btn-active-light-primary"
                                             :disabled="isMarkingAllAsRead"
-                                            title="Mark All as Read"
+                                            :title="trans('inbox.mark_all_read')"
                                         >
                                             <span v-if="isMarkingAllAsRead" class="spinner-border spinner-border-sm me-1"></span>
                                             <i v-else class="ki-outline ki-double-check fs-2 me-1"></i>
-                                            Mark All Read
+                                            {{ trans('inbox.mark_all_read') }}
                                         </button>
                                         <!--end::Mark All Read-->
 
                                         <span v-if="hasSelectedConversations" class="text-muted fs-7 ms-2">
-                                            {{ selectedConversations.length }} selected
+                                            {{ selectedConversations.length }} {{ trans('inbox.selected') }}
                                         </span>
                                     </div>
 
-                                    <p class="mb-0">Conversations: {{ conversations.data.length }}</p>
+                                    <p class="mb-0">{{ trans('inbox.conversations') }}: {{ conversations.data.length }}</p>
                                     <!--end::Actions-->
                                 </div>
 
@@ -325,55 +328,55 @@ const deleteModalMessage = computed(() => {
                                                     <tr>
                                                         <th data-dt-column="0" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div class="dt-column-header">
-                                                                <span class="dt-column-title">Checkbox</span
+                                                                <span class="dt-column-title">{{ trans('inbox.checkbox') }}</span
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
-                                                                    aria-label="Checkbox: Activate to sort"
+                                                                    :aria-label="trans('inbox.checkbox_sort_label')"
                                                                     tabindex="0"
                                                                 ></span>
                                                             </div>
                                                         </th>
                                                         <th data-dt-column="1" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div class="dt-column-header">
-                                                                <span class="dt-column-title">Actions</span
+                                                                <span class="dt-column-title">{{ trans('inbox.actions') }}</span
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
-                                                                    aria-label="Actions: Activate to sort"
+                                                                    :aria-label="trans('inbox.actions_sort_label')"
                                                                     tabindex="0"
                                                                 ></span>
                                                             </div>
                                                         </th>
                                                         <th data-dt-column="2" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div class="dt-column-header">
-                                                                <span class="dt-column-title">Author</span
+                                                                <span class="dt-column-title">{{ trans('inbox.author') }}</span
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
-                                                                    aria-label="Author: Activate to sort"
+                                                                    :aria-label="trans('inbox.author_sort_label')"
                                                                     tabindex="0"
                                                                 ></span>
                                                             </div>
                                                         </th>
                                                         <th data-dt-column="3" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div class="dt-column-header">
-                                                                <span class="dt-column-title">Title</span
+                                                                <span class="dt-column-title">{{ trans('inbox.title') }}</span
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
-                                                                    aria-label="Title: Activate to sort"
+                                                                    :aria-label="trans('inbox.title_sort_label')"
                                                                     tabindex="0"
                                                                 ></span>
                                                             </div>
                                                         </th>
                                                         <th data-dt-column="4" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div class="dt-column-header">
-                                                                <span class="dt-column-title">Date</span
+                                                                <span class="dt-column-title">{{ trans('inbox.date') }}</span
                                                                 ><span
                                                                     class="dt-column-order"
                                                                     role="button"
-                                                                    aria-label="Date: Activate to sort"
+                                                                    :aria-label="trans('inbox.date_sort_label')"
                                                                     tabindex="0"
                                                                 ></span>
                                                             </div>
@@ -397,7 +400,7 @@ const deleteModalMessage = computed(() => {
                                                             <button
                                                                 @click.stop="openDeleteModal(conversation.id)"
                                                                 class="btn btn-icon btn-color-gray-500 btn-active-color-danger w-35px h-35px"
-                                                                title="Delete conversation"
+                                                                :title="trans('inbox.delete_conversation')"
                                                             >
                                                                 <i class="ki-outline ki-trash fs-3"></i>
                                                             </button>
@@ -415,7 +418,7 @@ const deleteModalMessage = computed(() => {
                                                                         v-if="conversation.otherUser.isFavourite"
                                                                         class="position-absolute translate-middle d-flex align-items-center justify-content-center rounded-circle bg-danger start-0 top-0 border border-2 border-white"
                                                                         style="width: 20px; height: 20px; z-index: 1"
-                                                                        title="Favorited"
+                                                                        :title="trans('inbox.favorited')"
                                                                     >
                                                                         <i class="fa fa-heart text-white" style="font-size: 10px"></i>
                                                                     </div>
@@ -425,7 +428,7 @@ const deleteModalMessage = computed(() => {
                                                                         v-if="conversation.otherUser.isIgnored"
                                                                         class="position-absolute translate-middle d-flex align-items-center justify-content-center rounded-circle bg-warning start-0 top-0 border border-2 border-white"
                                                                         style="width: 20px; height: 20px; z-index: 1"
-                                                                        title="Ignored"
+                                                                        :title="trans('inbox.ignored')"
                                                                     >
                                                                         <i class="fa fa-ban text-white" style="font-size: 10px"></i>
                                                                     </div>
@@ -447,14 +450,14 @@ const deleteModalMessage = computed(() => {
 
                                                                 <!--begin::User Info-->
                                                                 <div class="d-flex flex-column">
-                                                                    <span class="fw-bold mb-1 text-gray-900">{{
+                                                                    <span class="fw-bold mb-1 text-gray-900 me-10">{{
                                                                         conversation.otherUser.username
                                                                     }}</span>
                                                                     <div class="d-flex align-items-center gap-2">
                                                                         <span class="badge badge-light-primary fs-8">{{
                                                                             conversation.otherUser.marriage_status
                                                                         }}</span>
-                                                                        <span class="text-muted fs-7">{{ conversation.otherUser.age }} yrs</span>
+                                                                        <span class="text-muted fs-7">{{ conversation.otherUser.age }} {{ trans('inbox.yrs') }}</span>
                                                                         <span class="text-muted fs-7">{{ conversation.otherUser.nationality }}</span>
                                                                     </div>
                                                                 </div>
@@ -464,12 +467,12 @@ const deleteModalMessage = computed(() => {
                                                         <td @click="openChatDrawer(conversation.id)">
                                                             <div v-if="conversation.lastMessage" class="gap-1 pt-2 text-gray-900">
 
-                                                                <div class="fs-6  badge " :class="conversation.lastMessage.isRead ? 'text-gray-700' : 'badge-primary text-white'">
+                                                                <div class="fs-6  badge overflow-ellipsis" :class="conversation.lastMessage.isRead ? 'text-gray-700' : 'badge-primary text-white'">
                                                                     {{ truncateMessage(conversation.lastMessage.message) }}
                                                                 </div>
                                                             </div>
                                                             <div v-else class="text-muted gap-1 pt-2">
-                                                                <span class="fst-italic">No messages yet</span>
+                                                                <span class="fst-italic">{{ trans('inbox.no_messages_yet') }}</span>
                                                             </div>
                                                         </td>
                                                         <td @click="openChatDrawer(conversation.id)" class="w-100px fs-7 pe-9 text-end">
@@ -535,11 +538,11 @@ const deleteModalMessage = computed(() => {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" @click="closeDeleteModal" :disabled="isDeleting">
-                            Cancel
+                            {{ trans('inbox.cancel') }}
                         </button>
                         <button type="button" class="btn btn-danger" @click="confirmDelete" :disabled="isDeleting">
                             <span v-if="isDeleting" class="spinner-border spinner-border-sm me-2"></span>
-                            Delete
+                            {{ trans('inbox.delete') }}
                         </button>
                     </div>
                 </div>

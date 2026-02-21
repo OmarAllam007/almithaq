@@ -6,15 +6,22 @@ import ProfileField from '@/components/Profile/ProfileField.vue';
 import { update } from '@/actions/App/Http/Controllers/ProfileController';
 import DeleteAccountController from '@/actions/App/Http/Controllers/DeleteAccountController';
 
+type SelectOption = { value: string; label: string };
+
 interface Props {
     countries: Array<{ id: number; name: string; ar_name: string; flag: string }>;
-    devotions: string[];
-    prayer_commitments: string[];
-    yes_no_list: string[];
-    education_levels: string[];
-    financial_statuses: string[];
-    fields_of_work: string[];
-    delete_account_reasons: Array<{ value: number; label: string }>;
+    marriage_types: SelectOption[];
+    marriage_statuses: SelectOption[];
+    skin_colors: SelectOption[];
+    body_shapes: SelectOption[];
+    devotions: SelectOption[];
+    prayer_commitments: SelectOption[];
+    yes_no_options: SelectOption[];
+    education_levels: SelectOption[];
+    financial_statuses: SelectOption[];
+    health_statuses: SelectOption[];
+    fields_of_work: SelectOption[];
+    delete_account_reasons: SelectOption[];
 }
 
 const props = defineProps<Props>();
@@ -24,71 +31,42 @@ const user = computed(() => page.props.auth.user);
 
 const isEditing = ref(false);
 
+const toStr = (val: unknown): string => (val !== null && val !== undefined ? String(val) : '');
+
 const form = useForm({
     username: user.value.username,
     email: user.value.email,
     phone_number: user.value.phone_number,
-    age: user.value.age,
-    marriage_type: user.value.marriage_type,
-    marriage_status: user.value.marriage_status,
-    child_count: user.value.child_count,
-    residence: user.value.residence,
-    nationality: user.value.nationality,
+    age: toStr(user.value.age),
+    marriage_type: toStr(user.value.marriage_type),
+    marriage_status: toStr(user.value.marriage_status),
+    child_count: toStr(user.value.child_count),
+    residence: toStr(user.value.residence?.id),
+    nationality: toStr(user.value.nationality?.id),
     city: user.value.city,
     weight: user.value.weight,
     height: user.value.height,
-    skin_color: user.value.skin_color,
-    body_shape: user.value.body_shape,
-    religion: user.value.religion,
-    ethnicity: user.value.ethnicity,
-    devotion: user.value.devotion,
-    prayer: user.value.prayer,
-    smoking: user.value.smoking,
-    beard: user.value.beard,
-    education_level: user.value.education_level,
-    financial_status: user.value.financial_status,
-    field_of_work: user.value.field_of_work,
+    skin_color: toStr(user.value.skin_color),
+    body_shape: toStr(user.value.body_shape),
+    devotion: toStr(user.value.devotion),
+    prayer: toStr(user.value.prayer),
+    smoking: toStr(user.value.smoking ? 1 : 0),
+    beard: toStr(user.value.beard ? 1 : 0),
+    education_level: toStr(user.value.education_level),
+    financial_status: toStr(user.value.financial_status),
+    field_of_work: toStr(user.value.field_of_work),
     job: user.value.job,
     monthly_income: user.value.monthly_income,
-    health_status: user.value.health_status,
+    health_status: toStr(user.value.health_status),
     about_partner: user.value.about_partner,
     about_self: user.value.about_self,
-    full_name: user.value.full_name,
 });
 
-const marriageTypes = ['First wife', 'Second wife', 'Only one wife', 'Accept polygamy'];
-const marriageStatuses = ['Single', 'Divorced', 'Widowed', 'Married'];
-const ageRange = Array.from({ length: 73 }, (_, i) => i + 18);
-const childCounts = Array.from({ length: 11 }, (_, i) => i);
-const skinColors = ['White', 'Light Brown', 'Brown', 'Dark Brown', 'Black'];
-const bodyShapes = ['Slim', 'Sporty', 'Average', 'Muscular', 'Overweight'];
+const ageRange = Array.from({ length: 73 }, (_, i) => ({ value: String(i + 18), label: String(i + 18) }));
+const childCounts = Array.from({ length: 11 }, (_, i) => ({ value: String(i), label: String(i) }));
 
 const countryOptions = computed(() =>
     props.countries.map((c) => ({ value: c.id.toString(), label: c.name }))
-);
-
-const devotionOptions = computed(() =>
-    props.devotions.map((d, index) => ({ value: index.toString(), label: d }))
-);
-
-const prayerOptions = computed(() =>
-    props.prayer_commitments.map((p, index) => ({ value: index.toString(), label: p }))
-);
-
-const yesNoOptions = computed(() =>
-    props.yes_no_list.map((yn, index) => ({ value: index.toString(), label: yn }))
-);
-
-const educationOptions = computed(() =>
-    props.education_levels.map((e, index) => ({ value: index.toString(), label: e }))
-);
-
-const financialOptions = computed(() =>
-    props.financial_statuses.map((f, index) => ({ value: index.toString(), label: f }))
-);
-
-const workFieldOptions = computed(() =>
-    props.fields_of_work.map((w, index) => ({ value: index.toString(), label: w }))
 );
 
 const toggleEdit = () => {
@@ -100,20 +78,29 @@ const toggleEdit = () => {
 };
 
 const saveProfile = () => {
-    form.submit(update(), {
+    form.transform((data) => ({
+        ...data,
+        age: data.age ? parseInt(data.age) : null,
+        marriage_type: data.marriage_type ? parseInt(data.marriage_type) : null,
+        marriage_status: data.marriage_status ? parseInt(data.marriage_status) : null,
+        child_count: data.child_count ? parseInt(data.child_count) : null,
+        residence: data.residence ? parseInt(data.residence) : null,
+        nationality: data.nationality ? parseInt(data.nationality) : null,
+        skin_color: data.skin_color ? parseInt(data.skin_color) : null,
+        body_shape: data.body_shape ? parseInt(data.body_shape) : null,
+        devotion: data.devotion ? parseInt(data.devotion) : null,
+        prayer: data.prayer ? parseInt(data.prayer) : null,
+        smoking: data.smoking === '1',
+        beard: data.beard === '1',
+        education_level: data.education_level ? parseInt(data.education_level) : null,
+        financial_status: data.financial_status ? parseInt(data.financial_status) : null,
+        field_of_work: data.field_of_work ? parseInt(data.field_of_work) : null,
+        health_status: data.health_status ? parseInt(data.health_status) : null,
+    })).submit(update(), {
         onSuccess: () => {
             isEditing.value = false;
         },
     });
-};
-
-const getCountryName = (id: number | string) => {
-    const country = props.countries.find((c) => c.id === Number(id));
-    return country?.name || id;
-};
-
-const getOptionLabel = (options: string[], value: number | string) => {
-    return options[Number(value)] || value;
 };
 
 // Delete Account
@@ -192,7 +179,7 @@ const submitDeleteAccount = () => {
                                                 </a>
                                                 <a href="#" class="d-flex align-items-center text-hover-primary me-5 mb-2 text-gray-500">
                                                     <i class="ki-outline ki-geolocation fs-4 me-1"></i
-                                                    >{{ getCountryName(user.residence.name) }}
+                                                    >{{ user.residence.name }}
                                                 </a>
                                                 <a href="#" class="d-flex align-items-center text-hover-primary mb-2 text-gray-500">
                                                     <i class="ki-outline ki-sms fs-4"></i>{{ user.email }}
@@ -236,21 +223,21 @@ const submitDeleteAccount = () => {
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="d-flex flex-stack flex-wrap">
-                                        <div class="d-flex align-items-center w-200px w-sm-300px flex-column mt-3">
-                                            <div class="d-flex justify-content-between mt-auto mb-2 w-100">
-                                                <span class="fw-semibold fs-6 text-gray-500">Profile Completion</span>
-                                                <span class="fw-bold fs-6">50%</span>
-                                            </div>
-                                            <div class="h-5px bg-light mx-3 mb-3 w-100">
-                                                <div
-                                                    class="bg-success h-5px rounded"
-                                                    role="progressbar"
-                                                    style="width: 50%"
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
+<!--                                    <div class="d-flex flex-stack flex-wrap">-->
+<!--                                        <div class="d-flex align-items-center w-200px w-sm-300px flex-column mt-3">-->
+<!--                                            <div class="d-flex justify-content-between mt-auto mb-2 w-100">-->
+<!--                                                <span class="fw-semibold fs-6 text-gray-500">Profile Completion</span>-->
+<!--                                                <span class="fw-bold fs-6">50%</span>-->
+<!--                                            </div>-->
+<!--                                            <div class="h-5px bg-light mx-3 mb-3 w-100">-->
+<!--                                                <div-->
+<!--                                                    class="bg-success h-5px rounded"-->
+<!--                                                    role="progressbar"-->
+<!--                                                    style="width: 50%"-->
+<!--                                                ></div>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
                                 </div>
                             </div>
                         </div>
@@ -287,7 +274,8 @@ const submitDeleteAccount = () => {
                             <ProfileField
                                 label="Nationality"
                                 type="select"
-                                :value="isEditing ? form.nationality : getCountryName(user.nationality.name)"
+                                :value="form.nationality"
+                                :display-value="user.nationality.name"
                                 @update:value="(v) => (form.nationality = v)"
                                 :is-editing="isEditing"
                                 :options="countryOptions"
@@ -296,7 +284,8 @@ const submitDeleteAccount = () => {
                             <ProfileField
                                 label="Residence"
                                 type="select"
-                                :value="isEditing ? form.residence : getCountryName(user.residence.name)"
+                                :value="form.residence"
+                                :display-value="user.residence.name"
                                 @update:value="(v) => (form.residence = v)"
                                 :is-editing="isEditing"
                                 :options="countryOptions"
@@ -321,7 +310,7 @@ const submitDeleteAccount = () => {
                                 :value="form.age"
                                 @update:value="(v) => (form.age = v)"
                                 :is-editing="isEditing"
-                                :options="ageRange.map((a) => ({ value: a.toString(), label: a.toString() }))"
+                                :options="ageRange"
                                 :error="form.errors.age"
                                 col-span="half"
                             />
@@ -331,7 +320,7 @@ const submitDeleteAccount = () => {
                                 :value="form.child_count"
                                 @update:value="(v) => (form.child_count = v)"
                                 :is-editing="isEditing"
-                                :options="childCounts.map((c) => ({ value: c.toString(), label: c.toString() }))"
+                                :options="childCounts"
                                 :error="form.errors.child_count"
                                 col-span="half"
                             />
@@ -361,9 +350,10 @@ const submitDeleteAccount = () => {
                                 label="Skin Color"
                                 type="select"
                                 :value="form.skin_color"
+                                :display-value="user.skin_color_label"
                                 @update:value="(v) => (form.skin_color = v)"
                                 :is-editing="isEditing"
-                                :options="skinColors.map((s) => ({ value: s, label: s }))"
+                                :options="skin_colors"
                                 :error="form.errors.skin_color"
                                 col-span="half"
                             />
@@ -371,9 +361,10 @@ const submitDeleteAccount = () => {
                                 label="Body Shape"
                                 type="select"
                                 :value="form.body_shape"
+                                :display-value="user.body_shape_label"
                                 @update:value="(v) => (form.body_shape = v)"
                                 :is-editing="isEditing"
-                                :options="bodyShapes.map((b) => ({ value: b, label: b }))"
+                                :options="body_shapes"
                                 :error="form.errors.body_shape"
                                 col-span="half"
                             />
@@ -383,9 +374,10 @@ const submitDeleteAccount = () => {
                                 label="Marriage Status"
                                 type="select"
                                 :value="form.marriage_status"
+                                :display-value="user.marriage_status_label"
                                 @update:value="(v) => (form.marriage_status = v)"
                                 :is-editing="isEditing"
-                                :options="marriageStatuses.map((m) => ({ value: m, label: m }))"
+                                :options="marriage_statuses"
                                 :error="form.errors.marriage_status"
                                 col-span="half"
                             />
@@ -393,9 +385,10 @@ const submitDeleteAccount = () => {
                                 label="Marriage Type"
                                 type="select"
                                 :value="form.marriage_type"
+                                :display-value="user.marriage_type_label"
                                 @update:value="(v) => (form.marriage_type = v)"
                                 :is-editing="isEditing"
-                                :options="marriageTypes.map((m) => ({ value: m, label: m }))"
+                                :options="marriage_types"
                                 :error="form.errors.marriage_type"
                                 col-span="half"
                             />
@@ -407,19 +400,18 @@ const submitDeleteAccount = () => {
                         <div class="row">
                             <ProfileField
                                 label="Religion"
-                                :value="form.religion"
-                                @update:value="(v) => (form.religion = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.religion"
+                                :value="user.religion"
+                                :is-editing="false"
                                 col-span="half"
                             />
                             <ProfileField
                                 label="Prayer"
                                 type="select"
-                                :value="isEditing ? form.prayer : getOptionLabel(prayer_commitments, user.prayer)"
+                                :value="form.prayer"
+                                :display-value="user.prayer_label"
                                 @update:value="(v) => (form.prayer = v)"
                                 :is-editing="isEditing"
-                                :options="prayerOptions"
+                                :options="prayer_commitments"
                                 :error="form.errors.prayer"
                                 col-span="half"
                             />
@@ -428,34 +420,36 @@ const submitDeleteAccount = () => {
                             <ProfileField
                                 label="Devotion"
                                 type="select"
-                                :value="isEditing ? form.devotion : getOptionLabel(devotions, user.devotion)"
+                                :value="form.devotion"
+                                :display-value="user.devotion_label"
                                 @update:value="(v) => (form.devotion = v)"
                                 :is-editing="isEditing"
-                                :options="devotionOptions"
+                                :options="devotions"
                                 :error="form.errors.devotion"
                                 col-span="half"
                             />
-
                         </div>
                         <div class="row">
                             <ProfileField
                                 label="Smoking"
                                 type="select"
-                                :value="isEditing ? form.smoking : getOptionLabel(yes_no_list, user.smoking)"
+                                :value="form.smoking"
+                                :display-value="user.smoking ? 'Yes' : 'No'"
                                 @update:value="(v) => (form.smoking = v)"
                                 :is-editing="isEditing"
-                                :options="yesNoOptions"
+                                :options="yes_no_options"
                                 :error="form.errors.smoking"
                                 col-span="half"
                             />
                             <ProfileField
-                                v-if="user.registration_type === 'husband'"
+                                v-if="user.registration_type === 1"
                                 label="Beard"
                                 type="select"
-                                :value="isEditing ? form.beard : getOptionLabel(yes_no_list, user.beard)"
+                                :value="form.beard"
+                                :display-value="user.beard ? 'Yes' : 'No'"
                                 @update:value="(v) => (form.beard = v)"
                                 :is-editing="isEditing"
-                                :options="yesNoOptions"
+                                :options="yes_no_options"
                                 :error="form.errors.beard"
                                 col-span="half"
                             />
@@ -468,20 +462,22 @@ const submitDeleteAccount = () => {
                             <ProfileField
                                 label="Education Level"
                                 type="select"
-                                :value="isEditing ? form.education_level : getOptionLabel(education_levels, user.education_level)"
+                                :value="form.education_level"
+                                :display-value="user.education_level_label"
                                 @update:value="(v) => (form.education_level = v)"
                                 :is-editing="isEditing"
-                                :options="educationOptions"
+                                :options="education_levels"
                                 :error="form.errors.education_level"
                                 col-span="half"
                             />
                             <ProfileField
                                 label="Financial Status"
                                 type="select"
-                                :value="isEditing ? form.financial_status : getOptionLabel(financial_statuses, user.financial_status)"
+                                :value="form.financial_status"
+                                :display-value="user.financial_status_label"
                                 @update:value="(v) => (form.financial_status = v)"
                                 :is-editing="isEditing"
-                                :options="financialOptions"
+                                :options="financial_statuses"
                                 :error="form.errors.financial_status"
                                 col-span="half"
                             />
@@ -490,10 +486,11 @@ const submitDeleteAccount = () => {
                             <ProfileField
                                 label="Field of Work"
                                 type="select"
-                                :value="isEditing ? form.field_of_work : getOptionLabel(fields_of_work, user.field_of_work)"
+                                :value="form.field_of_work"
+                                :display-value="user.field_of_work_label"
                                 @update:value="(v) => (form.field_of_work = v)"
                                 :is-editing="isEditing"
-                                :options="workFieldOptions"
+                                :options="fields_of_work"
                                 :error="form.errors.field_of_work"
                                 col-span="half"
                             />
@@ -518,9 +515,12 @@ const submitDeleteAccount = () => {
                             />
                             <ProfileField
                                 label="Health Status"
+                                type="select"
                                 :value="form.health_status"
+                                :display-value="user.health_status_label"
                                 @update:value="(v) => (form.health_status = v)"
                                 :is-editing="isEditing"
+                                :options="health_statuses"
                                 :error="form.errors.health_status"
                                 col-span="half"
                             />

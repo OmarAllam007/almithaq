@@ -6,6 +6,9 @@ import axios from 'axios';
 import Pagination from '@/components/Pagination.vue';
 import { PaginationData } from '@/types/pagination';
 import { router } from '@inertiajs/vue3';
+import { useLang } from '@/composables/useLang';
+
+const { trans } = useLang();
 
 interface Props {
     users: PaginationData;
@@ -66,15 +69,15 @@ const removeInteraction = async (userId: number) => {
     const actionText = props.activeTab === 'favorites' ? 'unfavorite' : 'unignore';
 
     const result = await Swal.fire({
-        title: `Do you want to ${actionText} this user?`,
+        title: trans(props.activeTab === 'favorites' ? 'user_interactions.unfavorite_confirm' : 'user_interactions.unignore_confirm'),
         showDenyButton: true,
         customClass: {
             confirmButton: "btn btn-primary",
             denyButton: "btn btn-secondary",
         },
         buttonsStyling: false,
-        confirmButtonText: 'Yes',
-        denyButtonText: 'No',
+        confirmButtonText: trans('user_interactions.yes'),
+        denyButtonText: trans('user_interactions.no'),
     });
 
     if (result.isConfirmed) {
@@ -108,7 +111,7 @@ const removeInteraction = async (userId: number) => {
                     <div class="page-title d-flex flex-column justify-content-center me-3">
                         <!--begin::Title-->
                         <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
-                            Like and Ignore List
+                            {{ trans('user_interactions.like_and_ignore_list') }}
                         </h1>
                         <!--end::Title-->
 
@@ -116,7 +119,7 @@ const removeInteraction = async (userId: number) => {
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
                             <!--begin::Item-->
                             <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary"> Home </a>
+                                <a href="/" class="text-muted text-hover-primary">{{ trans('user_interactions.home') }}</a>
                             </li>
                             <!--end::Item-->
                             <!--begin::Item-->
@@ -126,7 +129,7 @@ const removeInteraction = async (userId: number) => {
                             <!--end::Item-->
 
                             <!--begin::Item-->
-                            <li class="breadcrumb-item text-muted">My Interactions</li>
+                            <li class="breadcrumb-item text-muted">{{ trans('user_interactions.my_interactions') }}</li>
                             <!--end::Item-->
                         </ul>
                         <!--end::Breadcrumb-->
@@ -155,7 +158,7 @@ const removeInteraction = async (userId: number) => {
                                             :class="['nav-link text-center w-100', { active: activeTab === 'favorites' }]"
                                         >
                                             <i class="ki-outline ki-heart fs-3 me-2"></i>
-                                            My Favorites
+                                            {{ trans('user_interactions.my_favorites') }}
                                         </button>
                                     </li>
                                     <li class="nav-item flex-fill">
@@ -164,7 +167,7 @@ const removeInteraction = async (userId: number) => {
                                             :class="['nav-link text-center w-100', { active: activeTab === 'ignored' }]"
                                         >
                                             <i class="ki-outline ki-cross-circle fs-3 me-2"></i>
-                                            Ignored Users
+                                            {{ trans('user_interactions.ignored_users') }}
                                         </button>
                                     </li>
                                 </ul>
@@ -188,17 +191,17 @@ const removeInteraction = async (userId: number) => {
                                             <tr>
                                                 <th data-dt-column="0" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc p-5">
                                                     <div>
-                                                        <span class="dt-column-title">Member</span>
+                                                        <span class="dt-column-title">{{ trans('user_interactions.member') }}</span>
                                                     </div>
                                                 </th>
                                                 <th data-dt-column="1" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                     <div>
-                                                        <span class="dt-column-title">Added Date</span>
+                                                        <span class="dt-column-title">{{ trans('user_interactions.added_date') }}</span>
                                                     </div>
                                                 </th>
                                                 <th data-dt-column="2" rowspan="1" colspan="1" class="text-end pe-5">
                                                     <div>
-                                                        <span class="dt-column-title">Actions</span>
+                                                        <span class="dt-column-title">{{ trans('user_interactions.actions') }}</span>
                                                     </div>
                                                 </th>
                                             </tr>
@@ -229,7 +232,7 @@ const removeInteraction = async (userId: number) => {
                                                                 <span class="badge badge-light-primary fs-8">
                                                                     {{ user?.marriage_status }}
                                                                 </span>
-                                                                <span class="text-muted fs-7">{{ user?.age }} yrs</span>
+                                                                <span class="text-muted fs-7">{{ user?.age }} {{ trans('user_interactions.yrs') }}</span>
                                                                 <span class="text-muted fs-7">{{ user?.nationality }}</span>
                                                             </div>
                                                         </div>
@@ -247,7 +250,7 @@ const removeInteraction = async (userId: number) => {
                                                     <button
                                                         @click.stop="removeInteraction(user.id)"
                                                         class="btn btn-sm btn-icon btn-light-danger"
-                                                        :title="activeTab === 'favorites' ? 'Remove from favorites' : 'Unignore user'"
+                                                        :title="activeTab === 'favorites' ? trans('user_interactions.remove_from_favorites') : trans('user_interactions.unignore_user')"
                                                     >
                                                         <i class="ki-outline ki-trash fs-3"></i>
                                                     </button>
@@ -263,9 +266,9 @@ const removeInteraction = async (userId: number) => {
                                     <div class="mb-10">
                                         <i class="ki-outline ki-user fs-5x text-gray-400"></i>
                                     </div>
-                                    <h3 class="text-gray-800 mb-3">No Users Found</h3>
+                                    <h3 class="text-gray-800 mb-3">{{ trans('user_interactions.no_users_found') }}</h3>
                                     <p class="text-gray-600 fs-5">
-                                        {{ activeTab === 'favorites' ? 'You have not favorited any users yet.' : 'You have not ignored any users yet.' }}
+                                        {{ activeTab === 'favorites' ? trans('user_interactions.no_favorites_yet') : trans('user_interactions.no_ignored_yet') }}
                                     </p>
                                 </div>
                                 <!--end::Empty state-->
