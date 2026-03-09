@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     public function toggle(Request $request, User $user): JsonResponse
     {
         $currentUser = $request->user();
@@ -24,6 +29,7 @@ class FavoriteController extends Controller
         } else {
             $currentUser->favorites()->attach($user->id);
             $currentUser->ignores()->detach($user->id);
+            $this->notificationService->notifyLike($user->id, $currentUser->id);
             $message = 'User added to favorites';
         }
 

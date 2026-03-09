@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Country;
+use App\Models\Enums\MarriageStatus;
 use App\Models\User;
+use Carbon\Carbon;
 
 class UserInteractionService
 {
@@ -17,7 +20,7 @@ class UserInteractionService
                     'id' => $user->id,
                     'username' => $user->username,
                     'age' => $user->age,
-                    'nationality' => $user->nationality,
+                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
                     'profile_image' => $user->mainProfileImage()->first()->image_path ?? null,
                     'created_at' => $user->pivot->created_at->diffForHumans(), // I need favourite created_at,
                     'is_favourite' => $user->isFavoritedBy(auth()->id()),
@@ -44,10 +47,10 @@ class UserInteractionService
                     'id' => $user->id,
                     'username' => $user->username,
                     'age' => $user->age,
-                    'nationality' => $user->nationality,
-                    'marriage_status' => $user->marriage_status,
-                    'mainProfileImage' => $user->mainProfileImage()->first()->image_path ?? null,
-                    'created_at' => \Carbon\Carbon::parse($user->latest_visit)->diffForHumans(),
+                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                    'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                    'mainProfileImage' => $user->mainProfileImage->first()?->thumbnail_url ?? null,
+                    'created_at' => Carbon::parse($user->latest_visit)->diffForHumans(),
                     'is_favourite' => $user->isFavoritedBy(auth()->id()),
                     'is_ignored' => $user->isIgnored(auth()->id()),
                 ];
@@ -65,9 +68,9 @@ class UserInteractionService
                     'id' => $user->id,
                     'username' => $user->username,
                     'age' => $user->age,
-                    'nationality' => $user->nationality,
-                    'marriage_status' => $user->marriage_status,
-                    'mainProfileImage' => $user->mainProfileImage()->first()->image_path ?? null,
+                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                    'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                    'mainProfileImage' => $user->mainProfileImage->first()?->thumbnail_url ?? null,
                     'created_at' => $user->pivot->created_at->diffForHumans(),
                 ];
             });
@@ -84,9 +87,9 @@ class UserInteractionService
                     'id' => $user->id,
                     'username' => $user->username,
                     'age' => $user->age,
-                    'nationality' => $user->nationality,
-                    'marriage_status' => $user->marriage_status,
-                    'mainProfileImage' => $user->mainProfileImage()->first()->image_path ?? null,
+                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                    'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                    'mainProfileImage' => $user->mainProfileImage->first()?->thumbnail_url ?? null,
                     'created_at' => $user->pivot->created_at->diffForHumans(),
                 ];
             });

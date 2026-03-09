@@ -18,6 +18,7 @@ use App\Models\Enums\PrayerType;
 use App\Models\Enums\SkinColor;
 use App\Models\ProfileVisit;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -25,6 +26,10 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     public function index(): Response
     {
         $enumToOptions = fn (string $enumClass) => collect($enumClass::cases())->map(fn ($case) => [
@@ -68,6 +73,7 @@ class ProfileController extends Controller
                 'visitor_id' => auth()->id(),
                 'visited_user_id' => $user->id,
             ]);
+            $this->notificationService->notifyProfileVisit($user->id, auth()->id());
         }
 
         $userData = UserProfileResource::make($user);

@@ -179,8 +179,8 @@ const handleMessageFromModal = async (userId: number) => {
                                                                         <span class="badge badge-light-primary fs-8">{{
                                                                             user?.marriage_status
                                                                         }}</span>
+                                                                        <span class="text-muted fs-5" :title="user?.nationality?.name">{{ user?.nationality?.flag }}</span>
                                                                         <span class="text-muted fs-7">{{ user?.age }} {{ trans('user_interactions.yrs') }}</span>
-                                                                        <span class="text-muted fs-7">{{ user?.nationality }}</span>
                                                                     </div>
                                                                 </div>
                                                                 <!--end::User Info-->

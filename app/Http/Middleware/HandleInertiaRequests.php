@@ -43,7 +43,10 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => $user ? [
-                'user' => UserProfileResource::make($user)->toArray($request),
+                'user' => array_merge(UserProfileResource::make($user)->toArray($request), [
+                    'is_admin' => $user->isAdmin(),
+                    'is_verified' => $user->isVerified(),
+                ]),
                 'profile_image' => $user?->mainProfileImage()?->first()?->thumbnail_url,
             ] : null,
             'locale' => $locale,

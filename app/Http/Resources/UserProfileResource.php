@@ -17,18 +17,14 @@ use App\Models\Enums\SkinColor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Redis;
 
 class UserProfileResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         /** @var User $this */
-        $data = [
+        return [
             'id' => $this->id,
             'name' => $this->name,
             'username' => $this->username,
@@ -38,6 +34,7 @@ class UserProfileResource extends JsonResource
             'nationality' => Country::find($this->nationality)?->only('id', 'name', 'ar_name', 'flag'),
             'residence' => Country::find($this->residence)?->only('id', 'name', 'ar_name', 'flag'),
             'registration_type' => $this->gender,
+            'mainProfileImage' => $this->mainProfileImage->first()?->thumbnail_url,
             // Raw values for form editing
             'marriage_status' => $this->marriage_status,
             'marriage_type' => $this->marriage_type,
@@ -74,7 +71,11 @@ class UserProfileResource extends JsonResource
             'education_level_label' => EducationLevel::tryFrom($this->education_level)?->label(),
             'financial_status_label' => FinancialStatus::tryFrom($this->financial_status)?->label(),
             'field_of_work_label' => FieldOfWork::tryFrom($this->field_of_work)?->label(),
+
+            //
+
+            'isOnline' => (bool) Redis::zscore('online_users', $this->id),
         ];
-                return $data;
+
     }
 }

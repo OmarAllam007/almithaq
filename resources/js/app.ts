@@ -7,6 +7,7 @@ import { createInertiaApp, Link } from '@inertiajs/vue3';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { configureEcho } from '@laravel/echo-vue';
+import AdminLayout from '@/pages/layout/AdminLayout.vue';
 
 configureEcho({
     broadcaster: 'reverb',
@@ -31,8 +32,8 @@ createInertiaApp({
         }
 
         if (name.includes('Admin')) {
-            page.default.layout = AppLayout;
-        } else if (name.includes('Login') || name.includes('Register') || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword')) {
+            page.default.layout = AdminLayout;
+        } else if (name.includes('Login') || name.includes('Register') || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword') || name.includes('Verification')) {
             page.default.layout = null;
         } else {
             page.default.layout = AppLayout;

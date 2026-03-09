@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class IgnoreController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     public function toggle(Request $request, User $user): JsonResponse
     {
         $currentUser = $request->user();
@@ -24,6 +29,7 @@ class IgnoreController extends Controller
         } else {
             $currentUser->ignores()->attach($user->id);
             $currentUser->favorites()->detach($user->id);
+            $this->notificationService->notifyIgnore($user->id, $currentUser->id);
             $message = 'User ignored';
         }
 

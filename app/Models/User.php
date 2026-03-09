@@ -21,7 +21,8 @@ class User extends Authenticatable
         'height', 'skin_color', 'body_shape', 'devotion', 'prayer', 'smoking',
         'beard', 'education_level', 'financial_status', 'field_of_work', 'job',
         'monthly_income', 'health_status', 'about_partner', 'about_self',
-        'full_name', 'phone_number', 'last_seen_at', 'is_active', ];
+        'full_name', 'phone_number', 'last_seen_at', 'is_active', 'profile_completed',
+        'is_admin', 'is_verified', 'verification_video_path', ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -49,7 +50,20 @@ class User extends Authenticatable
             'height' => 'decimal:2',
             'monthly_income' => 'decimal:2',
             'last_seen_at' => 'datetime',
+            'profile_completed' => 'boolean',
+            'is_admin' => 'boolean',
+            'is_verified' => 'boolean',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->is_verified === true;
     }
 
     public function conversations()
@@ -70,46 +84,46 @@ class User extends Authenticatable
 
     public function conversationsAsUserOne(): HasMany
     {
-        return $this->hasMany(Conversation::class, 'user_one_id');
+        return $this->hasMany(Conversation::class , 'user_one_id');
     }
 
     public function conversationsAsUserTwo(): HasMany
     {
-        return $this->hasMany(Conversation::class, 'user_two_id');
+        return $this->hasMany(Conversation::class , 'user_two_id');
     }
 
     public function sentMessages(): HasMany
     {
-        return $this->hasMany(Message::class, 'sender_id');
+        return $this->hasMany(Message::class , 'sender_id');
     }
 
     public function favorites(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
+        return $this->belongsToMany(User::class , 'favorites', 'user_id', 'favorited_user_id')
             ->withTimestamps();
     }
 
     public function favoritedBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
+        return $this->belongsToMany(User::class , 'favorites', 'favorited_user_id', 'user_id')
             ->withTimestamps();
     }
 
     public function ignores(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'ignores', 'user_id', 'ignored_user_id')
+        return $this->belongsToMany(User::class , 'ignores', 'user_id', 'ignored_user_id')
             ->withTimestamps();
     }
 
     public function ignoredBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'ignores', 'ignored_user_id', 'user_id')
+        return $this->belongsToMany(User::class , 'ignores', 'ignored_user_id', 'user_id')
             ->withTimestamps();
     }
 
     public function visitedBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'profile_visits', 'visited_user_id', 'visitor_id')
+        return $this->belongsToMany(User::class , 'profile_visits', 'visited_user_id', 'visitor_id')
             ->withTimestamps()
             ->distinct();
     }
@@ -126,7 +140,7 @@ class User extends Authenticatable
 
     public function isOnline(): bool
     {
-        if (! $this->last_seen_at) {
+        if (!$this->last_seen_at) {
             return false;
         }
 
@@ -189,5 +203,15 @@ class User extends Authenticatable
             ->where('expires_at', '>', now())
             ->latest('expires_at')
             ->first();
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(UserNotification::class);
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->whereNull('read_at')->count();
     }
 }

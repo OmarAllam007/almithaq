@@ -58,4 +58,17 @@ class Conversation extends Model
     {
         return $this->user_one_id === $userId || $this->user_two_id === $userId;
     }
+
+    public function getOtherUserId(int $userId): ?int
+    {
+        if ($this->user_one_id === $userId) {
+            return $this->user_two_id;
+        }
+
+        if ($this->user_two_id === $userId) {
+            return $this->user_one_id;
+        }
+
+        return null;
+    }
 }

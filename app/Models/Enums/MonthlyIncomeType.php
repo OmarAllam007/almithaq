@@ -2,7 +2,7 @@
 
 namespace App\Models\Enums;
 
-enum MonthlyIncomeType : int
+enum MonthlyIncomeType: int
 {
     case UNEMPLOYED = 1;
 
@@ -23,14 +23,14 @@ enum MonthlyIncomeType : int
     public function label(): string
     {
         return match ($this) {
-            self::UNEMPLOYED => 'UNEMPLOYED',
-            self::LESS_THAN_100_DOLLAR => 'LESS_THAN_100_DOLLAR',
-            self::BETWEEN_200_1000_DOLLAR => 'BETWEEN_200_1000_DOLLAR',
-            self::BETWEEN_1000_2000_DOLLAR => 'BETWEEN_1000_2000_DOLLAR',
-            self::BETWEEN_3000_4000_DOLLAR => 'BETWEEN_3000_4000_DOLLAR',
-            self::BETWEEN_4000_5000_DOLLAR => 'BETWEEN_4000_5000_DOLLAR',
-            self::MORE_THAN_5000_DOLLAR => 'MORE_THAN_5000_DOLLAR',
-            self::PREFER_NOT_TO_SAY => 'PREFER_NOT_TO_SAY',
+            self::UNEMPLOYED => 'Unemployed',
+            self::LESS_THAN_100_DOLLAR => 'Less than $100',
+            self::BETWEEN_200_1000_DOLLAR => '$200 - $1,000',
+            self::BETWEEN_1000_2000_DOLLAR => '$1,000 - $2,000',
+            self::BETWEEN_3000_4000_DOLLAR => '$3,000 - $4,000',
+            self::BETWEEN_4000_5000_DOLLAR => '$4,000 - $5,000',
+            self::MORE_THAN_5000_DOLLAR => 'More than $5,000',
+            self::PREFER_NOT_TO_SAY => 'Prefer not to say',
         };
     }
 }

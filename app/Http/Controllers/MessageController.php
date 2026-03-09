@@ -6,11 +6,16 @@ use App\Events\MessageSent;
 use App\Events\UserTyping;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     public function store(Request $request, Conversation $conversation): JsonResponse
     {
         $user = $request->user();
@@ -36,7 +41,18 @@ class MessageController extends Controller
 
         broadcast(new MessageSent($message))->toOthers();
 
-        // dd($data);
+        // Send notification only if the last message was still unread (not actively chatting)
+        $receiverId = $conversation->getOtherUserId($user->id);
+        $hasUnreadMessages = $conversation->messages()
+            ->where('sender_id', $user->id)
+            ->where('id', '!=', $message->id)
+            ->where('is_read', false)
+            ->exists();
+
+        if (! $hasUnreadMessages && $receiverId) {
+            $this->notificationService->notifyNewMessage($receiverId, $user->id, $conversation->id);
+        }
+
         return response()->json([
             'message' => $message->load('sender'),
             'status' => 'Message sent!',

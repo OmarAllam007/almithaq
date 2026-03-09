@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserProfileResource;
 use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -49,13 +50,6 @@ class OnlineMembersController extends Controller
 
         $paginatedUsers = $users->forPage($page, $perPage)->values();
 
-        // Mark all as online since they're from online_users set
-        $paginatedUsers = $paginatedUsers->map(function ($user) {
-            $user->is_online = true;
-
-            return $user;
-        });
-
         $paginator = new LengthAwarePaginator(
             $paginatedUsers,
             $total,
@@ -65,7 +59,7 @@ class OnlineMembersController extends Controller
         );
 
         return Inertia::render('OnlineUsers/Index', [
-            'users' => $paginator,
+            'users' => UserProfileResource::collection($paginator),
             'countries' => $countries,
             'totalOnline' => $onlineCount ? max(0, $onlineCount - 1) : 0,
             'filters' => [

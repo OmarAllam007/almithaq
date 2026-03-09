@@ -126,7 +126,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                         <th data-dt-column="0" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc p-5">
                                                             <div>
                                                                 <span class="dt-column-title">{{ trans('user_interactions.member') }}</span>
-                                                                ><span
+                                                                <span
                                                                     class="dt-column-order"
                                                                     role="button"
                                                                     aria-label="Checkbox: Activate to sort"
@@ -137,7 +137,7 @@ const handleMessageFromModal = async (userId: number) => {
                                                         <th data-dt-column="1" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
                                                             <div >
                                                                 <span class="dt-column-title">{{ trans('user_interactions.visit_date') }}</span>
-                                                                ><span
+                                                                <span
                                                                     class="dt-column-order"
                                                                     role="button"
                                                                     aria-label="Actions: Activate to sort"
@@ -194,8 +194,8 @@ const handleMessageFromModal = async (userId: number) => {
                                                                         <span class="badge badge-light-primary fs-8">{{
                                                                             user?.marriage_status
                                                                         }}</span>
+                                                                        <span class="text-muted fs-5" :title="user?.nationality?.name">{{ user?.nationality?.flag }}</span>
                                                                         <span class="text-muted fs-7">{{ user?.age }} {{ trans('user_interactions.yrs') }}</span>
-                                                                        <span class="text-muted fs-7">{{ user?.nationality }}</span>
                                                                     </div>
                                                                 </div>
                                                                 <!--end::User Info-->

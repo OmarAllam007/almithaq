@@ -10,6 +10,7 @@ use App\Models\Enums\SubscriptionPlanPrice;
 use App\Models\Enums\SubscriptionStatus;
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Services\NotificationService;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,10 @@ use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     public function create(Request $request)
     {
         $planPrices = SubscriptionPlanPrice::getAllValues();
@@ -243,6 +248,8 @@ class PaymentController extends Controller
                     'starts_at' => now(),
                     'expires_at' => now()->addMonths($payment->subscription->plan_duration),
                 ]);
+
+                $this->notificationService->notifySubscriptionRenewed($payment->user_id);
             }
 
             return redirect()->route('subscription.index')

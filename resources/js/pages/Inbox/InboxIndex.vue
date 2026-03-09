@@ -406,7 +406,7 @@ const deleteModalMessage = computed(() => {
                                                             </button>
                                                             <!--end::Delete-->
                                                         </td>
-                                                        <td class="w-150px w-md-175px">
+                                                        <td class="w-400px w-md-400px">
                                                             <div
                                                                 @click.stop="openProfileModal(conversation.otherUser.id)"
                                                                 class="d-flex align-items-center cursor-pointer text-gray-900"
@@ -442,7 +442,7 @@ const deleteModalMessage = computed(() => {
                                                                     />
                                                                     <div
                                                                         data-v-94a0a411=""
-                                                                        class="position-absolute rounded-circle h-10px w-10px translate-middle bg-success start-100 top-100 border border-2 border-white"
+                                                                        class="position-absolute rounded-circle h-10px w-10px translate-middle bg-success start-100 top-75 border border-2 border-white"
                                                                         v-if="conversation.otherUser.isOnline"
                                                                     ></div>
                                                                 </div>
@@ -455,10 +455,10 @@ const deleteModalMessage = computed(() => {
                                                                     }}</span>
                                                                     <div class="d-flex align-items-center gap-2">
                                                                         <span class="badge badge-light-primary fs-8">{{
-                                                                            conversation.otherUser.marriage_status
+                                                                            conversation.otherUser.marriage_status_label
                                                                         }}</span>
-                                                                        <span class="text-muted fs-7">{{ conversation.otherUser.age }} {{ trans('inbox.yrs') }}</span>
-                                                                        <span class="text-muted fs-7">{{ conversation.otherUser.nationality }}</span>
+                                                                        <span class="text-muted fs-6" :title="conversation.otherUser.nationality?.name">{{ conversation.otherUser.nationality?.flag }}</span>
+                                                                        <span class="text-muted fs-7">{{ conversation.otherUser?.age }} {{ trans('inbox.yrs') }}</span>
                                                                     </div>
                                                                 </div>
                                                                 <!--end::User Info-->

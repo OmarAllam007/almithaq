@@ -30,18 +30,18 @@ const isTogglingFavorite = ref(false);
 
 const getNationalityName = computed(() => {
     if (!props.countries) {
-        return props.user.nationality;
+        return props.user.nationality?.name;
     }
     const country = props.countries.find((c) => c.id === Number(props.user.nationality));
-    return country?.name || props.user.nationality;
+    return country?.name || props.user.nationality?.name;
 });
 
 const getResidenceName = computed(() => {
     if (!props.countries) {
-        return props.user.residence;
+        return props.user.residence?.name;
     }
     const country = props.countries.find((c) => c.id === Number(props.user.residence));
-    return country?.name || props.user.residence;
+    return country?.name || props.user.residence?.name;
 });
 
 const toggleFavorite = async () => {
@@ -78,7 +78,7 @@ const handleCardClick = () => {
                 <div class="position-relative">
                     <div class="symbol symbol-100px symbol-circle">
                         <img
-                            src="/assets/media/avatars/300-1.jpg"
+                            :src="user.mainProfileImage"
                             :alt="user.username"
                             class="rounded-circle"
                         />
@@ -114,7 +114,7 @@ const handleCardClick = () => {
             <!-- Footer -->
             <div class="mt-auto border-top pt-4">
                 <div class="text-center mb-3">
-                    <span class="badge badge-light-primary fs-7">{{ user.marriage_status }}</span>
+                    <span class="badge badge-light-primary fs-7">{{ user.marriage_status_label }}</span>
                 </div>
 
                 <div class="d-flex gap-2">

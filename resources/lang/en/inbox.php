@@ -1,4 +1,5 @@
 <?php
+
 return [
     // Page titles and breadcrumbs
     'inbox' => 'Inbox',
@@ -19,9 +20,9 @@ return [
 
     // Messages
     'just_now' => 'Just now',
-    'm_ago' => '{minutes} m ago',
-    'h_ago' => '{hours} h ago',
-    'd_ago' => '{days} d ago',
+    'm_ago' => '{minutes}m ago',
+    'h_ago' => '{hours}h ago',
+    'd_ago' => '{days}d ago',
     'no_messages_yet' => 'No messages yet',
 
     // Confirmation messages
