@@ -62,4 +62,16 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function arabCountries(): static
+    {
+        $arabCountryIds = [4, 14, 39, 48, 53, 80, 86, 93, 97, 100, 112, 120, 132, 142, 152, 161, 166, 171, 179, 185, 194];
+
+        return $this->state(fn (array $attributes) => [
+            'nationality' => fake()->randomElement($arabCountryIds),
+            'residence' => fake()->randomElement($arabCountryIds),
+            'city' => null,
+            'profile_completed' => true,
+        ]);
+    }
 }

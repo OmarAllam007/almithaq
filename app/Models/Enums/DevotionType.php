@@ -17,11 +17,11 @@ enum DevotionType: int
     public function label(): string
     {
         return match ($this) {
-            self::VERY_RELIGIOUS => 'Very Religious',
-            self::RELIGIOUS => 'Religious',
-            self::MODERATE => 'Moderate',
-            self::NOT_RELIGIOUS => 'Not Religious',
-            self::PREFER_NOT_TO_SAY => 'Prefer Not To Say',
+            self::VERY_RELIGIOUS => trans('enums.devotion_very_religious'),
+            self::RELIGIOUS => trans('enums.devotion_religious'),
+            self::MODERATE => trans('enums.devotion_moderate'),
+            self::NOT_RELIGIOUS => trans('enums.devotion_not_religious'),
+            self::PREFER_NOT_TO_SAY => trans('enums.devotion_prefer_not_to_say'),
         };
     }
 }

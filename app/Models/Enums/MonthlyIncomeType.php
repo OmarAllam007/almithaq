@@ -23,14 +23,14 @@ enum MonthlyIncomeType: int
     public function label(): string
     {
         return match ($this) {
-            self::UNEMPLOYED => 'Unemployed',
-            self::LESS_THAN_100_DOLLAR => 'Less than $100',
-            self::BETWEEN_200_1000_DOLLAR => '$200 - $1,000',
-            self::BETWEEN_1000_2000_DOLLAR => '$1,000 - $2,000',
-            self::BETWEEN_3000_4000_DOLLAR => '$3,000 - $4,000',
-            self::BETWEEN_4000_5000_DOLLAR => '$4,000 - $5,000',
-            self::MORE_THAN_5000_DOLLAR => 'More than $5,000',
-            self::PREFER_NOT_TO_SAY => 'Prefer not to say',
+            self::UNEMPLOYED => trans('enums.income_unemployed'),
+            self::LESS_THAN_100_DOLLAR => trans('enums.income_less_than_100'),
+            self::BETWEEN_200_1000_DOLLAR => trans('enums.income_200_1000'),
+            self::BETWEEN_1000_2000_DOLLAR => trans('enums.income_1000_2000'),
+            self::BETWEEN_3000_4000_DOLLAR => trans('enums.income_3000_4000'),
+            self::BETWEEN_4000_5000_DOLLAR => trans('enums.income_4000_5000'),
+            self::MORE_THAN_5000_DOLLAR => trans('enums.income_more_than_5000'),
+            self::PREFER_NOT_TO_SAY => trans('enums.income_prefer_not_to_say'),
         };
     }
 }

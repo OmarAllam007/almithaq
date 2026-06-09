@@ -24,6 +24,10 @@ Broadcast::channel('conversation.{conversationId}.typing', function ($user, $con
     return $conversation->user_one_id === $user->id || $conversation->user_two_id === $user->id;
 });
 
+Broadcast::channel('user.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
 Broadcast::channel('online-users', function ($user) {
     if (auth()->check()) {
         return [

@@ -16,6 +16,7 @@ use App\Models\Enums\MonthlyIncomeType;
 use App\Models\Enums\PrayerType;
 use App\Models\Enums\RegistrationType;
 use App\Models\Enums\SkinColor;
+use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
 
 class CompleteProfileController extends Controller
@@ -36,10 +37,18 @@ class CompleteProfileController extends Controller
             return redirect()->route('home');
         }
 
-        $countries = Country::orderBy('name')->select(['id', 'name', 'ar_name', 'flag'])->get();
+        $locale = App::getLocale();
+        $countries = Country::orderBy($locale === 'ar' ? 'ar_name' : 'name')
+            ->select(['id', 'name', 'ar_name', 'flag'])
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $locale === 'ar' ? ($c->ar_name ?: $c->name) : $c->name,
+                'flag' => $c->flag,
+            ]);
 
         // Marriage types filtered by registration type
-        $husbandMarriageTypes = [MarriageType::FIRST_WIFE, MarriageType::SECOND_WIFE];
+        $husbandMarriageTypes = [MarriageType::FIRST_WIFE, MarriageType::SECOND_WIFE, MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
         $wifeMarriageTypes = [MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
 
         $marriageTypes = array_map(
@@ -48,12 +57,13 @@ class CompleteProfileController extends Controller
         );
 
         // Marriage statuses filtered by registration type
-        $husbandMarriageStatuses = [MarriageStatus::SINGLE, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED, MarriageStatus::MARRIED];
+        $isHusband = $user->registration_type === RegistrationType::AS_HUSBAND;
+        $husbandMarriageStatuses = [MarriageStatus::SINGLE, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED];
         $wifeMarriageStatuses = [MarriageStatus::SINGLE, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED];
 
         $marriageStatuses = array_map(
-            fn ($case) => ['value' => $case->value, 'label' => $case->label()],
-            $user->registration_type === RegistrationType::AS_HUSBAND ? $husbandMarriageStatuses : $wifeMarriageStatuses
+            fn ($case) => ['value' => $case->value, 'label' => $case->labelForGender($isHusband)],
+            $isHusband ? $husbandMarriageStatuses : $wifeMarriageStatuses
         );
 
         return Inertia::render('Auth/CompleteProfile', [
@@ -63,8 +73,8 @@ class CompleteProfileController extends Controller
             'devotions' => $this->enumToOptions(DevotionType::class),
             'prayer_commitments' => $this->enumToOptions(PrayerType::class),
             'yes_no_list' => [
-                ['value' => 1, 'label' => 'Yes'],
-                ['value' => 2, 'label' => 'No'],
+                ['value' => 1, 'label' => trans('enums.yes')],
+                ['value' => 2, 'label' => trans('enums.no')],
             ],
             'education_levels' => $this->enumToOptions(EducationLevel::class),
             'financial_statuses' => $this->enumToOptions(FinancialStatus::class),
@@ -87,7 +97,10 @@ class CompleteProfileController extends Controller
 
         $user->update(array_merge(
             $request->validated(),
-            ['profile_completed' => true]
+            [
+                'profile_completed' => true,
+                'name' => $request->full_name,
+            ]
         ));
 
         return redirect()->route('home');

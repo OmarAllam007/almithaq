@@ -13,7 +13,9 @@ class InboxController extends Controller
     public function index()
     {
         $paginatedConversations = auth()->user()->conversations()
+            ->has('messages')
             ->with(['userOne.mainProfileImage', 'userTwo.mainProfileImage', 'latestMessage'])
+            ->orderByDesc('last_message_at')
             ->paginate(20);
 
         $data = $paginatedConversations->through(function (Conversation $conversation) {

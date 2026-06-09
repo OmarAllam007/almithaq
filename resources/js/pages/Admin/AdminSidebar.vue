@@ -30,10 +30,21 @@ const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-star
             <div class="ms-3">
                 <!--begin::Menu wrapper-->
                 <div class="position-relative symbol symbol-circle symbol-40px cursor-pointer"
+                    :class="{ 'sidebar-subscriber-avatar': $page.props.auth?.user.has_active_subscription }"
                     data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
                     :data-kt-menu-placement="isRtl ? 'bottom-start' : 'bottom-end'">
                     <img :src="$page.props.auth?.profile_image" alt="user" />
-                    <div class="position-absolute rounded-circle bg-success h-8px w-8px ms-n3 mt-n3 start-100 top-100">
+                    <div v-if="$page.props.auth?.user.has_active_subscription"
+                        :class="[
+                            'position-absolute rounded-circle h-8px w-8px mt-n3 top-100',
+                            isRtl ? 'end-100 me-n3' : 'start-100 ms-n3',
+                        ]"
+                        style="background: linear-gradient(135deg, #f6d365, #fda085);"></div>
+                    <div v-else
+                        :class="[
+                            'position-absolute rounded-circle bg-success h-8px w-8px mt-n3 top-100',
+                            isRtl ? 'end-100 me-n3' : 'start-100 ms-n3',
+                        ]">
                     </div>
                 </div>
                 <!--begin::User account menu-->
@@ -51,8 +62,11 @@ const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-star
                             <div class="d-flex flex-column">
                                 <div class="fw-bold d-flex align-items-center fs-5">
                                     {{ $page.props.auth?.user.name
-                                    }}<span class="badge badge-light-success fw-bold fs-8 ms-2 px-2 py-1">{{
-                                        $page.props.auth?.user.subcription_type
+                                    }}<span class="fw-bold fs-8 ms-2 px-2 py-1 badge"
+                                        :class="$page.props.auth?.user.has_active_subscription ? 'subscriber-type-badge' : 'badge-light-success'">
+                                        <i v-if="$page.props.auth?.user.has_active_subscription"
+                                            class="ki-outline ki-crown fs-9 me-1" style="color: inherit;"></i>
+                                        {{ $page.props.auth?.user.subcription_type
                                         }}</span>
                                 </div>
                                 <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">{{
@@ -82,7 +96,7 @@ const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-star
                         :data-kt-menu-placement="subMenuPlacement" data-kt-menu-offset="-15px, 0">
                         <a href="#" class="menu-link px-5">
                             <span class="menu-title">My Subscription</span>
-                            <span class="menu-arrow"></span>
+                            <span class="menu-arrow" :class="isRtl ? 'rotate-90' : 'rotate-270'"></span>
                         </a>
                         <!--begin::Menu sub-->
                         <div class="menu-sub menu-sub-dropdown w-175px py-4">
@@ -105,10 +119,11 @@ const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-star
                     <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
                         :data-kt-menu-placement="subMenuPlacement" data-kt-menu-offset="-15px, 0">
                         <a href="#" class="menu-link px-5">
-                            <span class="menu-title position-relative">Mode
-                                <span class="position-absolute translate-middle-y end-0 top-50 ms-5">
-                                    <i class="ki-outline ki-night-day theme-light-show fs-2"></i>
-                                    <i class="ki-outline ki-moon theme-dark-show fs-2"></i> </span></span>
+                            <span class="menu-title">Mode</span>
+                            <span class="d-flex align-items-center flex-shrink-0">
+                                <i class="ki-outline ki-night-day theme-light-show fs-2"></i>
+                                <i class="ki-outline ki-moon theme-dark-show fs-2"></i>
+                            </span>
                         </a>
                         <!--begin::Menu-->
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-title-gray-700 menu-icon-gray-500 menu-active-bg menu-state-color fw-semibold fs-base w-150px py-4"
@@ -151,11 +166,13 @@ const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-star
                     <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
                         :data-kt-menu-placement="subMenuPlacement" data-kt-menu-offset="-15px, 0">
                         <a href="#" class="menu-link px-5">
-                            <span class="menu-title position-relative">Language
-                                <span
-                                    class="fs-8 bg-light position-absolute translate-middle-y end-0 top-50 rounded px-3 py-2">English
-                                    <img class="w-15px h-15px rounded-1 ms-2" src="assets/media/flags/united-states.svg"
-                                        alt="" /></span></span>
+                            <span class="menu-title">Language</span>
+                            <span
+                                class="fs-8 bg-light rounded px-3 py-2 d-inline-flex align-items-center gap-2 flex-shrink-0">
+                                English
+                                <img class="w-15px h-15px rounded-1" src="assets/media/flags/united-states.svg"
+                                    alt="" />
+                            </span>
                         </a>
                         <!--begin::Menu sub-->
                         <div class="menu-sub menu-sub-dropdown w-175px py-4">
@@ -352,4 +369,29 @@ const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-star
     <!--end::Sidebar-->
 </template>
 
-<style scoped></style>
+<style scoped>
+.sidebar-subscriber-avatar {
+    position: relative;
+}
+
+.sidebar-subscriber-avatar::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f6d365, #fda085, #f6d365);
+    z-index: 0;
+}
+
+.sidebar-subscriber-avatar img {
+    position: relative;
+    z-index: 1;
+    border: 2px solid #fff;
+}
+
+.subscriber-type-badge {
+    background: linear-gradient(135deg, #f6d365, #fda085) !important;
+    color: #fff !important;
+    border: none;
+}
+</style>

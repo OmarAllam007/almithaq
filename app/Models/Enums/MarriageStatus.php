@@ -14,12 +14,18 @@ enum MarriageStatus: int
 
     public function label(): string
     {
+        return $this->labelForGender(true);
+    }
+
+    public function labelForGender(bool $isMale): string
+    {
+        $suffix = $isMale ? 'male' : 'female';
+
         return match ($this) {
-            self::SINGLE => 'Single',
-            self::MARRIED => 'Married',
-            self::DIVORCED => 'Divorced',
-            self::WIDOWED => 'Widowed',
-            default => throw new \Exception('Unexpected match value'),
+            self::SINGLE => trans("enums.marriage_status_single_{$suffix}"),
+            self::MARRIED => trans("enums.marriage_status_married_{$suffix}"),
+            self::DIVORCED => trans("enums.marriage_status_divorced_{$suffix}"),
+            self::WIDOWED => trans("enums.marriage_status_widowed_{$suffix}"),
         };
     }
 }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import UserCard from '@/components/UserCard.vue';
 import UserProfileModal from '@/components/UserProfileModal.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
+import Pagination from '@/components/Pagination.vue';
 import { ref } from 'vue';
 import axios from 'axios';
-import Pagination from '@/components/Pagination.vue';
-import { PaginationData } from '@/types/pagination';
 import { router } from '@inertiajs/vue3';
+import { PaginationData } from '@/types/pagination';
 import { useLang } from '@/composables/useLang';
 
 const { trans } = useLang();
@@ -44,36 +45,25 @@ const closeProfileModal = () => {
 
 const handleMessageFromModal = async (userId: number) => {
     closeProfileModal();
-
     try {
-        // Get or create conversation with this user
-        const response = await axios.post('/conversations', {
-            recipient_id: userId,
-        });
-
-        const conversationId = response.data.conversation_id;
-        openChatDrawer(conversationId);
+        const response = await axios.post('/conversations', { recipient_id: userId });
+        openChatDrawer(response.data.conversation_id);
     } catch (error) {
         console.error('Failed to get or create conversation:', error);
     }
 };
 
 const changeTab = (tab: 'favorites' | 'ignored') => {
-    router.get('/my-interactions', { tab }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get('/my-interactions', { tab }, { preserveState: true, preserveScroll: true });
 };
 
 const removeInteraction = async (userId: number) => {
-    const actionText = props.activeTab === 'favorites' ? 'unfavorite' : 'unignore';
-
     const result = await Swal.fire({
         title: trans(props.activeTab === 'favorites' ? 'user_interactions.unfavorite_confirm' : 'user_interactions.unignore_confirm'),
         showDenyButton: true,
         customClass: {
-            confirmButton: "btn btn-primary",
-            denyButton: "btn btn-secondary",
+            confirmButton: 'btn btn-primary',
+            denyButton: 'btn btn-secondary',
         },
         buttonsStyling: false,
         confirmButtonText: trans('user_interactions.yes'),
@@ -87,70 +77,52 @@ const removeInteraction = async (userId: number) => {
             } else {
                 await axios.post(`/users/${userId}/ignore`);
             }
-
-            // Reload the page to refresh the list
-            router.reload({
-                preserveScroll: true,
-            });
+            router.reload({ preserveScroll: true });
         } catch (error) {
             console.error('Failed to remove interaction:', error);
         }
     }
 };
+
+const mapUser = (user: any) => ({
+    ...user,
+    name: user.name || user.username,
+    is_favorited: user.is_favourite ?? user.is_favorited ?? false,
+});
 </script>
 
 <template>
     <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
-        <!--begin::Content wrapper-->
         <div class="d-flex flex-column flex-column-fluid">
             <!--begin::Toolbar-->
             <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
-                <!--begin::Toolbar container-->
                 <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
-                    <!--begin::Page title-->
                     <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <!--begin::Title-->
                         <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
                             {{ trans('user_interactions.like_and_ignore_list') }}
                         </h1>
-                        <!--end::Title-->
-
-                        <!--begin::Breadcrumb-->
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                            <!--begin::Item-->
                             <li class="breadcrumb-item text-muted">
                                 <a href="/" class="text-muted text-hover-primary">{{ trans('user_interactions.home') }}</a>
                             </li>
-                            <!--end::Item-->
-                            <!--begin::Item-->
                             <li class="breadcrumb-item">
-                                <span class="bullet w-5px h-2px bg-gray-500"></span>
+                                <span class="bullet w-5px h-2px bg-gray-500 mx-2"></span>
                             </li>
-                            <!--end::Item-->
-
-                            <!--begin::Item-->
                             <li class="breadcrumb-item text-muted">{{ trans('user_interactions.my_interactions') }}</li>
-                            <!--end::Item-->
                         </ul>
-                        <!--end::Breadcrumb-->
                     </div>
-                    <!--end::Page title-->
                 </div>
-                <!--end::Toolbar container-->
             </div>
             <!--end::Toolbar-->
 
             <!--begin::Content-->
             <div id="kt_app_content" class="app-content flex-column-fluid">
-                <!--begin::Content container-->
                 <div id="kt_app_content_container" class="app-container container-xxl">
                     <!--begin::Card-->
                     <div class="card">
-                        <!--begin::Card header-->
+                        <!--begin::Card header (tabs)-->
                         <div class="card-header border-0 pt-6">
-                            <!--begin::Card toolbar-->
                             <div class="card-toolbar w-100">
-                                <!--begin::Tabs-->
                                 <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold w-100">
                                     <li class="nav-item flex-fill">
                                         <button
@@ -171,130 +143,75 @@ const removeInteraction = async (userId: number) => {
                                         </button>
                                     </li>
                                 </ul>
-                                <!--end::Tabs-->
                             </div>
-                            <!--end::Card toolbar-->
                         </div>
                         <!--end::Card header-->
 
                         <!--begin::Card body-->
-                        <div class="card-body p-0">
-                            <!--begin::Table-->
-                            <div id="kt_inbox_listing_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
-                                <div id="" class="table-responsive">
-                                    <table
-                                        class="table-hover table-row-dashed fs-6 gy-5 dataTable my-0 table"
-                                        id="kt_inbox_listing"
-                                        style="width: 100%"
-                                    >
-                                        <thead>
-                                            <tr>
-                                                <th data-dt-column="0" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc p-5">
-                                                    <div>
-                                                        <span class="dt-column-title">{{ trans('user_interactions.member') }}</span>
-                                                    </div>
-                                                </th>
-                                                <th data-dt-column="1" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
-                                                    <div>
-                                                        <span class="dt-column-title">{{ trans('user_interactions.added_date') }}</span>
-                                                    </div>
-                                                </th>
-                                                <th data-dt-column="2" rowspan="1" colspan="1" class="text-end pe-5">
-                                                    <div>
-                                                        <span class="dt-column-title">{{ trans('user_interactions.actions') }}</span>
-                                                    </div>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr
-                                                v-for="user in users.data"
-                                                :key="user.id"
-                                                class="cursor-pointer"
-                                                @click.stop="openProfileModal(user.id)"
-                                            >
-                                                <td class="p-5">
-                                                    <div class="d-flex align-items-center cursor-pointer text-gray-900">
-                                                        <!--begin::Avatar-->
-                                                        <div class="symbol symbol-45px me-3">
-                                                            <img
-                                                                :src="user?.mainProfileImage || '/assets/media/avatars/300-1.jpg'"
-                                                                :alt="user?.username"
-                                                                class="rounded-circle"
-                                                            />
-                                                        </div>
-                                                        <!--end::Avatar-->
-
-                                                        <!--begin::User Info-->
-                                                        <div class="d-flex flex-column">
-                                                            <span class="fw-bold mb-1 text-gray-900">{{ user.username }}</span>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <span class="badge badge-light-primary fs-8">
-                                                                    {{ user?.marriage_status }}
-                                                                </span>
-                                                                <span class="text-muted fs-5" :title="user?.nationality?.name">{{ user?.nationality?.flag }}</span>
-                                                                <span class="text-muted fs-7">{{ user?.age }} {{ trans('user_interactions.yrs') }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <!--end::User Info-->
-                                                    </div>
-                                                </td>
-
-                                                <td>
-                                                    <div class="text-muted gap-1 pt-2">
-                                                        <span class="fst-italic">{{ user.created_at }}</span>
-                                                    </div>
-                                                </td>
-
-                                                <td class="text-end pe-5">
-                                                    <button
-                                                        @click.stop="removeInteraction(user.id)"
-                                                        class="btn btn-sm btn-icon btn-light-danger"
-                                                        :title="activeTab === 'favorites' ? trans('user_interactions.remove_from_favorites') : trans('user_interactions.unignore_user')"
-                                                    >
-                                                        <i class="ki-outline ki-trash fs-3"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot></tfoot>
-                                    </table>
-                                </div>
-
-                                <!--begin::Empty state-->
-                                <div v-if="users.data.length === 0" class="text-center py-20">
-                                    <div class="mb-10">
-                                        <i class="ki-outline ki-user fs-5x text-gray-400"></i>
-                                    </div>
-                                    <h3 class="text-gray-800 mb-3">{{ trans('user_interactions.no_users_found') }}</h3>
-                                    <p class="text-gray-600 fs-5">
-                                        {{ activeTab === 'favorites' ? trans('user_interactions.no_favorites_yet') : trans('user_interactions.no_ignored_yet') }}
-                                    </p>
-                                </div>
-                                <!--end::Empty state-->
-
-                                <div id="" class="row px-9 pt-3 pb-5">
-                                    <!-- Pagination -->
-                                    <Pagination :data="users" />
-                                </div>
-                                <div class="dt-autosize" style="width: 100%; height: 0px"></div>
+                        <div class="card-body">
+                            <!-- Total count -->
+                            <div class="d-flex align-items-center mb-5">
+                                <span class="fw-semibold text-gray-700 fs-6">
+                                    {{ activeTab === 'favorites' ? trans('user_interactions.total_favorites') : trans('user_interactions.total_ignored') }}: {{ users.total }}
+                                </span>
                             </div>
-                            <!--end::Table-->
+
+                            <!-- Empty state -->
+                            <div v-if="users.data.length === 0" class="text-center py-20">
+                                <div class="mb-6">
+                                    <i :class="['ki-outline fs-5x text-gray-400', activeTab === 'favorites' ? 'ki-heart' : 'ki-cross-circle']"></i>
+                                </div>
+                                <h3 class="text-gray-800 mb-3">{{ trans('user_interactions.no_users_found') }}</h3>
+                                <p class="text-gray-600 fs-5">
+                                    {{ activeTab === 'favorites' ? trans('user_interactions.no_favorites_yet') : trans('user_interactions.no_ignored_yet') }}
+                                </p>
+                            </div>
+
+                            <!-- Cards grid -->
+                            <div v-else class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3 mb-6">
+                                <div
+                                    v-for="user in users.data"
+                                    :key="user.id"
+                                    class="col d-flex flex-column gap-2"
+                                >
+                                    <UserCard
+                                        :user="mapUser(user)"
+                                        @view-profile="openProfileModal"
+                                        @message="handleMessageFromModal"
+                                    />
+
+                                    <!-- Action date -->
+                                    <div class="text-center text-muted fs-8">
+                                        <i
+                                            :class="['ki-outline fs-8 me-1', activeTab === 'favorites' ? 'ki-heart text-danger' : 'ki-cross-circle text-warning']"
+                                        ></i>
+                                        {{ user.created_at }}
+                                    </div>
+
+                                    <!-- Remove button -->
+                                    <button
+                                        @click.stop="removeInteraction(user.id)"
+                                        :class="['btn btn-sm w-100', activeTab === 'favorites' ? 'btn-light-danger' : 'mi-unignore-btn']"
+                                    >
+                                        <i :class="['ki-outline fs-7 me-1', activeTab === 'favorites' ? 'ki-trash' : 'ki-eye']"></i>
+                                        {{ activeTab === 'favorites' ? trans('user_interactions.remove_from_favorites') : trans('user_interactions.unignore_user') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Pagination -->
+                            <Pagination :data="users" />
                         </div>
                         <!--end::Card body-->
                     </div>
                     <!--end::Card-->
                 </div>
-                <!--end::Content container-->
             </div>
             <!--end::Content-->
         </div>
-        <!--end::Content wrapper-->
 
-        <!-- Chat Drawer -->
         <ChatDrawer :is-open="isChatDrawerOpen" :conversation-id="selectedConversationId" @close="closeChatDrawer" />
 
-        <!-- User Profile Modal -->
         <UserProfileModal
             :is-open="isProfileModalOpen"
             :user-id="selectedUserId"
@@ -305,7 +222,19 @@ const removeInteraction = async (userId: number) => {
 </template>
 
 <style scoped>
-.cursor-pointer {
-    cursor: pointer;
+/* ─── Unignore button ──────────────────────────────────────── */
+.mi-unignore-btn {
+    background: rgba(255, 80, 80, 0.08);
+    color: #cc2222;
+    border: 1px solid rgba(255, 80, 80, 0.22);
+    font-weight: 600;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mi-unignore-btn:hover {
+    background: rgba(255, 80, 80, 0.15);
+    border-color: rgba(255, 80, 80, 0.45);
+    box-shadow: 0 3px 10px rgba(200, 30, 30, 0.18);
+    color: #aa1111;
 }
 </style>

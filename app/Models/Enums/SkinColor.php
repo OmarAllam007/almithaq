@@ -19,12 +19,12 @@ enum SkinColor: int
     public function label(): string
     {
         return match ($this) {
-            self::White => 'White',
-            self::WHEATISH_WHITE => 'Wheatish White',
-            self::Light_BROWN => 'Light Brown',
-            self::BROWN => 'Brown',
-            self::DARK_BROWN => 'Dark Brown',
-            self::Black => 'Black',
+            self::White => trans('enums.skin_color_white'),
+            self::WHEATISH_WHITE => trans('enums.skin_color_wheatish_white'),
+            self::Light_BROWN => trans('enums.skin_color_light_brown'),
+            self::BROWN => trans('enums.skin_color_brown'),
+            self::DARK_BROWN => trans('enums.skin_color_dark_brown'),
+            self::Black => trans('enums.skin_color_black'),
         };
     }
 }

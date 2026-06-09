@@ -1,4 +1,5 @@
 <?php
+
 return [
     // Page titles
     'who_visited_me' => 'Who visited me',
@@ -16,6 +17,8 @@ return [
     // Stats
     'total_visits' => 'Total Visits',
     'total_likes' => 'Total Likes',
+    'total_favorites' => 'Total Favorites',
+    'total_ignored' => 'Total Ignored',
 
     // Tabs
     'my_favorites' => 'My Favorites',

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
+import Select2Input from '@/components/Inputs/Select2Input.vue';
 
 interface Props {
     label: string;
@@ -25,7 +28,7 @@ const emit = defineEmits<{
 const computedDisplayValue = computed(() => {
     const val = props.displayValue ?? props.value;
     if (val === null || val === undefined || val === '') {
-        return 'Not specified';
+        return trans('profile.not_specified');
     }
     return val;
 });
@@ -47,6 +50,10 @@ const handleInput = (event: Event) => {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
     emit('update:value', target.value);
 };
+
+const handleSelect2Update = (val: string | number) => {
+    emit('update:value', val);
+};
 </script>
 
 <template>
@@ -66,21 +73,12 @@ const handleInput = (event: Event) => {
                     class="form-control form-control-solid"
                     rows="4"
                 />
-                <select
+                <Select2Input
                     v-else-if="type === 'select'"
-                    :value="selectValue"
-                    @change="handleInput"
-                    class="form-select form-select-solid"
-                >
-                    <option value="">Select {{ label }}</option>
-                    <option
-                        v-for="option in options"
-                        :key="option.value"
-                        :value="option.value"
-                    >
-                        {{ option.label }}
-                    </option>
-                </select>
+                    :model-value="selectValue"
+                    :options="options ?? []"
+                    @update:model-value="handleSelect2Update"
+                />
                 <input
                     v-else
                     :type="type"

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Country;
 use App\Models\Enums\MarriageStatus;
+use App\Models\ImageRequest;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -11,87 +12,149 @@ class UserInteractionService
 {
     public function whoLikedMe()
     {
-        return auth()->user()
+        $authId = auth()->id();
+
+        $paginator = auth()->user()
             ->favoritedBy()
             ->with('mainProfileImage')
-            ->paginate(20)
-            ->through(function (User $user) {
-                return [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'age' => $user->age,
-                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
-                    'profile_image' => $user->mainProfileImage()->first()->image_path ?? null,
-                    'created_at' => $user->pivot->created_at->diffForHumans(), // I need favourite created_at,
-                    'is_favourite' => $user->isFavoritedBy(auth()->id()),
-                    'is_ignored' => $user->isIgnored(auth()->id()),
-                ];
-            });
+            ->paginate(20);
+
+        $userIds = $paginator->pluck('id')->all();
+        $viewableIds = ImageRequest::approvedViewersOf($authId, $userIds);
+
+        return $paginator->through(function (User $user) use ($authId, $viewableIds) {
+            $canViewImages = isset($viewableIds[$user->id]);
+            $image = $user->mainProfileImage->first();
+
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'age' => $user->age,
+                'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
+                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'mainProfileImage' => $canViewImages
+                    ? ($image?->original_url ?? $image?->thumbnail_url)
+                    : $image?->thumbnail_url,
+                'can_view_images' => $canViewImages,
+                'is_online' => $user->isOnline(),
+                'is_verified' => (bool) $user->is_verified,
+                'liked_at' => $user->pivot->created_at->diffForHumans(),
+                'is_favourite' => $user->isFavoritedBy($authId),
+                'is_ignored' => $user->isIgnored($authId),
+            ];
+        });
     }
 
     public function whoVisitedMe()
     {
-        $visitedUserId = auth()->id();
+        $authId = auth()->id();
 
-        // Get unique visitors with their latest visit date
-        return User::query()
+        $paginator = User::query()
             ->join('profile_visits', 'users.id', '=', 'profile_visits.visitor_id')
-            ->where('profile_visits.visited_user_id', $visitedUserId)
+            ->where('profile_visits.visited_user_id', $authId)
             ->select('users.*', \DB::raw('MAX(profile_visits.created_at) as latest_visit'))
             ->groupBy('users.id')
             ->orderByDesc('latest_visit')
             ->with('mainProfileImage')
-            ->paginate(20)
-            ->through(function (User $user) {
-                return [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'age' => $user->age,
-                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
-                    'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
-                    'mainProfileImage' => $user->mainProfileImage->first()?->thumbnail_url ?? null,
-                    'created_at' => Carbon::parse($user->latest_visit)->diffForHumans(),
-                    'is_favourite' => $user->isFavoritedBy(auth()->id()),
-                    'is_ignored' => $user->isIgnored(auth()->id()),
-                ];
-            });
+            ->paginate(20);
+
+        $userIds = $paginator->pluck('id')->all();
+        $viewableIds = ImageRequest::approvedViewersOf($authId, $userIds);
+
+        return $paginator->through(function (User $user) use ($authId, $viewableIds) {
+            $canViewImages = isset($viewableIds[$user->id]);
+            $image = $user->mainProfileImage->first();
+
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'age' => $user->age,
+                'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
+                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'mainProfileImage' => $canViewImages
+                    ? ($image?->original_url ?? $image?->thumbnail_url)
+                    : $image?->thumbnail_url,
+                'can_view_images' => $canViewImages,
+                'is_online' => $user->isOnline(),
+                'is_verified' => (bool) $user->is_verified,
+                'visited_at' => Carbon::parse($user->latest_visit)->diffForHumans(),
+                'is_favourite' => $user->isFavoritedBy($authId),
+                'is_ignored' => $user->isIgnored($authId),
+            ];
+        });
     }
 
     public function myFavorites()
     {
-        return auth()->user()
+        $authId = auth()->id();
+
+        $paginator = auth()->user()
             ->favorites()
             ->with('mainProfileImage')
-            ->paginate(20)
-            ->through(function (User $user) {
-                return [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'age' => $user->age,
-                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
-                    'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
-                    'mainProfileImage' => $user->mainProfileImage->first()?->thumbnail_url ?? null,
-                    'created_at' => $user->pivot->created_at->diffForHumans(),
-                ];
-            });
+            ->paginate(20);
+
+        $userIds = $paginator->pluck('id')->all();
+        $viewableIds = ImageRequest::approvedViewersOf($authId, $userIds);
+
+        return $paginator->through(function (User $user) use ($authId, $viewableIds) {
+            $canViewImages = isset($viewableIds[$user->id]);
+            $image = $user->mainProfileImage->first();
+
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'age' => $user->age,
+                'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
+                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'mainProfileImage' => $canViewImages
+                    ? ($image?->original_url ?? $image?->thumbnail_url)
+                    : $image?->thumbnail_url,
+                'can_view_images' => $canViewImages,
+                'is_online' => $user->isOnline(),
+                'is_verified' => (bool) $user->is_verified,
+                'is_favourite' => true,
+                'is_ignored' => $user->isIgnored($authId),
+                'created_at' => $user->pivot->created_at->diffForHumans(),
+            ];
+        });
     }
 
     public function myIgnoredUsers()
     {
-        return auth()->user()
+        $authId = auth()->id();
+
+        $paginator = auth()->user()
             ->ignores()
             ->with('mainProfileImage')
-            ->paginate(20)
-            ->through(function (User $user) {
-                return [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'age' => $user->age,
-                    'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
-                    'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
-                    'mainProfileImage' => $user->mainProfileImage->first()?->thumbnail_url ?? null,
-                    'created_at' => $user->pivot->created_at->diffForHumans(),
-                ];
-            });
+            ->paginate(20);
+
+        $userIds = $paginator->pluck('id')->all();
+        $viewableIds = ImageRequest::approvedViewersOf($authId, $userIds);
+
+        return $paginator->through(function (User $user) use ($authId, $viewableIds) {
+            $canViewImages = isset($viewableIds[$user->id]);
+            $image = $user->mainProfileImage->first();
+
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'age' => $user->age,
+                'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
+                'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
+                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'mainProfileImage' => $canViewImages
+                    ? ($image?->original_url ?? $image?->thumbnail_url)
+                    : $image?->thumbnail_url,
+                'can_view_images' => $canViewImages,
+                'is_online' => $user->isOnline(),
+                'is_verified' => (bool) $user->is_verified,
+                'is_favourite' => $user->isFavoritedBy($authId),
+                'is_ignored' => true,
+                'created_at' => $user->pivot->created_at->diffForHumans(),
+            ];
+        });
     }
 }

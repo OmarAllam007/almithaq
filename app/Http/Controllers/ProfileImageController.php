@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProfileImageRequest;
+use App\Models\ImageRequest;
 use App\Models\ProfileImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
@@ -54,10 +55,10 @@ class ProfileImageController extends Controller
             $originalImage->scaleDown(width: 1920, height: 1920);
             Storage::disk('local')->put($imagePath, (string) $originalImage->encode());
 
-            // Create and store thumbnail
+            // Create and store thumbnail — small size + low quality so it's unusable at full resolution
             $thumbnail = Image::read($image);
-            $thumbnail->cover(200, 200);
-            Storage::disk('local')->put($thumbnailPath, (string) $thumbnail->encode());
+            $thumbnail->cover(100, 100);
+            Storage::disk('local')->put($thumbnailPath, (string) $thumbnail->toJpeg(quality: 45));
 
             // Get the highest order number for this user
             $maxOrder = ProfileImage::where('user_id', $user->id)->max('order') ?? -1;
@@ -125,6 +126,33 @@ class ProfileImageController extends Controller
         return redirect()
             ->route('profile.gallery')
             ->with('success', 'Main image updated successfully.');
+    }
+
+    public function serveOriginal(ProfileImage $image): Response
+    {
+        $currentUserId = auth()->id();
+
+        if ($image->user_id !== $currentUserId) {
+            $hasAccess = ImageRequest::where('requester_id', $currentUserId)
+                ->where('requested_user_id', $image->user_id)
+                ->where('status', 'approved')
+                ->exists();
+
+            if (! $hasAccess) {
+                abort(403, 'Access denied.');
+            }
+        }
+
+        $path = Storage::disk('local')->path($image->image_path);
+
+        if (! file_exists($path)) {
+            abort(404);
+        }
+
+        $file = Storage::disk('local')->get($image->image_path);
+        $mimeType = Storage::disk('local')->mimeType($image->image_path);
+
+        return response($file, 200)->header('Content-Type', $mimeType);
     }
 
     public function serveThumbnail(ProfileImage $image): Response

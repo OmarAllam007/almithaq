@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'google_adsense' => [
+        'client' => env('GOOGLE_ADSENSE_CLIENT'),
+    ],
+
 ];

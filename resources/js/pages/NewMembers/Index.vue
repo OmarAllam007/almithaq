@@ -5,8 +5,11 @@ import UserCard from '@/components/UserCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import UserProfileModal from '@/components/UserProfileModal.vue';
+import GoogleAd from '@/components/GoogleAd.vue';
 import { PaginationData } from '@/types/pagination';
 import axios from 'axios';
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
 
 interface User {
     id: number;
@@ -120,10 +123,10 @@ watch([selectedNationality, selectedResidence], () => {
                                 <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
                                     <div class="d-flex flex-column">
                                         <div class="d-flex align-items-center mb-1">
-                                            <span class="text-gray-900 fs-2 fw-bold me-3">New Members</span>
+                                            <span class="text-gray-900 fs-2 fw-bold me-3">{{ trans('new_members.new_members') }}</span>
                                         </div>
                                         <div class="d-flex flex-wrap fw-semibold mb-4 fs-5 text-gray-500">
-                                            Latest registered members
+                                            {{ trans('new_members.latest_registered_members') }}
                                         </div>
                                     </div>
                                 </div>
@@ -136,13 +139,13 @@ watch([selectedNationality, selectedResidence], () => {
                                 <li class="nav-item">
                                     <div class="d-flex align-items-center gap-3 px-3">
                                         <div class="d-flex align-items-center gap-2">
-                                            <label class="form-label mb-0 text-nowrap">Nationality:</label>
+                                            <label class="form-label mb-0 text-nowrap">{{ trans('new_members.nationality') }}:</label>
                                             <select
                                                 v-model="selectedNationality"
                                                 class="form-select form-select-sm"
                                                 style="min-width: 150px"
                                             >
-                                                <option :value="undefined">All</option>
+                                                <option :value="undefined">{{ trans('new_members.all') }}</option>
                                                 <option
                                                     v-for="country in countries"
                                                     :key="country.id"
@@ -154,13 +157,13 @@ watch([selectedNationality, selectedResidence], () => {
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2">
-                                            <label class="form-label mb-0 text-nowrap">Residence:</label>
+                                            <label class="form-label mb-0 text-nowrap">{{ trans('new_members.residence') }}:</label>
                                             <select
                                                 v-model="selectedResidence"
                                                 class="form-select form-select-sm"
                                                 style="min-width: 150px"
                                             >
-                                                <option :value="undefined">All</option>
+                                                <option :value="undefined">{{ trans('new_members.all') }}</option>
                                                 <option
                                                     v-for="country in countries"
                                                     :key="country.id"
@@ -177,7 +180,7 @@ watch([selectedNationality, selectedResidence], () => {
                                             class="btn btn-sm btn-light-primary"
                                         >
                                             <i class="ki-outline ki-cross fs-3"></i>
-                                            Clear Filters
+                                            {{ trans('new_members.clear_filters') }}
                                         </button>
                                     </div>
                                 </li>
@@ -186,12 +189,17 @@ watch([selectedNationality, selectedResidence], () => {
                     </div>
                 </div>
 
+                <!-- Ad: between filter and user grid -->
+                <div class="mb-6">
+                    <GoogleAd slot-id="NEW_MEMBERS_TOP" format="horizontal" />
+                </div>
+
                 <!-- Users Grid -->
                 <div v-if="users.data.length > 0" class="row g-6 g-xl-9 mb-6 mb-xl-9">
                     <div
                         v-for="user in users.data"
                         :key="user.id"
-                        class="col-md-6 col-xl-4"
+                        class="col-md-6 col-xl-3"
                     >
                         <UserCard
                             :user="user"
@@ -208,16 +216,16 @@ watch([selectedNationality, selectedResidence], () => {
                         <div class="mb-10">
                             <i class="ki-outline ki-user fs-5x text-gray-400"></i>
                         </div>
-                        <h3 class="text-gray-800 mb-3">No Members Found</h3>
+                        <h3 class="text-gray-800 mb-3">{{ trans('new_members.no_members_found') }}</h3>
                         <p class="text-gray-600 fs-5">
-                            Try adjusting your filters to see more results.
+                            {{ trans('new_members.try_adjusting_your_filters_to_see_more_results') }}
                         </p>
                         <button
                             v-if="selectedNationality || selectedResidence"
                             @click="resetFilters"
                             class="btn btn-primary mt-5"
                         >
-                            Clear Filters
+                            {{ trans('new_members.clear_filters') }}
                         </button>
                     </div>
                 </div>

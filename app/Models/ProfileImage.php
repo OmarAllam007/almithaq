@@ -68,8 +68,12 @@ class ProfileImage extends Model
 
     public function getThumbnailUrlAttribute(): string
     {
-
         return route('profile.images.thumbnail', $this);
+    }
+
+    public function getOriginalUrlAttribute(): string
+    {
+        return route('profile.images.original', $this);
     }
 
     protected static function booted(): void

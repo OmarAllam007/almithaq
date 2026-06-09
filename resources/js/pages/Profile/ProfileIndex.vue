@@ -5,6 +5,9 @@ import ProfileSection from '@/components/Profile/ProfileSection.vue';
 import ProfileField from '@/components/Profile/ProfileField.vue';
 import { update } from '@/actions/App/Http/Controllers/ProfileController';
 import DeleteAccountController from '@/actions/App/Http/Controllers/DeleteAccountController';
+import ResetPasswordController from '@/actions/App/Http/Controllers/ResetPasswordController';
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
 
 type SelectOption = { value: string; label: string };
 
@@ -21,6 +24,7 @@ interface Props {
     financial_statuses: SelectOption[];
     health_statuses: SelectOption[];
     fields_of_work: SelectOption[];
+    monthly_incomes: SelectOption[];
     delete_account_reasons: SelectOption[];
 }
 
@@ -28,6 +32,7 @@ const props = defineProps<Props>();
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const isArabic = computed(() => page.props.locale === 'ar');
 
 const isEditing = ref(false);
 
@@ -37,15 +42,15 @@ const form = useForm({
     username: user.value.username,
     email: user.value.email,
     phone_number: user.value.phone_number,
-    age: toStr(user.value.age),
+    age: user.value.age,
     marriage_type: toStr(user.value.marriage_type),
     marriage_status: toStr(user.value.marriage_status),
     child_count: toStr(user.value.child_count),
     residence: toStr(user.value.residence?.id),
     nationality: toStr(user.value.nationality?.id),
     city: user.value.city,
-    weight: user.value.weight,
-    height: user.value.height,
+    weight: Number.parseInt(user.value.weight),
+    height: Number.parseInt(user.value.height),
     skin_color: toStr(user.value.skin_color),
     body_shape: toStr(user.value.body_shape),
     devotion: toStr(user.value.devotion),
@@ -66,8 +71,13 @@ const ageRange = Array.from({ length: 73 }, (_, i) => ({ value: String(i + 18), 
 const childCounts = Array.from({ length: 11 }, (_, i) => ({ value: String(i), label: String(i) }));
 
 const countryOptions = computed(() =>
-    props.countries.map((c) => ({ value: c.id.toString(), label: c.name }))
+    props.countries.map((c) => ({ value: c.id.toString(), label: isArabic.value ? c.ar_name : c.name }))
 );
+
+const countryDisplayName = (country: any): string => {
+    if (!country) return '';
+    return isArabic.value ? (country.ar_name || country.name) : country.name;
+};
 
 const toggleEdit = () => {
     if (isEditing.value) {
@@ -96,9 +106,36 @@ const saveProfile = () => {
         financial_status: data.financial_status ? parseInt(data.financial_status) : null,
         field_of_work: data.field_of_work ? parseInt(data.field_of_work) : null,
         health_status: data.health_status ? parseInt(data.health_status) : null,
+        monthly_income: data.monthly_income ? parseInt(data.monthly_income) : null,
     })).submit(update(), {
         onSuccess: () => {
             isEditing.value = false;
+        },
+    });
+};
+
+// Reset Password
+const showResetPasswordModal = ref(false);
+const resetPasswordForm = useForm({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+});
+
+const openResetPasswordModal = () => {
+    showResetPasswordModal.value = true;
+};
+
+const closeResetPasswordModal = () => {
+    showResetPasswordModal.value = false;
+    resetPasswordForm.reset();
+    resetPasswordForm.clearErrors();
+};
+
+const submitResetPassword = () => {
+    resetPasswordForm.submit(ResetPasswordController(), {
+        onSuccess: () => {
+            closeResetPasswordModal();
         },
     });
 };
@@ -134,17 +171,18 @@ const submitDeleteAccount = () => {
             <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
                 <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
                     <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
-                            Account Overview
+                        <h1
+                            class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
+                            {{ trans('profile.profile') }}
                         </h1>
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
                             <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary">Home</a>
+                                <a href="/" class="text-muted text-hover-primary">{{ trans('home.home') }}</a>
                             </li>
                             <li class="breadcrumb-item">
                                 <span class="bullet w-5px h-2px bg-gray-500"></span>
                             </li>
-                            <li class="breadcrumb-item text-muted">Account</li>
+                            <li class="breadcrumb-item text-muted">{{ trans('profile.profile') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -157,11 +195,12 @@ const submitDeleteAccount = () => {
                         <div class="card-body pt-9 pb-0">
                             <div class="d-flex flex-sm-nowrap flex-wrap">
                                 <div class="me-7 mb-4">
-                                    <div class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative">
-                                        <img :src="$page.props.auth?.profile_image" alt="image" />
+                                    <div class="symbol symbol-100px symbol-lg-100px symbol-fixed position-relative">
+                                        <img :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" alt="image" />
                                         <div
-                                            class="position-absolute translate-middle bg-success rounded-circle border-body h-20px w-20px start-100 bottom-0 mb-6 border border-4"
-                                        ></div>
+                                            class="translate-middle bg-success rounded-circle border-body
+                                             h-20px w-20px bottom-0 mb-6 border border-4 start-100 top-100">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
@@ -174,70 +213,67 @@ const submitDeleteAccount = () => {
                                                 <a href="#"><i class="ki-outline ki-verify fs-1 text-primary"></i></a>
                                             </div>
                                             <div class="d-flex fw-semibold fs-6 mb-4 flex-wrap pe-2">
-                                                <a href="#" class="d-flex align-items-center text-hover-primary me-5 mb-2 text-gray-500">
-                                                    <i class="ki-outline ki-profile-circle fs-4 me-1"></i>{{ user.username }}
+                                                <a href="#"
+                                                    class="d-flex align-items-center text-hover-primary me-5 mb-2 text-gray-500">
+                                                    <i class="ki-outline ki-profile-circle fs-4 me-1"></i>{{
+                                                    user.username }}
                                                 </a>
-                                                <a href="#" class="d-flex align-items-center text-hover-primary me-5 mb-2 text-gray-500">
-                                                    <i class="ki-outline ki-geolocation fs-4 me-1"></i
-                                                    >{{ user.residence.name }}
+                                                <a href="#"
+                                                    class="d-flex align-items-center text-hover-primary me-5 mb-2 text-gray-500">
+                                                    <i class="ki-outline ki-geolocation fs-4 me-1"></i>{{
+                                                    user.residence.name }}
                                                 </a>
-                                                <a href="#" class="d-flex align-items-center text-hover-primary mb-2 text-gray-500">
+                                                <a href="#" v-if="user.email"
+                                                    class="d-flex align-items-center text-hover-primary mb-2 text-gray-500">
                                                     <i class="ki-outline ki-sms fs-4"></i>{{ user.email }}
                                                 </a>
                                             </div>
                                         </div>
                                         <div class="d-flex my-4">
-                                            <button
-                                                v-if="!isEditing"
-                                                @click="toggleEdit"
-                                                class="btn btn-sm btn-primary me-2"
-                                            >
+                                            <button v-if="!isEditing" @click="toggleEdit"
+                                                class="btn btn-sm btn-primary me-2">
                                                 <i class="ki-outline ki-pencil fs-3"></i>
-                                                Edit Profile
+                                                {{ trans('profile.edit_profile') }}
                                             </button>
                                             <template v-else>
-                                                <button
-                                                    @click="saveProfile"
-                                                    :disabled="form.processing"
-                                                    class="btn btn-sm btn-success me-2"
-                                                >
+                                                <button @click="saveProfile" :disabled="form.processing"
+                                                    class="btn btn-sm btn-success me-2">
                                                     <i class="ki-outline ki-check fs-3"></i>
-                                                    Save Changes
+                                                    {{ trans('profile.save_profile') }}
                                                 </button>
-                                                <button
-                                                    @click="toggleEdit"
-                                                    :disabled="form.processing"
-                                                    class="btn btn-sm btn-light-danger"
-                                                >
+                                                <button @click="toggleEdit" :disabled="form.processing"
+                                                    class="btn btn-sm btn-light-danger">
                                                     <i class="ki-outline ki-cross fs-3"></i>
-                                                    Cancel
+                                                    {{ trans('profile.cancel') }}
                                                 </button>
                                             </template>
-                                            <button
-                                                v-if="!isEditing"
-                                                @click="openDeleteModal"
-                                                class="btn btn-sm btn-light-danger"
-                                            >
+                                            <button v-if="!isEditing" @click="openResetPasswordModal"
+                                                class="btn btn-sm btn-light-warning me-2">
+                                                <i class="ki-outline ki-lock-2 fs-3"></i>
+                                                {{ trans('profile.reset_password') }}
+                                            </button>
+                                            <button v-if="!isEditing" @click="openDeleteModal"
+                                                class="btn btn-sm btn-light-danger">
                                                 <i class="ki-outline ki-trash fs-3"></i>
-                                                Delete Account
+                                                {{ trans('profile.delete_account') }}
                                             </button>
                                         </div>
                                     </div>
-<!--                                    <div class="d-flex flex-stack flex-wrap">-->
-<!--                                        <div class="d-flex align-items-center w-200px w-sm-300px flex-column mt-3">-->
-<!--                                            <div class="d-flex justify-content-between mt-auto mb-2 w-100">-->
-<!--                                                <span class="fw-semibold fs-6 text-gray-500">Profile Completion</span>-->
-<!--                                                <span class="fw-bold fs-6">50%</span>-->
-<!--                                            </div>-->
-<!--                                            <div class="h-5px bg-light mx-3 mb-3 w-100">-->
-<!--                                                <div-->
-<!--                                                    class="bg-success h-5px rounded"-->
-<!--                                                    role="progressbar"-->
-<!--                                                    style="width: 50%"-->
-<!--                                                ></div>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
+                                    <!--                                    <div class="d-flex flex-stack flex-wrap">-->
+                                    <!--                                        <div class="d-flex align-items-center w-200px w-sm-300px flex-column mt-3">-->
+                                    <!--                                            <div class="d-flex justify-content-between mt-auto mb-2 w-100">-->
+                                    <!--                                                <span class="fw-semibold fs-6 text-gray-500">Profile Completion</span>-->
+                                    <!--                                                <span class="fw-bold fs-6">50%</span>-->
+                                    <!--                                            </div>-->
+                                    <!--                                            <div class="h-5px bg-light mx-3 mb-3 w-100">-->
+                                    <!--                                                <div-->
+                                    <!--                                                    class="bg-success h-5px rounded"-->
+                                    <!--                                                    role="progressbar"-->
+                                    <!--                                                    style="width: 50%"-->
+                                    <!--                                                ></div>-->
+                                    <!--                                            </div>-->
+                                    <!--                                        </div>-->
+                                    <!--                                    </div>-->
                                 </div>
                             </div>
                         </div>
@@ -245,324 +281,218 @@ const submitDeleteAccount = () => {
 
                     <!-- Account & Location Details -->
                     <div class="d-flex col-12 gap-2 flex-wrap flex-lg-nowrap">
-                        <ProfileSection title="Account Details" class="col-12 col-lg-6">
-                            <ProfileField
-                                label="Username"
-                                :value="form.username"
-                                @update:value="(v) => (form.username = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.username"
-                            />
-                            <ProfileField
-                                label="Email"
-                                type="email"
-                                :value="form.email"
-                                @update:value="(v) => (form.email = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.email"
-                            />
-                            <ProfileField
-                                label="Phone Number"
-                                :value="form.phone_number"
-                                @update:value="(v) => (form.phone_number = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.phone_number"
-                            />
+                        <ProfileSection :title="trans('profile.account_details')" class="col-12 col-lg-6">
+                            <ProfileField :label="trans('profile.username')" :value="form.username"
+                                :is-editing="false"
+                                :error="form.errors.username" />
+                            <ProfileField :label="trans('profile.email')" type="email" :value="form.email"
+                                @update:value="(v) => (form.email = v)" :is-editing="isEditing"
+                                :error="form.errors.email" />
+                            <ProfileField :label="trans('profile.phone_number')" :value="form.phone_number"
+                                @update:value="(v) => (form.phone_number = v)" :is-editing="isEditing"
+                                :error="form.errors.phone_number" />
                         </ProfileSection>
 
-                        <ProfileSection title="Location Details" class="col-12 col-lg-6">
-                            <ProfileField
-                                label="Nationality"
-                                type="select"
-                                :value="form.nationality"
-                                :display-value="user.nationality.name"
-                                @update:value="(v) => (form.nationality = v)"
-                                :is-editing="isEditing"
-                                :options="countryOptions"
-                                :error="form.errors.nationality"
-                            />
-                            <ProfileField
-                                label="Residence"
-                                type="select"
-                                :value="form.residence"
-                                :display-value="user.residence.name"
-                                @update:value="(v) => (form.residence = v)"
-                                :is-editing="isEditing"
-                                :options="countryOptions"
-                                :error="form.errors.residence"
-                            />
-                            <ProfileField
-                                label="City"
-                                :value="form.city"
-                                @update:value="(v) => (form.city = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.city"
-                            />
+                            <ProfileSection :title="trans('profile.location_details')" class="col-12 col-lg-6">
+                            <ProfileField :label="trans('profile.nationality')" type="select" :value="form.nationality"
+                                :display-value="countryDisplayName(user.nationality)" @update:value="(v) => (form.nationality = v)"
+                                :is-editing="isEditing" :options="countryOptions" :error="form.errors.nationality" />
+                            <ProfileField :label="trans('profile.residence')" type="select" :value="form.residence"
+                                :display-value="countryDisplayName(user.residence)" @update:value="(v) => (form.residence = v)"
+                                :is-editing="isEditing" :options="countryOptions" :error="form.errors.residence" />
+                            <ProfileField :label="trans('profile.city')" :value="form.city" @update:value="(v) => (form.city = v)"
+                                :is-editing="isEditing" :error="form.errors.city" />
                         </ProfileSection>
                     </div>
 
                     <!-- Personal Details -->
-                    <ProfileSection title="Personal Details">
+                    <ProfileSection :title="trans('profile.personal_details')">
                         <div class="row">
-                            <ProfileField
-                                label="Age"
-                                type="select"
-                                :value="form.age"
-                                @update:value="(v) => (form.age = v)"
-                                :is-editing="isEditing"
-                                :options="ageRange"
-                                :error="form.errors.age"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Child Count"
-                                type="select"
-                                :value="form.child_count"
-                                @update:value="(v) => (form.child_count = v)"
-                                :is-editing="isEditing"
-                                :options="childCounts"
-                                :error="form.errors.child_count"
-                                col-span="half"
-                            />
+                            <ProfileField :label="trans('profile.age')" type="select" :value="form.age"
+                                @update:value="(v) => (form.age = v)" :is-editing="isEditing" :options="ageRange"
+                                :error="form.errors.age" col-span="half" />
+                            <ProfileField :label="trans('profile.child_count')" type="select" :value="form.child_count"
+                                @update:value="(v) => (form.child_count = v)" :is-editing="isEditing"
+                                :options="childCounts" :error="form.errors.child_count" col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Weight (kg)"
-                                type="number"
-                                :value="form.weight"
-                                @update:value="(v) => (form.weight = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.weight"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Height (cm)"
-                                type="number"
-                                :value="form.height"
-                                @update:value="(v) => (form.height = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.height"
-                                col-span="half"
-                            />
+                            <ProfileField :label="trans('profile.weight') + ' (kg)'" type="number" :value="form.weight"
+                                @update:value="(v) => (form.weight = v)" :is-editing="isEditing"
+                                :error="form.errors.weight" col-span="half" />
+                            <ProfileField :label="trans('profile.height') + ' (cm)'" type="number" :value="form.height"
+                                @update:value="(v) => (form.height = v)" :is-editing="isEditing"
+                                :error="form.errors.height" col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Skin Color"
-                                type="select"
-                                :value="form.skin_color"
-                                :display-value="user.skin_color_label"
-                                @update:value="(v) => (form.skin_color = v)"
-                                :is-editing="isEditing"
-                                :options="skin_colors"
-                                :error="form.errors.skin_color"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Body Shape"
-                                type="select"
-                                :value="form.body_shape"
-                                :display-value="user.body_shape_label"
-                                @update:value="(v) => (form.body_shape = v)"
-                                :is-editing="isEditing"
-                                :options="body_shapes"
-                                :error="form.errors.body_shape"
-                                col-span="half"
-                            />
+                            <ProfileField :label="trans('profile.skin_color')" type="select" :value="form.skin_color"
+                                :display-value="user.skin_color_label" @update:value="(v) => (form.skin_color = v)"
+                                :is-editing="isEditing" :options="skin_colors" :error="form.errors.skin_color"
+                                col-span="half" />
+                            <ProfileField :label="trans('profile.body_shape')" type="select" :value="form.body_shape"
+                                :display-value="user.body_shape_label" @update:value="(v) => (form.body_shape = v)"
+                                :is-editing="isEditing" :options="body_shapes" :error="form.errors.body_shape"
+                                col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Marriage Status"
-                                type="select"
-                                :value="form.marriage_status"
+                            <ProfileField :label="trans('profile.marriage_status')" type="select" :value="form.marriage_status"
                                 :display-value="user.marriage_status_label"
-                                @update:value="(v) => (form.marriage_status = v)"
-                                :is-editing="isEditing"
-                                :options="marriage_statuses"
-                                :error="form.errors.marriage_status"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Marriage Type"
-                                type="select"
-                                :value="form.marriage_type"
+                                @update:value="(v) => (form.marriage_status = v)" :is-editing="isEditing"
+                                :options="marriage_statuses" :error="form.errors.marriage_status" col-span="half" />
+                            <ProfileField :label="trans('profile.marriage_type')" type="select" :value="form.marriage_type"
                                 :display-value="user.marriage_type_label"
-                                @update:value="(v) => (form.marriage_type = v)"
-                                :is-editing="isEditing"
-                                :options="marriage_types"
-                                :error="form.errors.marriage_type"
-                                col-span="half"
-                            />
+                                @update:value="(v) => (form.marriage_type = v)" :is-editing="isEditing"
+                                :options="marriage_types" :error="form.errors.marriage_type" col-span="half" />
                         </div>
                     </ProfileSection>
 
                     <!-- Religious & Social Details -->
-                    <ProfileSection title="Religious & Social Details">
+                    <ProfileSection :title="trans('profile.religious_and_social_details')">
                         <div class="row">
-                            <ProfileField
-                                label="Religion"
-                                :value="user.religion"
-                                :is-editing="false"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Prayer"
-                                type="select"
-                                :value="form.prayer"
-                                :display-value="user.prayer_label"
-                                @update:value="(v) => (form.prayer = v)"
-                                :is-editing="isEditing"
-                                :options="prayer_commitments"
-                                :error="form.errors.prayer"
-                                col-span="half"
-                            />
+                            <ProfileField :label="trans('profile.religion')" :value="trans('profile.muslim')" :is-editing="false" col-span="half" />
+                            <ProfileField :label="trans('profile.prayer')" type="select" :value="form.prayer"
+                                :display-value="user.prayer_label" @update:value="(v) => (form.prayer = v)"
+                                :is-editing="isEditing" :options="prayer_commitments" :error="form.errors.prayer"
+                                col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Devotion"
-                                type="select"
-                                :value="form.devotion"
-                                :display-value="user.devotion_label"
-                                @update:value="(v) => (form.devotion = v)"
-                                :is-editing="isEditing"
-                                :options="devotions"
-                                :error="form.errors.devotion"
-                                col-span="half"
-                            />
+                            <ProfileField :label="trans('profile.devotion')" type="select" :value="form.devotion"
+                                :display-value="user.devotion_label" @update:value="(v) => (form.devotion = v)"
+                                :is-editing="isEditing" :options="devotions" :error="form.errors.devotion"
+                                col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Smoking"
-                                type="select"
-                                :value="form.smoking"
-                                :display-value="user.smoking ? 'Yes' : 'No'"
-                                @update:value="(v) => (form.smoking = v)"
-                                :is-editing="isEditing"
-                                :options="yes_no_options"
-                                :error="form.errors.smoking"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                v-if="user.registration_type === 1"
-                                label="Beard"
-                                type="select"
-                                :value="form.beard"
-                                :display-value="user.beard ? 'Yes' : 'No'"
-                                @update:value="(v) => (form.beard = v)"
-                                :is-editing="isEditing"
-                                :options="yes_no_options"
-                                :error="form.errors.beard"
-                                col-span="half"
-                            />
+                            <ProfileField :label="trans('profile.smoking')" type="select" :value="form.smoking"
+                                :display-value="user.smoking ? trans('enums.yes') : trans('enums.no')" @update:value="(v) => (form.smoking = v)"
+                                :is-editing="isEditing" :options="yes_no_options" :error="form.errors.smoking"
+                                col-span="half" />
+                            <ProfileField v-if="user.registration_type === 1" :label="trans('profile.beard')" type="select"
+                                :value="form.beard" :display-value="user.beard ? trans('enums.yes') : trans('enums.no')"
+                                @update:value="(v) => (form.beard = v)" :is-editing="isEditing"
+                                :options="yes_no_options" :error="form.errors.beard" col-span="half" />
                         </div>
                     </ProfileSection>
 
                     <!-- Professional Details -->
-                    <ProfileSection title="Professional Details">
+                    <ProfileSection :title="trans('profile.professional_details')">
                         <div class="row">
-                            <ProfileField
-                                label="Education Level"
-                                type="select"
-                                :value="form.education_level"
+                            <ProfileField :label="trans('profile.education_level')" type="select" :value="form.education_level"
                                 :display-value="user.education_level_label"
-                                @update:value="(v) => (form.education_level = v)"
-                                :is-editing="isEditing"
-                                :options="education_levels"
-                                :error="form.errors.education_level"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Financial Status"
-                                type="select"
-                                :value="form.financial_status"
+                                @update:value="(v) => (form.education_level = v)" :is-editing="isEditing"
+                                :options="education_levels" :error="form.errors.education_level" col-span="half" />
+                            <ProfileField :label="trans('profile.financial_status')" type="select" :value="form.financial_status"
                                 :display-value="user.financial_status_label"
-                                @update:value="(v) => (form.financial_status = v)"
-                                :is-editing="isEditing"
-                                :options="financial_statuses"
-                                :error="form.errors.financial_status"
-                                col-span="half"
-                            />
+                                @update:value="(v) => (form.financial_status = v)" :is-editing="isEditing"
+                                :options="financial_statuses" :error="form.errors.financial_status" col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Field of Work"
-                                type="select"
-                                :value="form.field_of_work"
+                            <ProfileField :label="trans('profile.field_of_work')" type="select" :value="form.field_of_work"
                                 :display-value="user.field_of_work_label"
-                                @update:value="(v) => (form.field_of_work = v)"
-                                :is-editing="isEditing"
-                                :options="fields_of_work"
-                                :error="form.errors.field_of_work"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Job Title"
-                                :value="form.job"
-                                @update:value="(v) => (form.job = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.job"
-                                col-span="half"
-                            />
+                                @update:value="(v) => (form.field_of_work = v)" :is-editing="isEditing"
+                                :options="fields_of_work" :error="form.errors.field_of_work" col-span="half" />
+                            <ProfileField :label="trans('profile.job_title')" :value="form.job" @update:value="(v) => (form.job = v)"
+                                :is-editing="isEditing" :error="form.errors.job" col-span="half" />
                         </div>
                         <div class="row">
-                            <ProfileField
-                                label="Monthly Income"
-                                type="number"
-                                :value="form.monthly_income"
-                                @update:value="(v) => (form.monthly_income = v)"
-                                :is-editing="isEditing"
-                                :error="form.errors.monthly_income"
-                                col-span="half"
-                            />
-                            <ProfileField
-                                label="Health Status"
-                                type="select"
-                                :value="form.health_status"
+                            <ProfileField :label="trans('profile.monthly_income')" type="select" :value="form.monthly_income"
+                                :display-value="user.monthly_income_label"
+                                @update:value="(v) => (form.monthly_income = v)" :is-editing="isEditing"
+                                :options="monthly_incomes" :error="form.errors.monthly_income" col-span="half" />
+                            <ProfileField :label="trans('profile.health_status')" type="select" :value="form.health_status"
                                 :display-value="user.health_status_label"
-                                @update:value="(v) => (form.health_status = v)"
-                                :is-editing="isEditing"
-                                :options="health_statuses"
-                                :error="form.errors.health_status"
-                                col-span="half"
-                            />
+                                @update:value="(v) => (form.health_status = v)" :is-editing="isEditing"
+                                :options="health_statuses" :error="form.errors.health_status" col-span="half" />
                         </div>
                     </ProfileSection>
 
                     <!-- About Section -->
-                    <ProfileSection title="About">
-                        <ProfileField
-                            label="About Yourself"
-                            type="textarea"
-                            :value="form.about_self"
-                            @update:value="(v) => (form.about_self = v)"
-                            :is-editing="isEditing"
-                            :error="form.errors.about_self"
-                        />
-                        <ProfileField
-                            label="About Your Ideal Partner"
-                            type="textarea"
-                            :value="form.about_partner"
-                            @update:value="(v) => (form.about_partner = v)"
-                            :is-editing="isEditing"
-                            :error="form.errors.about_partner"
-                        />
+                        <ProfileSection :title="trans('profile.about')">
+                        <ProfileField :label="trans('profile.about_yourself')" type="textarea" :value="form.about_self"
+                            @update:value="(v) => (form.about_self = v)" :is-editing="isEditing"
+                            :error="form.errors.about_self" />
+                        <ProfileField :label="trans('profile.about_your_ideal_partner')" type="textarea" :value="form.about_partner"
+                            @update:value="(v) => (form.about_partner = v)" :is-editing="isEditing"
+                            :error="form.errors.about_partner" />
                     </ProfileSection>
                 </div>
             </div>
         </div>
 
+        <!-- Reset Password Modal -->
+        <div v-if="showResetPasswordModal" class="modal fade show d-block" tabindex="-1"
+            style="background-color: rgba(0, 0, 0, 0.5)">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-warning">
+                            <i class="ki-outline ki-lock-2 fs-2 text-warning me-2"></i>
+                            {{ trans('profile.reset_password') }}
+                        </h5>
+                        <button type="button" class="btn-close" @click="closeResetPasswordModal"></button>
+                    </div>
+                    <form @submit.prevent="submitResetPassword">
+                        <div class="modal-body">
+                            <div class="alert alert-warning d-flex align-items-center p-5 mb-5">
+                                <i class="ki-outline ki-information-5 fs-2hx text-warning me-4"></i>
+                                <div class="d-flex flex-column">
+                                    <h4 class="mb-1 text-warning">{{ trans('profile.notice') }}</h4>
+                                    <span>{{ trans('profile.you_will_be_logged_out_after_resetting_your_password_please_log_in_again_with_your_new_password') }}</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="form-label required">{{ trans('profile.current_password') }}</label>
+                                <input v-model="resetPasswordForm.current_password" type="password" class="form-control"
+                                    :class="{ 'is-invalid': resetPasswordForm.errors.current_password }"
+                                    :placeholder="trans('profile.enter_your_current_password')" />
+                                <div v-if="resetPasswordForm.errors.current_password" class="invalid-feedback">
+                                    {{ resetPasswordForm.errors.current_password }}
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="form-label required">{{ trans('profile.new_password') }}</label>
+                                <input v-model="resetPasswordForm.password" type="password" class="form-control"
+                                    :class="{ 'is-invalid': resetPasswordForm.errors.password }"
+                                    :placeholder="trans('profile.enter_your_new_password')" />
+                                <div v-if="resetPasswordForm.errors.password" class="invalid-feedback">
+                                    {{ resetPasswordForm.errors.password }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label required">{{ trans('profile.confirm_new_password') }}</label>
+                                <input v-model="resetPasswordForm.password_confirmation" type="password"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': resetPasswordForm.errors.password_confirmation }"
+                                    :placeholder="trans('profile.re_enter_your_new_password')" />
+                                <div v-if="resetPasswordForm.errors.password_confirmation" class="invalid-feedback">
+                                    {{ resetPasswordForm.errors.password_confirmation }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" @click="closeResetPasswordModal">{{ trans('profile.cancel') }}</button>
+                            <button type="submit" class="btn btn-warning"
+                                :disabled="resetPasswordForm.processing || !resetPasswordForm.current_password || !resetPasswordForm.password || !resetPasswordForm.password_confirmation">
+                                <span v-if="resetPasswordForm.processing"
+                                    class="spinner-border spinner-border-sm me-2"></span>
+                                {{ trans('profile.reset_password') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Delete Account Modal -->
-        <div
-            v-if="showDeleteModal"
-            class="modal fade show d-block"
-            tabindex="-1"
-            style="background-color: rgba(0, 0, 0, 0.5)"
-        >
+        <div v-if="showDeleteModal" class="modal fade show d-block" tabindex="-1"
+            style="background-color: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title text-danger">
                             <i class="ki-outline ki-information-5 fs-2 text-danger me-2"></i>
-                            Delete Account
+                            {{ trans('profile.delete_account') }}
                         </h5>
                         <button type="button" class="btn-close" @click="closeDeleteModal"></button>
                     </div>
@@ -571,24 +501,18 @@ const submitDeleteAccount = () => {
                             <div class="alert alert-danger d-flex align-items-center p-5 mb-5">
                                 <i class="ki-outline ki-shield-cross fs-2hx text-danger me-4"></i>
                                 <div class="d-flex flex-column">
-                                    <h4 class="mb-1 text-danger">Warning</h4>
-                                    <span>This action is permanent. Your account and all associated data will be deleted.</span>
+                                    <h4 class="mb-1 text-danger">{{ trans('profile.warning') }}</h4>
+                                    <span>{{ trans('profile.this_action_is_permanent_your_account_and_all_associated_data_will_be_deleted') }}</span>
                                 </div>
                             </div>
 
                             <div class="mb-5">
-                                <label class="form-label required">Why are you deleting your account?</label>
-                                <select
-                                    v-model="deleteForm.reason"
-                                    class="form-select"
-                                    :class="{ 'is-invalid': deleteForm.errors.reason }"
-                                >
-                                    <option value="" disabled>Select a reason</option>
-                                    <option
-                                        v-for="reason in props.delete_account_reasons"
-                                        :key="reason.value"
-                                        :value="reason.value"
-                                    >
+                                <label class="form-label required">{{ trans('profile.why_are_you_deleting_your_account') }}</label>
+                                <select v-model="deleteForm.reason" class="form-select"
+                                    :class="{ 'is-invalid': deleteForm.errors.reason }">
+                                    <option value="" disabled>{{ trans('profile.select_a_reason') }}</option>
+                                    <option v-for="reason in props.delete_account_reasons" :key="reason.value"
+                                        :value="reason.value">
                                         {{ reason.label }}
                                     </option>
                                 </select>
@@ -598,15 +522,10 @@ const submitDeleteAccount = () => {
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Additional feedback (optional)</label>
-                                <textarea
-                                    v-model="deleteForm.message"
-                                    class="form-control"
-                                    :class="{ 'is-invalid': deleteForm.errors.message }"
-                                    rows="4"
-                                    placeholder="Tell us more about why you're leaving..."
-                                    maxlength="1000"
-                                ></textarea>
+                                <label class="form-label">{{ trans('profile.additional_feedback_optional') }}</label>
+                                <textarea v-model="deleteForm.message" class="form-control"
+                                    :class="{ 'is-invalid': deleteForm.errors.message }" rows="4"
+                                    :placeholder="trans('profile.tell_us_more_about_why_you_re_leaving')" maxlength="1000"></textarea>
                                 <div v-if="deleteForm.errors.message" class="invalid-feedback">
                                     {{ deleteForm.errors.message }}
                                 </div>
@@ -616,14 +535,11 @@ const submitDeleteAccount = () => {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-light" @click="closeDeleteModal">Cancel</button>
-                            <button
-                                type="submit"
-                                class="btn btn-danger"
-                                :disabled="deleteForm.processing || !deleteForm.reason"
-                            >
+                            <button type="button" class="btn btn-light" @click="closeDeleteModal">{{ trans('profile.cancel') }}</button>
+                            <button type="submit" class="btn btn-danger"
+                                :disabled="deleteForm.processing || !deleteForm.reason">
                                 <span v-if="deleteForm.processing" class="spinner-border spinner-border-sm me-2"></span>
-                                Delete My Account
+                                {{ trans('profile.delete_my_account') }}
                             </button>
                         </div>
                     </form>

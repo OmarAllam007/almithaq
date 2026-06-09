@@ -13,7 +13,7 @@ defineProps<Props>();
     <div class="card mb-xl-10 rounded-1 mb-5">
         <div class="card-header cursor-pointer">
             <div class="card-title m-0">
-                <h3 class="fw-bold m-0">{{ title }}</h3>
+                <h3 class="fw-bold m-0"> {{  title }} </h3>
             </div>
         </div>
         <div class="card-body p-9">

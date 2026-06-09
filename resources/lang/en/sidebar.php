@@ -1,6 +1,40 @@
 <?php
+
 return [
     'inbox' => 'Inbox',
+    'Arabic' => 'العربية',
+    'English' => 'English',
 
+    'My Profile' => 'Profile',
+    'My Gallery' => 'Photos',
+    'My Projects' => 'My Projects',
+    'My Subscription' => 'My Subscription',
+    'Payments' => 'Payments',
+    'Mode' => 'Mode',
+    'Light' => 'Light',
+    'Dark' => 'Dark',
+    'System' => 'System',
+    'Language' => 'Language',
+    'Account Settings' => 'Account Settings',
+    'Who Liked Me' => 'Who Liked Me',
+    'Who Visit Me?' => 'Who Visited Me',
+    'Like and Ignore List' => 'Like and Ignore List',
+    'Smart Search' => 'Smart Search',
+    'Logout' => 'Logout',
+    'Logout Confirm' => 'Are you sure you want to logout?',
+    'Cancel' => 'Cancel',
 
+    'Home' => 'Home',
+    'Members' => 'Members',
+    'All Members' => 'All Members',
+    'Online' => 'Online',
+    'New Members' => 'New Members',
+    'VIP Search' => 'VIP Search',
+    'Search' => 'Search',
+    'Profile' => 'Profile',
+
+    'pagination_showing' => 'Showing {from} to {to} of {total} entries',
+    'Previous' => 'Previous',
+    'Next' => 'Next',
+    'Image Requests' => 'Image Requests',
 ];

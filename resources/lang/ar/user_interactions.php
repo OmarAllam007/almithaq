@@ -1,4 +1,5 @@
 <?php
+
 return [
     // Page titles
     'who_visited_me' => 'من زارني',
@@ -16,10 +17,12 @@ return [
     // Stats
     'total_visits' => 'إجمالي الزيارات',
     'total_likes' => 'إجمالي الإعجابات',
+    'total_favorites' => 'إجمالي المفضلين',
+    'total_ignored' => 'إجمالي المحظورين',
 
     // Tabs
-    'my_favorites' => 'المفضلة',
-    'ignored_users' => 'المستخدمون المحظورون',
+    'my_favorites' => 'المفضلون',
+    'ignored_users' => 'المحظورون',
 
     // Actions
     'remove_from_favorites' => 'إزالة من المفضلة',

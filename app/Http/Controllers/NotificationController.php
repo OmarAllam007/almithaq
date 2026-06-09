@@ -21,20 +21,19 @@ class NotificationController extends Controller
             ->latest()
             ->paginate(20);
 
-        $notifications->through(function (UserNotification $notification) {
-            return [
-                'id' => $notification->id,
-                'type' => $notification->type->value,
-                'actor' => $notification->actor ? [
-                    'id' => $notification->actor->id,
-                    'username' => $notification->actor->username,
-                    'profile_image' => $notification->actor->mainProfileImage()->first()->image_path ?? null,
-                ] : null,
-                'data' => $notification->data,
-                'read_at' => $notification->read_at,
-                'created_at' => $notification->created_at->diffForHumans(),
-            ];
-        });
+        $notifications->through(fn (UserNotification $notification) => [
+            'id' => $notification->id,
+            'type' => $notification->type->value,
+            'label' => $notification->type->label(),
+            'actor' => $notification->actor ? [
+                'id' => $notification->actor->id,
+                'username' => $notification->actor->username,
+                'profile_image' => $notification->actor->mainProfileImage()->first()->image_path ?? null,
+            ] : null,
+            'data' => $notification->data,
+            'read_at' => $notification->read_at,
+            'created_at' => $notification->created_at->diffForHumans(),
+        ]);
 
         return response()->json($notifications);
     }

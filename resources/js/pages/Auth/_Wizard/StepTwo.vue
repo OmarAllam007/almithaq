@@ -10,12 +10,12 @@ defineProps({
 });
 
 const marriageTypes = {
-    husband: ['First wife', 'Second wife'],
+    husband: ['First wife', 'Second wife', 'Only one wife', 'Accept polygamy'],
     wife: ['Only one wife', 'Accept polygamy'],
 };
 
 const marriageStatuses = {
-    husband: ['Single', 'Divorced', 'Widowed', 'Married'],
+    husband: ['Single', 'Divorced', 'Widowed'],
     wife: ['Single', 'Divorced', 'Widowed'],
 };
 

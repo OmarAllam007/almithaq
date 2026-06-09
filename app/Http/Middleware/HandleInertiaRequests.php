@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Http\Resources\UserProfileResource;
+use App\Models\Conversation;
+use App\Models\ImageRequest;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -38,6 +40,7 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -46,22 +49,35 @@ class HandleInertiaRequests extends Middleware
                 'user' => array_merge(UserProfileResource::make($user)->toArray($request), [
                     'is_admin' => $user->isAdmin(),
                     'is_verified' => $user->isVerified(),
+                    'has_active_subscription' => $user->hasActiveSubscription(),
                 ]),
                 'profile_image' => $user?->mainProfileImage()?->first()?->thumbnail_url,
             ] : null,
             'locale' => $locale,
             'lang' => $this->getLanguageData($locale),
+            'adsense_client' => config('services.google_adsense.client'),
+            'unread_conversations' => $user ? Conversation::query()
+                ->where(function ($q) use ($user) {
+                    $q->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+                })
+                ->whereHas('messages', function ($q) use ($user) {
+                    $q->where('is_read', false)->where('sender_id', '!=', $user->id);
+                })
+                ->count() : 0,
+            'pending_image_requests' => $user
+                ? ImageRequest::where('requested_user_id', $user->id)->where('status', 'pending')->count()
+                : 0,
         ];
     }
 
-    private function getLanguageData($locale)
+    private function getLanguageData(string $locale): array
     {
         $langPath = resource_path("lang/{$locale}");
 
         $langData = [];
 
         if (is_dir($langPath)) {
-            $files = glob($langPath . '/*.php');
+            $files = glob($langPath.'/*.php');
             foreach ($files as $file) {
                 $key = basename($file, '.php');
                 $langData[$key] = require $file;

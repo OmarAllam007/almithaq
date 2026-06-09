@@ -19,12 +19,12 @@ enum PrayerType: int
     public function label(): string
     {
         return match ($this) {
-            self::ALWAYS => 'Always',
-            self::USUALLY => 'Usually',
-            self::SOMETIMES => 'Sometimes',
-            self::RARELY => 'Rarely',
-            self::NEVER => 'Never',
-            self::PREFER_NOT_TO_SAY => 'Prefer Not To Say',
+            self::ALWAYS => trans('enums.prayer_always'),
+            self::USUALLY => trans('enums.prayer_usually'),
+            self::SOMETIMES => trans('enums.prayer_sometimes'),
+            self::RARELY => trans('enums.prayer_rarely'),
+            self::NEVER => trans('enums.prayer_never'),
+            self::PREFER_NOT_TO_SAY => trans('enums.prayer_prefer_not_to_say'),
         };
     }
 }

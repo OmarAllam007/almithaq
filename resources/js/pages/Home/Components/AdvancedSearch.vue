@@ -1,49 +1,126 @@
 <script setup lang="ts">
 import noUiSlider from 'nouislider';
 import 'nouislider/dist/nouislider.css';
-import { onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { useLang } from '@/composables/useLang';
+import Select2Input from '@/components/Inputs/Select2Input.vue';
+const { trans } = useLang();
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
 
-const filters = ref({
-    nationality: '',
-    residence: '',
-    city: '',
-    ageMin: 18,
-    ageMax: 60,
-    marriage_status: '',
+interface Props {
+    countries?: Array<{ id: number; name: string; ar_name: string }>;
+    marriageStatuses?: Array<{ value: number; label: string }>;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    countries: () => [],
+    marriageStatuses: () => [],
 });
 
+const filters = ref({
+    nationality: '' as number | '',
+    residence: '' as number | '',
+    age_min: 18,
+    age_max: 60,
+    marriage_status: '' as number | '',
+});
+
+const countryOptions = computed(() =>
+    props.countries.map((c) => ({
+        value: c.id,
+        label: isRtl.value ? c.ar_name : c.name,
+    })),
+);
+
+const marriageStatusOptions = computed(() =>
+    props.marriageStatuses.map((s) => ({
+        value: s.value,
+        label: s.label,
+    })),
+);
+
+const parseCountryValue = (v: number | string): number | '' => (v === '' ? '' : Number(v));
+
 const ageSlider = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+const initializeAgeSlider = (): void => {
+    if (!ageSlider.value || ageSlider.value.noUiSlider || ageSlider.value.offsetWidth === 0) {
+        return;
+    }
+
+    noUiSlider.create(ageSlider.value, {
+        start: [filters.value.age_min, filters.value.age_max],
+        connect: true,
+        direction: isRtl.value ? 'rtl' : 'ltr',
+        range: { min: 18, max: 80 },
+        step: 1,
+    });
+
+    ageSlider.value.noUiSlider.on('update', (values: (string | number)[]) => {
+        filters.value.age_min = Math.round(Number(values[0]));
+        filters.value.age_max = Math.round(Number(values[1]));
+    });
+};
+
+const refreshAgeSlider = (): void => {
+    ageSlider.value?.noUiSlider?.set([filters.value.age_min, filters.value.age_max]);
+};
 
 onMounted(() => {
-    if (ageSlider.value) {
-        noUiSlider.create(ageSlider.value, {
-            start: [filters.value.ageMin, filters.value.ageMax],
-            connect: true,
-            range: {
-                min: 18,
-                max: 80,
-            },
-        });
+    nextTick(() => {
+        initializeAgeSlider();
 
-        ageSlider.value.noUiSlider?.on('update', (values: (string | number)[]) => {
-            filters.value.ageMin = Math.round(Number(values[0]));
-            filters.value.ageMax = Math.round(Number(values[1]));
-        });
-    }
+        if (!ageSlider.value?.noUiSlider && ageSlider.value) {
+            resizeObserver = new ResizeObserver(() => {
+                initializeAgeSlider();
+
+                if (ageSlider.value?.noUiSlider) {
+                    resizeObserver?.disconnect();
+                    resizeObserver = null;
+                    refreshAgeSlider();
+                }
+            });
+            resizeObserver.observe(ageSlider.value);
+        }
+
+        // Home page entrance animation is 500ms — recalculate handle positions once layout settles.
+        window.setTimeout(refreshAgeSlider, 550);
+    });
+});
+
+onUnmounted(() => {
+    resizeObserver?.disconnect();
+    ageSlider.value?.noUiSlider?.destroy();
 });
 
 const handleSearch = () => {
-    // Will be implemented when actual data is provided
-    console.log('Search filters:', filters.value);
+    const payload: Record<string, any> = {
+        age_min: filters.value.age_min,
+        age_max: filters.value.age_max,
+    };
+
+    if (filters.value.nationality !== '') {
+        payload.nationality = filters.value.nationality;
+    }
+    if (filters.value.residence !== '') {
+        payload.residence = filters.value.residence;
+    }
+    if (filters.value.marriage_status !== '') {
+        payload.marriage_status = filters.value.marriage_status;
+    }
+
+    router.get('/quick-search', payload);
 };
 
 const resetFilters = () => {
     filters.value = {
         nationality: '',
         residence: '',
-        city: '',
-        ageMin: 18,
-        ageMax: 60,
+        age_min: 18,
+        age_max: 60,
         marriage_status: '',
     };
 
@@ -54,111 +131,117 @@ const resetFilters = () => {
 </script>
 
 <template>
-    <div class="col-xl-12 mb-10">
-        <!--begin::Advanced Search Card-->
-        <div class="card card-flush h-xl-100">
-            <!--begin::Header-->
+    <div class="col-xl-12 mb-8">
+        <div class="card card-flush">
             <div class="card-header border-0 pt-5">
                 <h3 class="card-title align-items-start flex-column">
-                    <span class="card-label fw-bold text-gray-900">Advanced Search</span>
-                    <span class="fw-semibold fs-7 mt-1 text-gray-500">Find your perfect match</span>
+                    <span class="card-label fw-bold text-gray-900">{{ trans('home.quick_search') }}</span>
+                    <span class="fw-semibold fs-7 mt-1 text-gray-500">{{ trans('home.find_your_perfect_match') }}</span>
                 </h3>
             </div>
-            <!--end::Header-->
 
-            <!--begin::Body-->
-            <div class="card-body pt-5">
+            <div class="card-body pt-4">
                 <div class="row g-5">
-                    <!--begin::Nationality-->
-                    <div class="col-md-6 col-lg-4">
-                        <label class="form-label fw-semibold text-gray-700">Nationality</label>
-                        <select v-model="filters.nationality" class="form-select form-select-solid">
-                            <option value="">Select Nationality</option>
-                            <option value="saudi">Saudi Arabia</option>
-                            <option value="egypt">Egypt</option>
-                            <option value="jordan">Jordan</option>
-                            <option value="uae">United Arab Emirates</option>
-                            <option value="other">Other</option>
-                        </select>
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label fw-semibold text-gray-700">{{ trans('home.nationality') }}</label>
+                        <Select2Input
+                            :model-value="filters.nationality"
+                            :options="countryOptions"
+                            :placeholder="trans('home.all_nationalities')"
+                            @update:model-value="(v) => (filters.nationality = parseCountryValue(v))"
+                        />
                     </div>
-                    <!--end::Nationality-->
 
-                    <!--begin::Residence-->
-                    <div class="col-md-6 col-lg-4">
-                        <label class="form-label fw-semibold text-gray-700">Residence</label>
-                        <select v-model="filters.residence" class="form-select form-select-solid">
-                            <option value="">Select Residence</option>
-                            <option value="saudi">Saudi Arabia</option>
-                            <option value="egypt">Egypt</option>
-                            <option value="jordan">Jordan</option>
-                            <option value="uae">United Arab Emirates</option>
-                            <option value="other">Other</option>
-                        </select>
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label fw-semibold text-gray-700">{{ trans('home.residence') }}</label>
+                        <Select2Input
+                            :model-value="filters.residence"
+                            :options="countryOptions"
+                            :placeholder="trans('home.all_countries')"
+                            @update:model-value="(v) => (filters.residence = parseCountryValue(v))"
+                        />
                     </div>
-                    <!--end::Residence-->
 
-                    <!--begin::City-->
-                    <div class="col-md-6 col-lg-4">
-                        <label class="form-label fw-semibold text-gray-700">City</label>
-                        <select v-model="filters.city" class="form-select form-select-solid">
-                            <option value="">Select City</option>
-                            <option value="riyadh">Riyadh</option>
-                            <option value="jeddah">Jeddah</option>
-                            <option value="mecca">Mecca</option>
-                            <option value="medina">Medina</option>
-                            <option value="cairo">Cairo</option>
-                            <option value="other">Other</option>
-                        </select>
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label fw-semibold text-gray-700">{{ trans('home.marriage_status') }}</label>
+                        <Select2Input
+                            :model-value="filters.marriage_status"
+                            :options="marriageStatusOptions"
+                            :placeholder="trans('home.any_status')"
+                            @update:model-value="(v) => (filters.marriage_status = parseCountryValue(v))"
+                        />
                     </div>
-                    <!--end::City-->
 
-                    <!--begin::Marriage Status-->
-                    <div class="col-md-6 col-lg-4">
-                        <label class="form-label fw-semibold text-gray-700">Marriage Status</label>
-                        <select v-model="filters.marriage_status" class="form-select form-select-solid">
-                            <option value="">Select Status</option>
-                            <option value="single">Single</option>
-                            <option value="divorced">Divorced</option>
-                            <option value="widowed">Widowed</option>
-                        </select>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-gray-700">
+                            {{ trans('home.age_range') }}:
+                            <span class="text-gray-800 fw-bold">{{ filters.age_min }} – {{ filters.age_max }}</span>
+                        </label>
+                        <div ref="ageSlider" class=" mt-3 mb-2"></div>
                     </div>
-                    <!--end::Marriage Status-->
 
-                    <!--begin::Age Range-->
-                    <div class="col-md-12 col-lg-8">
-                        <label class="form-label fw-semibold text-gray-700">Age Range</label>
-                        <div ref="ageSlider" class="mb-5"></div>
-                        <div class="d-flex justify-content-between">
-                            <div class="fw-semibold text-gray-700">
-                                Min: <span class="text-gray-900">{{ filters.ageMin }}</span> years
-                            </div>
-                            <div class="fw-semibold text-gray-700">
-                                Max: <span class="text-gray-900">{{ filters.ageMax }}</span> years
-                            </div>
-                        </div>
-                    </div>
-                    <!--end::Age Range-->
-
-                    <!--begin::Search Button-->
                     <div class="col-12">
                         <div class="d-flex justify-content-end gap-3">
                             <button type="button" class="btn btn-light" @click="resetFilters">
                                 <i class="ki-outline ki-arrows-circle fs-2"></i>
-                                Reset Filters
+                                {{ trans('home.reset') }}
                             </button>
-                            <button type="button" class="btn btn-primary" @click="handleSearch">
-                                <i class="ki-outline ki-magnifier fs-2"></i>
-                                Search
+                            <button type="button" class="btn text-white" style="background-color:#d02e79;" @click="handleSearch">
+                                <i class="ki-outline ki-magnifier fs-2 text-white"></i>
+                                {{ trans('home.search') }}
                             </button>
                         </div>
                     </div>
-                    <!--end::Search Button-->
                 </div>
             </div>
-            <!--end::Body-->
         </div>
-        <!--end::Advanced Search Card-->
     </div>
 </template>
 
-<style scoped></style>
+<style>
+.advanced-search-slider {
+    --bs-component-active-bg: rgb(208, 46, 121);
+}
+
+.advanced-search-slider.noUi-target {
+    border: none;
+    box-shadow: none;
+    background: var(--bs-gray-200, #f1f1f4);
+    height: 6px;
+    border-radius: 3px;
+}
+
+.advanced-search-slider .noUi-connect {
+    background: rgb(208, 46, 121);
+    border-radius: 3px;
+}
+
+.advanced-search-slider.noUi-horizontal .noUi-handle {
+    border-radius: 50%;
+    background: rgb(208, 46, 121) !important;
+    border: 2.5px solid #fff !important;
+    box-shadow:
+        0 0 0 2px rgb(208, 46, 121),
+        0 2px 6px rgba(208, 46, 121, 0.35) !important;
+    width: 18px !important;
+    height: 18px !important;
+    top: -7px !important;
+    right: -9px !important;
+    cursor: grab;
+}
+
+.advanced-search-slider.noUi-horizontal .noUi-handle:active {
+    cursor: grabbing;
+    transform: scale(1.15);
+}
+
+[dir='rtl'] .advanced-search-slider.noUi-horizontal .noUi-handle {
+    right: auto !important;
+    left: -9px !important;
+}
+
+.advanced-search-slider .noUi-handle::before,
+.advanced-search-slider .noUi-handle::after {
+    display: none;
+}
+</style>

@@ -5,7 +5,15 @@ import axios from 'axios';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import MessageItem from './MessageItem.vue';
+import EmojiPicker from './EmojiPicker.vue';
 import { usePresenceStore } from '@/stores/useUserStore';
+import { useActiveChatStore } from '@/composables/useActiveChatStore';
+import { useUnreadConversations } from '@/composables/useUnreadConversations';
+import { useLang } from '@/composables/useLang';
+import { route } from 'ziggy-js';
+const { trans } = useLang();
+const { activeConversationId } = useActiveChatStore();
+const { markConversationRead } = useUnreadConversations();
 
 interface Message {
     id: number;
@@ -30,6 +38,8 @@ interface OtherUser {
     residence?: string | number;
     is_online: boolean;
     last_seen_at?: string;
+    profile_image?: string | null;
+    is_ignored?: boolean;
 }
 
 interface Props {
@@ -55,16 +65,40 @@ const conversationData = ref<{
     id: number;
     other_user: OtherUser;
 } | null>(null);
+const pendingRecipientId = ref<number | null>(null);
+const pendingOtherUser = ref<OtherUser | null>(null);
 
 const messagesContainer = ref<HTMLElement | null>(null);
+const messageInput = ref<HTMLTextAreaElement | null>(null);
+const showEmojiPicker = ref(false);
 
-const otherUser = computed(() => conversationData.value?.other_user);
+const toggleEmojiPicker = () => {
+    showEmojiPicker.value = !showEmojiPicker.value;
+};
+
+const insertEmoji = (emoji: string) => {
+    const textarea = messageInput.value;
+    if (!textarea) {
+        newMessage.value += emoji;
+        return;
+    }
+    const start = textarea.selectionStart ?? newMessage.value.length;
+    const end = textarea.selectionEnd ?? newMessage.value.length;
+    newMessage.value = newMessage.value.slice(0, start) + emoji + newMessage.value.slice(end);
+    nextTick(() => {
+        const pos = start + emoji.length;
+        textarea.setSelectionRange(pos, pos);
+        textarea.focus();
+    });
+};
+
+const otherUser = computed(() => conversationData.value?.other_user ?? pendingOtherUser.value);
 
 const isOnline = computed(() => otherUser?.value?.id ? usePresenceStore().isUserOnline(otherUser.value.id) : false);
 
 const lastSeenText = computed(() => {
     if (!otherUser.value?.last_seen_at) {
-        return 'Offline';
+        return trans('chat.offline');
     }
 
     const lastSeen = new Date(otherUser.value.last_seen_at);
@@ -72,15 +106,15 @@ const lastSeenText = computed(() => {
     const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000);
 
     if (diffMinutes < 1) {
-        return 'Just now';
+        return trans('chat.just_now');
     }
     if (diffMinutes < 60) {
-        return `${diffMinutes}m ago`;
+        return trans('chat.minutes_ago').replace(':count', String(diffMinutes));
     }
     if (diffMinutes < 1440) {
-        return `${Math.floor(diffMinutes / 60)}h ago`;
+        return trans('chat.hours_ago').replace(':count', String(Math.floor(diffMinutes / 60)));
     }
-    return `${Math.floor(diffMinutes / 1440)}d ago`;
+    return trans('chat.days_ago').replace(':count', String(Math.floor(diffMinutes / 1440)));
 });
 
 const scrollToBottom = () => {
@@ -100,25 +134,56 @@ const loadConversation = async () => {
 
     try {
         if (props.conversationId) {
-            // Load existing conversation
             const response = await axios.get(`/conversations/${props.conversationId}`);
             conversationData.value = response.data.conversation;
             messages.value = response.data.messages;
+
+            scrollToBottom();
+            nextTick(() => messageInput.value?.focus());
+
+            if (conversationData.value?.id) {
+                const hasUnread = messages.value.some(
+                    (msg) => !msg.is_read && msg.sender_id !== currentUser.value.id,
+                );
+                if (hasUnread) {
+                    axios.post(`/conversations/${conversationData.value.id}/mark-as-read`).catch(() => {});
+                    markConversationRead(conversationData.value.id);
+                }
+            }
         } else if (props.recipientId) {
-            // Create or get conversation with recipient
-            const createResponse = await axios.post('/conversations', {
-                recipient_id: props.recipientId,
-            });
+            // Check if a conversation already exists before creating one
+            const existingConvResponse = await axios.get('/conversations');
+            const existing = existingConvResponse.data.find(
+                (c: any) => c.other_user?.id === props.recipientId,
+            );
 
-            const conversationId = createResponse.data.conversation_id;
+            if (existing) {
+                // Load the existing conversation
+                const response = await axios.get(`/conversations/${existing.id}`);
+                conversationData.value = response.data.conversation;
+                messages.value = response.data.messages;
 
-            // Load the conversation
-            const response = await axios.get(`/conversations/${conversationId}`);
-            conversationData.value = response.data.conversation;
-            messages.value = response.data.messages;
+                scrollToBottom();
+                nextTick(() => messageInput.value?.focus());
+
+                if (conversationData.value?.id) {
+                    const hasUnread = messages.value.some(
+                        (msg) => !msg.is_read && msg.sender_id !== currentUser.value.id,
+                    );
+                    if (hasUnread) {
+                        axios.post(`/conversations/${conversationData.value.id}/mark-as-read`).catch(() => {});
+                        markConversationRead(conversationData.value.id);
+                    }
+                }
+            } else {
+                // No existing conversation — fetch user info and defer creation until first message
+                const userResponse = await axios.get(`/users/${props.recipientId}/chat-info`);
+                pendingOtherUser.value = userResponse.data;
+                pendingRecipientId.value = props.recipientId;
+                messages.value = [];
+                nextTick(() => messageInput.value?.focus());
+            }
         }
-
-        scrollToBottom();
     } catch (error) {
         console.error('Failed to load conversation:', error);
     } finally {
@@ -127,7 +192,10 @@ const loadConversation = async () => {
 };
 
 const sendMessage = async () => {
-    if (!newMessage.value.trim() || !conversationData.value || isSending.value) {
+    if (!newMessage.value.trim() || isSending.value) {
+        return;
+    }
+    if (!conversationData.value && !pendingRecipientId.value) {
         return;
     }
 
@@ -136,7 +204,21 @@ const sendMessage = async () => {
     isSending.value = true;
 
     try {
-        const response = await axios.post(`/conversations/${conversationData.value.id}/messages`, {
+        // Create conversation on first message if it doesn't exist yet
+        if (!conversationData.value && pendingRecipientId.value) {
+            const createResponse = await axios.post('/conversations', {
+                recipient_id: pendingRecipientId.value,
+            });
+            const conversationId = createResponse.data.conversation_id;
+            const convResponse = await axios.get(`/conversations/${conversationId}`);
+            conversationData.value = convResponse.data.conversation;
+            pendingRecipientId.value = null;
+            pendingOtherUser.value = null;
+            subscribeToChannel(conversationData.value.id);
+            activeConversationId.value = conversationData.value.id;
+        }
+
+        const response = await axios.post(`/conversations/${conversationData.value!.id}/messages`, {
             message: messageText,
         });
 
@@ -144,9 +226,10 @@ const sendMessage = async () => {
         scrollToBottom();
     } catch (error) {
         console.error('Failed to send message:', error);
-        newMessage.value = messageText; // Restore message on error
+        newMessage.value = messageText;
     } finally {
         isSending.value = false;
+        nextTick(() => messageInput.value?.focus());
     }
 };
 
@@ -154,7 +237,10 @@ const handleClose = () => {
     emit('close');
     messages.value = [];
     conversationData.value = null;
+    pendingRecipientId.value = null;
+    pendingOtherUser.value = null;
     newMessage.value = '';
+    showEmojiPicker.value = false;
 };
 
 // Track current Echo channel for cleanup
@@ -185,6 +271,9 @@ const subscribeToChannel = (conversationId: number) => {
         handleNewMessage(e);
     });
 
+    channel.listen('.MessagesRead', handleMessagesRead);
+    channel.listen('MessagesRead', handleMessagesRead);
+
     const handleTypingEvent = (e: any) => {
         if (e.typerId === currentUser.value.id) {
             return;
@@ -203,12 +292,26 @@ const subscribeToChannel = (conversationId: number) => {
     typingChannel.listen('UserTyping', handleTypingEvent);
 };
 
+const handleMessagesRead = (e: any) => {
+    if (e.readerId === currentUser.value.id) {
+        return;
+    }
+    messages.value.forEach((msg) => {
+        if (msg.sender_id === currentUser.value.id && !msg.is_read) {
+            msg.is_read = true;
+        }
+    });
+};
+
 const handleNewMessage = (e: any) => {
-    // Check if message already exists to avoid duplicates
     const messageExists = messages.value.some((msg) => msg.id === e.message.id);
     if (!messageExists) {
         messages.value.push(e.message);
         scrollToBottom();
+        // Auto-mark as read since the drawer is open
+        if (conversationData.value?.id && e.message.sender_id !== currentUser.value.id) {
+            axios.post(`/conversations/${conversationData.value.id}/mark-as-read`).catch(() => {});
+        }
     }
 };
 
@@ -249,10 +352,12 @@ watch(
             loadConversation().then(() => {
                 if (conversationData.value?.id) {
                     subscribeToChannel(conversationData.value.id);
+                    activeConversationId.value = conversationData.value.id;
                 }
             });
         } else {
             unsubscribeFromChannel();
+            activeConversationId.value = null;
         }
     },
 );
@@ -289,26 +394,26 @@ watch(
                     <div v-if="otherUser" class="d-flex align-items-center flex-grow-1 gap-3">
                         <div class="position-relative">
                             <div class="symbol symbol-45px">
-                                <img src="/assets/media/avatars/300-1.jpg" :alt="otherUser.username" class="rounded-circle" />
+                                <img
+                                    :src="otherUser.profile_image || '/assets/media/auth/no-image-for-user.png'"
+                                    :alt="otherUser.username"
+                                    class="rounded-circle"
+                                    @error="($event.target as HTMLImageElement).src = '/assets/media/auth/no-image-for-user.png'"
+                                />
                             </div>
                             <div
-                                :class="[
-                                    'position-absolute rounded-circle border border-2 border-white',
-                                    'h-10px w-10px',
-                                    'translate-middle',
-                                    'start-100 top-100',
-                                    isOnline ? 'bg-success' : 'bg-secondary',
-                                ]"
+                                :class="['position-absolute rounded-circle border border-2 border-white h-10px w-10px', isOnline ? 'bg-success' : 'bg-secondary']"
+                                style="bottom: 0; right: 0"
                             ></div>
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="fw-bold mb-0 text-gray-900">{{ otherUser.username }}</h5>
                             <Transition name="typing-status" mode="out-in">
                                 <span v-if="otherUserTyping" class="text-primary fs-7 fw-semibold">
-                                    Typing<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
+                                    {{ trans('chat.typing') }}<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
                                 </span>
                                 <span v-else class="text-muted fs-7">
-                                    {{ isOnline ? 'Online' : lastSeenText }}
+                                    {{ isOnline ? trans('chat.online') : lastSeenText }}
                                 </span>
                             </Transition>
                         </div>
@@ -324,18 +429,48 @@ watch(
                 </div>
             </div>
 
+            <!-- Blocked state when other user is ignored -->
+            <template v-if="otherUser?.is_ignored">
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-6 py-10 text-center" style="background-color: #f9f9f9; gap: 16px;">
+                    <div class="cd-blocked-icon">
+                        <i class="ki-outline ki-eye-slash"></i>
+                    </div>
+                    <div>
+                        <p class="fw-bold text-gray-800 fs-5 mb-1">{{ trans('chat.you_blocked_this_user') }}</p>
+                        <p class="text-muted fs-7 mb-0">{{ trans('chat.unblock_to_message') }}</p>
+                    </div>
+                    <a
+                        :href="route('my-interactions') + '?tab=ignored'"
+                        class="cd-unblock-btn"
+                    >
+                        <i class="ki-outline ki-eye fs-6"></i>
+                        {{ trans('chat.go_to_ignored_list') }}
+                    </a>
+                </div>
+            </template>
+
+            <!-- Normal chat when not ignored -->
+            <template v-else>
+            <!-- Pinned safety notice -->
+            <div class="cd-safety-notice d-flex align-items-start gap-2 px-4 py-3 border-bottom">
+                <i class="ki-outline ki-shield-tick fs-5 text-warning mt-1 flex-shrink-0"></i>
+                <p class="mb-0 fs-7 text-gray-600 lh-sm font-bold">
+                    {{ trans('chat.safety_notice') }}
+                </p>
+            </div>
+
             <!-- Messages Container -->
             <div ref="messagesContainer" class="flex-grow-1 overflow-auto px-6 py-4" style="background-color: #f9f9f9">
                 <div v-if="isLoading" class="d-flex justify-content-center align-items-center h-100">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                        <span class="visually-hidden">{{ trans('chat.loading') }}</span>
                     </div>
                 </div>
 
                 <div v-else-if="messages.length === 0" class="d-flex justify-content-center align-items-center h-100">
                     <div class="text-muted text-center">
                         <i class="ki-outline ki-message-text fs-3x mb-3"></i>
-                        <p>No messages yet. Start the conversation!</p>
+                        <p>{{ trans('chat.no_messages_yet') }}</p>
                     </div>
                 </div>
 
@@ -357,12 +492,29 @@ watch(
 
             <!-- Message Input -->
             <div class="border-top bg-white px-6 py-4">
-                <form @submit.prevent="sendMessage" class="d-flex gap-2">
+                <form @submit.prevent="sendMessage" class="d-flex gap-2 align-items-end">
+                    <div class="cd-emoji-wrap">
+                        <button
+                            type="button"
+                            class="cd-emoji-btn"
+                            :class="{ 'cd-emoji-btn--active': showEmojiPicker }"
+                            @click="toggleEmojiPicker"
+                            :title="'Emoji'"
+                        >😊</button>
+                        <Transition name="ep-pop">
+                            <EmojiPicker
+                                v-if="showEmojiPicker"
+                                @select="(e) => { insertEmoji(e); showEmojiPicker = false; }"
+                                @close="showEmojiPicker = false"
+                            />
+                        </Transition>
+                    </div>
                     <div class="flex-grow-1">
                         <textarea
+                            ref="messageInput"
                             v-model="newMessage"
                             @keydown.enter.exact.prevent="sendMessage"
-                            placeholder="Type a message..."
+                            :placeholder="trans('chat.type_a_message')"
                             rows="1"
                             class="form-control form-control-flush resize-none"
                             :disabled="isSending || isLoading"
@@ -373,13 +525,14 @@ watch(
                         type="submit"
                         :disabled="!newMessage.trim() || isSending || isLoading"
                         class="btn btn-primary btn-icon"
-                        title="Send message"
+                        :title="trans('chat.send_message')"
                     >
                         <i v-if="!isSending" class="ki-outline ki-send fs-2"></i>
                         <span v-else class="spinner-border spinner-border-sm" role="status"></span>
                     </button>
                 </form>
             </div>
+            </template>
         </div>
     </Transition>
 </template>
@@ -502,7 +655,104 @@ watch(
     opacity: 0;
 }
 
-/* Typing bubble transition */
+/* ─── Safety notice ─────────────────────────────────────── */
+.cd-safety-notice {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    font-size: 0.76rem;
+}
+
+/* ─── Blocked state ──────────────────────────────────────── */
+.cd-blocked-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255, 64, 64, 0.09);
+    border: 2px solid rgba(255, 64, 64, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: #e03333;
+    box-shadow: 0 0 0 8px rgba(255, 64, 64, 0.05);
+    animation: cd-pulse-ring 2.4s ease-in-out infinite;
+}
+
+@keyframes cd-pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 8px rgba(255, 64, 64, 0.05); }
+    50%       { box-shadow: 0 0 0 14px rgba(255, 64, 64, 0.0); }
+}
+
+.cd-unblock-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    border-radius: 12px;
+    background: rgba(255, 64, 64, 0.08);
+    border: 1px solid rgba(255, 64, 64, 0.24);
+    color: #cc2020;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cd-unblock-btn:hover {
+    background: rgba(255, 64, 64, 0.15);
+    border-color: rgba(255, 64, 64, 0.45);
+    box-shadow: 0 4px 14px rgba(200, 30, 30, 0.18);
+    color: #aa1010;
+}
+
+/* ─── Emoji button & wrapper ─────────────────────────────── */
+.cd-emoji-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.cd-emoji-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s, border-color 0.18s, transform 0.18s;
+    padding: 0;
+}
+
+.cd-emoji-btn:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: scale(1.1);
+}
+
+.cd-emoji-btn--active {
+    background: #ede9fe;
+    border-color: #a78bfa;
+}
+
+/* Picker pop-in transition */
+.ep-pop-enter-active {
+    transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ep-pop-leave-active {
+    transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.ep-pop-enter-from,
+.ep-pop-leave-to {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+}
+
+/* ─── Typing bubble transition ───────────────────────────── */
 .typing-bubble-enter-active {
     transition: all 0.3s ease-out;
 }

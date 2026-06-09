@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { Link, usePage, router } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import { useLang } from '@/composables/useLang';
+import { useNotificationCount } from '@/composables/useNotificationCount';
+import UserProfileModal from '@/components/UserProfileModal.vue';
+import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
+const { trans } = useLang();
+const { unreadCount } = useNotificationCount();
 
 const page = usePage();
 const isRtl = computed(() => page.props.locale === 'ar');
@@ -12,28 +18,38 @@ const drawerDirection = computed(() => isRtl.value ? 'start' : 'end');
 interface Notification {
     id: number;
     type: string;
+    label: string;
     actor: { id: number; username: string; profile_image: string | null } | null;
     data: Record<string, any> | null;
     read_at: string | null;
     created_at: string;
 }
 
-const unreadCount = ref(0);
+
 const notifications = ref<Notification[]>([]);
 const showNotifications = ref(false);
 const loadingNotifications = ref(false);
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-const notificationMeta: Record<string, { icon: string; label: string; color: string }> = {
-    like: { icon: 'ki-outline ki-heart fs-3', label: 'liked you', color: 'text-danger' },
-    ignore: { icon: 'ki-outline ki-eye-slash fs-3', label: 'ignored you', color: 'text-warning' },
-    profile_visit: { icon: 'ki-outline ki-eye fs-3', label: 'visited your profile', color: 'text-info' },
-    new_message: { icon: 'ki-outline ki-sms fs-3', label: 'sent you a message', color: 'text-primary' },
-    subscription_renewed: { icon: 'ki-outline ki-verify fs-3', label: 'Subscription renewed!', color: 'text-success' },
+// Profile modal state
+const profileModalOpen = ref(false);
+const profileModalUserId = ref<number | undefined>(undefined);
+
+// Chat drawer state
+const chatDrawerOpen = ref(false);
+const chatConversationId = ref<number | undefined>(undefined);
+const chatRecipientId = ref<number | undefined>(undefined);
+
+const notificationMeta: Record<string, { icon: string; color: string }> = {
+    like: { icon: 'ki-outline ki-heart fs-3', color: 'text-danger' },
+    ignore: { icon: 'ki-outline ki-eye-slash fs-3', color: 'text-warning' },
+    profile_visit: { icon: 'ki-outline ki-eye fs-3', color: 'text-info' },
+    new_message: { icon: 'ki-outline ki-sms fs-3', color: 'text-primary' },
+    subscription_renewed: { icon: 'ki-outline ki-verify fs-3', color: 'text-success' },
 };
 
 function getMeta(type: string) {
-    return notificationMeta[type] || { icon: 'ki-outline ki-notification-on fs-3', label: type, color: 'text-muted' };
+    return notificationMeta[type] || { icon: 'ki-outline ki-notification-on fs-3', color: 'text-muted' };
 }
 
 async function fetchUnreadCount() {
@@ -79,14 +95,15 @@ async function markAsRead(notification: any) {
         }
     }
 
-    // Navigate to actor profile if there's an actor
-    if (notification.actor?.id) {
-        if (notification.type === 'new_message' && notification.data?.conversation_id) {
-            router.visit(route('conversations.show', { conversation: notification.data.conversation_id }));
-        } else {
-            router.visit(route('users.show', { user: notification.actor.id }));
-        }
-        closeDropdown();
+    closeDropdown();
+
+    if (notification.type === 'new_message') {
+        chatConversationId.value = notification.data?.conversation_id;
+        chatRecipientId.value = notification.actor?.id;
+        chatDrawerOpen.value = true;
+    } else if (notification.actor?.id) {
+        profileModalUserId.value = notification.actor.id;
+        profileModalOpen.value = true;
     }
 }
 
@@ -139,7 +156,7 @@ onUnmounted(() => {
                             v-if="!$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
-                                <span class="menu-title">Sign up</span>
+                                <span class="menu-title">{{ trans('home.sign-in-head-link') }}</span>
                                 <span class="menu-arrow d-lg-none"></span>
                             </span>
                             <!--end:Menu link-->
@@ -151,7 +168,7 @@ onUnmounted(() => {
                             v-if="!$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
-                                <span class="menu-title">Login</span>
+                                <span class="menu-title">{{ trans('home.sign-in-title') }}</span>
                                 <span class="menu-arrow d-lg-none"></span>
                             </span>
                             <!--end:Menu link-->
@@ -164,7 +181,7 @@ onUnmounted(() => {
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-title"> <i class="fa fa-home fs-4 me-1 text-hover-primary"></i>
-                                    Home</span>
+                                    {{ trans('home.home') }}</span>
                             </span>
                             <!--end:Menu link-->
                         </Link>
@@ -177,7 +194,7 @@ onUnmounted(() => {
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-title"> <i class="fa fa-users fs-4 me-1 text-hover-primary"></i>
-                                    Online Members</span>
+                                    {{ trans('home.online-members') }}</span>
                             </span>
                             <!--end:Menu link-->
                         </Link>
@@ -190,20 +207,20 @@ onUnmounted(() => {
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-title"> <i class="fa fa-users-rays fs-4 me-1 text-hover-primary"></i>
-                                    New Members</span>
+                                    {{ trans('home.new-members') }}</span>
                             </span>
                             <!--end:Menu link-->
                         </Link>
                         <!--end:Menu item-->
 
                         <!--begin:Menu item-->
-                        <Link :href="route('signup')" data-kt-menu-placement="bottom-start"
+                        <Link :href="route('smart-search.index')" data-kt-menu-placement="bottom-start"
                             class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
                             v-if="$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-title"> <i class="fa fa-search fs-4 me-1 text-hover-primary"></i>
-                                    Search</span>
+                                    {{ trans('home.search') }}</span>
                             </span>
                             <!--end:Menu link-->
                         </Link>
@@ -221,9 +238,9 @@ onUnmounted(() => {
                     </div>
                     <!--end::Logo wrapper-->
                     <!--begin::Logo image-->
-                    <a href="index.html" class="d-flex d-lg-none">
-                        <img alt="Logo" src="assets/media/logos/demo23.svg" class="h-20px theme-light-show" />
-                        <img alt="Logo" src="assets/media/logos/demo23-dark.svg" class="h-20px theme-dark-show" />
+                    <a href="/" class="d-flex d-lg-none">
+                        <img alt="Logo" src="assets/media/logos/logo.png" class="h-20px theme-light-show" />
+                        <img alt="Logo" src="assets/media/logos/logo.png" class="h-20px theme-dark-show" />
                     </a>
                     <!--end::Logo image-->
                 </div>
@@ -237,8 +254,8 @@ onUnmounted(() => {
                             @click.stop="toggleDropdown">
                             <i class="ki-outline ki-notification-on fs-1"></i>
                             <span v-if="unreadCount > 0"
-                                class="position-absolute top-0 start-100 translate-middle badge badge-circle badge-sm bg-danger"
-                                style="font-size: 10px; min-width: 16px; min-height: 16px;">
+                                class="position-absolute badge badge-circle badge-sm bg-danger"
+                                style="font-size: 10px; min-width: 16px; min-height: 16px; top: 0; right: 0; transform: translate(40%, -40%);">
                                 {{ unreadCount > 99 ? '99+' : unreadCount }}
                             </span>
                         </div>
@@ -248,10 +265,10 @@ onUnmounted(() => {
                             :style="{ top: '50px', [isRtl ? 'left' : 'right']: '0', width: '340px', maxHeight: '420px', zIndex: 1050 }">
                             <!--header-->
                             <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
-                                <h6 class="mb-0 fw-bold text-gray-800">Notifications</h6>
+                                <h6 class="mb-0 fw-bold text-gray-800">{{ trans('home.notifications') }}</h6>
                                 <button v-if="unreadCount > 0" class="btn btn-sm btn-light-primary py-1 px-3"
                                     @click.stop="markAllAsRead">
-                                    Mark all read
+                                    {{ trans('home.mark_all_read') }}
                                 </button>
                             </div>
 
@@ -262,7 +279,7 @@ onUnmounted(() => {
                                 </div>
 
                                 <div v-else-if="notifications.length === 0" class="text-center py-5 text-muted fs-7">
-                                    No notifications yet
+                                    {{ trans('home.no_notifications_yet') }}
                                 </div>
 
                                 <template v-else>
@@ -277,7 +294,7 @@ onUnmounted(() => {
                                         <div class="flex-grow-1 min-w-0">
                                             <div class="fs-7 text-gray-800">
                                                 <span class="fw-bold" v-if="n.actor">{{ n.actor.username }}</span>
-                                                <span> {{ getMeta(n.type).label }}</span>
+                                                <span class="mx-1"> {{ n.label }}</span>
                                             </div>
                                             <div class="text-muted fs-8 mt-1">{{ n.created_at }}</div>
                                         </div>
@@ -313,6 +330,19 @@ onUnmounted(() => {
     <!--click-away overlay to close notifications-->
     <div v-if="showNotifications" class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1040;"
         @click="closeDropdown"></div>
+
+    <UserProfileModal
+        :is-open="profileModalOpen"
+        :user-id="profileModalUserId"
+        @close="profileModalOpen = false"
+    />
+
+    <ChatDrawer
+        :is-open="chatDrawerOpen"
+        :conversation-id="chatConversationId"
+        :recipient-id="chatRecipientId"
+        @close="chatDrawerOpen = false; chatConversationId = undefined; chatRecipientId = undefined"
+    />
 </template>
 
 <style scoped>

@@ -8,28 +8,27 @@ use App\Models\Enums\DevotionType;
 use App\Models\Enums\EducationLevel;
 use App\Models\Enums\FinancialStatus;
 use App\Models\Enums\MarriageStatus;
+use App\Models\Enums\MarriageType;
 use App\Models\Enums\PrayerType;
 use App\Models\Enums\SkinColor;
 use App\Services\SmartSearchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class SmartSearchController extends Controller
 {
-    public function index(Request $request, SmartSearchService $searchService)
+    public function index(SmartSearchService $searchService)
     {
+        // dd($searchService);
         $cachedFilters = $searchService->getCachedFilters();
         $users = null;
 
-        // If there are cached filters, perform the search (for pagination)
-        if ($cachedFilters && $request->has('page')) {
+        if ($cachedFilters) {
             $users = $searchService->search($cachedFilters);
-        } elseif ($cachedFilters) {
-            // Show filters by default even if we have cached filters
-            $users = null;
         }
 
-        $countries = Country::select(['id', 'name', 'ar_name'])->get();
+        $countries = Country::select(['id', 'name', 'ar_name'])->orderByDesc('is_arab')->orderBy('name')->get();
 
         return Inertia::render('SmartSearch/Index', [
             'users' => $users,
@@ -41,10 +40,15 @@ class SmartSearchController extends Controller
 
     public function search(Request $request, SmartSearchService $searchService)
     {
+        if ($request->isMethod('get')) {
+            return redirect()->route('smart-search.index');
+        }
+        // dd($request->all());
         $filters = $request->only([
             'residence',
             'nationality',
             'marriage_status',
+            'marriage_type',
             'age_min',
             'age_max',
             'body_shape',
@@ -71,7 +75,7 @@ class SmartSearchController extends Controller
         // Perform search
         $users = $searchService->search($filters);
 
-        $countries = Country::select(['id', 'name', 'ar_name'])->get();
+        $countries = Country::select(['id', 'name', 'ar_name'])->orderByDesc('is_arab')->orderBy('name')->get();
 
         return Inertia::render('SmartSearch/Index', [
             'users' => $users,
@@ -88,10 +92,23 @@ class SmartSearchController extends Controller
         return redirect()->route('smart-search.index');
     }
 
-    private function getFilterOptions()
+    private function getFilterOptions(): array
     {
+        // Labels should match the profiles being searched (opposite gender of current user)
+        $isBrowsingMaleProfiles = Auth::user()->registration_type === 2;
+
+        $availableStatuses = [MarriageStatus::SINGLE, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED];
+
+        $availableMarriageTypes = $isBrowsingMaleProfiles
+            ? [MarriageType::FIRST_WIFE, MarriageType::SECOND_WIFE, MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY]
+            : [MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
+
         return [
-            'marriage_statuses' => collect(MarriageStatus::cases())->map(fn ($case) => [
+            'marriage_statuses' => collect($availableStatuses)->map(fn ($case) => [
+                'value' => $case->value,
+                'label' => $case->labelForGender($isBrowsingMaleProfiles),
+            ])->values(),
+            'marriage_types' => collect($availableMarriageTypes)->map(fn ($case) => [
                 'value' => $case->value,
                 'label' => $case->label(),
             ])->values(),
@@ -120,8 +137,8 @@ class SmartSearchController extends Controller
                 'label' => $case->label(),
             ])->values(),
             'smoking_options' => [
-                ['value' => 0, 'label' => 'Non-Smoker'],
-                ['value' => 1, 'label' => 'Smoker'],
+                ['value' => 0, 'label' => trans('smart.non_smoker')],
+                ['value' => 1, 'label' => trans('smart.smoker')],
             ],
         ];
     }

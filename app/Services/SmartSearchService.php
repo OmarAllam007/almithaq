@@ -2,15 +2,21 @@
 
 namespace App\Services;
 
+use App\Models\Enums\MarriageStatus;
+use App\Models\Enums\MarriageType;
+use App\Models\ImageRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 
 class SmartSearchService
 {
     public function search(array $filters)
     {
+        $currentUser = auth()->user();
+        $oppositeType = $currentUser->registration_type === 1 ? 2 : 1;
+
         $query = User::query()
-            ->where('id', '!=', auth()->id())
+            ->where('id', '!=', $currentUser->id)
+            ->where('registration_type', $oppositeType)
             ->with('mainProfileImage');
 
         // Residence filter (multi-select)
@@ -26,6 +32,11 @@ class SmartSearchService
         // Marriage status filter (checkboxes)
         if (! empty($filters['marriage_status'])) {
             $query->whereIn('marriage_status', $filters['marriage_status']);
+        }
+
+        // Marriage type filter (checkboxes)
+        if (! empty($filters['marriage_type'])) {
+            $query->whereIn('marriage_type', $filters['marriage_type']);
         }
 
         // Age range filter (slider)
@@ -87,34 +98,50 @@ class SmartSearchService
             $query->whereIn('smoking', $filters['smoking']);
         }
 
-        return $query->paginate(20)
-            ->through(function (User $user) {
-                return [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'age' => $user->age,
-                    'nationality' => $user->nationality,
-                    'residence' => $user->residence,
-                    'marriage_status' => $user->marriage_status,
-                    'mainProfileImage' => $user->mainProfileImage()->first()->image_path ?? null,
-                    'is_online' => $user->is_online,
-                    'is_favorited' => $user->isFavoritedBy(auth()->id()),
-                ];
-            });
+        $paginator = $query->paginate(20);
+        $userIds = $paginator->pluck('id')->all();
+        $currentUserId = $currentUser->id;
+        $viewableIds = ImageRequest::approvedViewersOf($currentUserId, $userIds);
+
+        return $paginator->through(function (User $user) use ($currentUserId, $viewableIds) {
+            $canViewImages = isset($viewableIds[$user->id]);
+            $image = $user->mainProfileImage->first();
+
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'age' => $user->age,
+                'nationality' => $user->nationality,
+                'residence' => $user->residence,
+                'marriage_status' => $user->marriage_status,
+                'mainProfileImage' => $canViewImages
+                    ? ($image?->original_url ?? $image?->thumbnail_url)
+                    : $image?->thumbnail_url,
+                'can_view_images' => $canViewImages,
+                'is_online' => $user->is_online,
+                'is_favorited' => $user->isFavoritedBy($currentUserId),
+                'is_ignored' => $user->isIgnored($currentUserId),
+                'is_verified' => (bool) $user->is_verified,
+                'is_subscriber' => $user->hasActiveSubscription(),
+                'registration_type' => $user->registration_type,
+                'marriage_status_label' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_type_label' => MarriageType::tryFrom($user->marriage_type)?->label(),
+            ];
+        });
     }
 
-    public function getCachedFilters()
+    public function getCachedFilters(): ?array
     {
-        return Cache::get('smart_search_filters_'.auth()->id());
+        return auth()->user()?->smart_search_filters;
     }
 
-    public function cacheFilters(array $filters)
+    public function cacheFilters(array $filters): void
     {
-        Cache::put('smart_search_filters_'.auth()->id(), $filters, now()->addDays(30));
+        auth()->user()->update(['smart_search_filters' => $filters]);
     }
 
-    public function clearCachedFilters()
+    public function clearCachedFilters(): void
     {
-        Cache::forget('smart_search_filters_'.auth()->id());
+        auth()->user()->update(['smart_search_filters' => null]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessagesRead;
 use App\Models\Conversation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,12 +49,17 @@ class ConversationController extends Controller
         $messages = $conversation->messages()->with('sender')->get();
 
         // Mark messages as read
-        $conversation->messages()
+        $updated = $conversation->messages()
             ->where('sender_id', '!=', $user->id)
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
+        if ($updated > 0) {
+            broadcast(new MessagesRead($conversation->id, $user->id))->toOthers();
+        }
+
         $otherUser = $conversation->getOtherUser($user->id);
+        $otherUser->load('mainProfileImage');
 
         return response()->json([
             'conversation' => [
@@ -67,6 +73,8 @@ class ConversationController extends Controller
                     'residence' => $otherUser->residence,
                     'is_online' => $otherUser->isOnline(),
                     'last_seen_at' => $otherUser->last_seen_at,
+                    'profile_image' => $otherUser->mainProfileImage->first()?->thumbnail_url,
+                    'is_ignored' => $otherUser->isIgnored($user->id),
                 ],
             ],
             'messages' => $messages,

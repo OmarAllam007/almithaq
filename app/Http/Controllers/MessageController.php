@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
+use App\Events\MessagesRead;
 use App\Events\UserTyping;
 use App\Models\Conversation;
 use App\Models\Message;
@@ -67,10 +68,14 @@ class MessageController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $conversation->messages()
+        $updated = $conversation->messages()
             ->where('sender_id', '!=', $user->id)
             ->where('is_read', false)
             ->update(['is_read' => true]);
+
+        if ($updated > 0) {
+            broadcast(new MessagesRead($conversation->id, $user->id))->toOthers();
+        }
 
         return response()->json(['success' => true]);
     }

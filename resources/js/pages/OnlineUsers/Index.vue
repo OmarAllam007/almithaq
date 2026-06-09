@@ -5,8 +5,11 @@ import UserCard from '@/components/UserCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import UserProfileModal from '@/components/UserProfileModal.vue';
+import GoogleAd from '@/components/GoogleAd.vue';
 import { PaginationData } from '@/types/pagination';
 import axios from 'axios';
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
 
 interface User {
     id: number;
@@ -117,14 +120,14 @@ watch([selectedNationality, selectedResidence], () => {
                                 <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
                                     <div class="d-flex flex-column">
                                         <div class="d-flex align-items-center mb-1">
-                                            <span class="text-gray-900 fs-2 fw-bold me-3">Online Members</span>
+                                            <span class="text-gray-900 fs-2 fw-bold me-3">{{ trans('online.online_members') }}</span>
                                             <span class="badge badge-success fs-7">
                                                 <i class="ki-outline ki-abstract-26 fs-6 text-white me-1"></i>
-                                                {{ totalOnline }} Online
+                                                {{ totalOnline }} {{ trans('online.online') }}
                                             </span>
                                         </div>
                                         <div class="d-flex flex-wrap fw-semibold mb-4 fs-5 text-gray-500">
-                                            Members currently active on the platform
+                                            {{ trans('online.members_currently_active_on_the_platform') }}
                                         </div>
                                     </div>
                                 </div>
@@ -137,13 +140,13 @@ watch([selectedNationality, selectedResidence], () => {
                                 <li class="nav-item">
                                     <div class="d-flex align-items-center gap-3 px-3">
                                         <div class="d-flex align-items-center gap-2">
-                                            <label class="form-label mb-0 text-nowrap">Nationality:</label>
+                                            <label class="form-label mb-0 text-nowrap">{{ trans('online.nationality') }}:</label>
                                             <select
                                                 v-model="selectedNationality"
                                                 class="form-select form-select-sm"
                                                 style="min-width: 150px"
                                             >
-                                                <option :value="undefined">All</option>
+                                                <option :value="undefined">{{ trans('online.all') }}</option>
                                                 <option
                                                     v-for="country in countries"
                                                     :key="country.id"
@@ -155,13 +158,13 @@ watch([selectedNationality, selectedResidence], () => {
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2">
-                                            <label class="form-label mb-0 text-nowrap">Residence:</label>
+                                            <label class="form-label mb-0 text-nowrap">{{ trans('online.residence') }}:</label>
                                             <select
                                                 v-model="selectedResidence"
                                                 class="form-select form-select-sm"
                                                 style="min-width: 150px"
                                             >
-                                                <option :value="undefined">All</option>
+                                                <option :value="undefined">{{ trans('online.all') }}</option>
                                                 <option
                                                     v-for="country in countries"
                                                     :key="country.id"
@@ -178,7 +181,7 @@ watch([selectedNationality, selectedResidence], () => {
                                             class="btn btn-sm btn-light-primary"
                                         >
                                             <i class="ki-outline ki-cross fs-3"></i>
-                                            Clear Filters
+                                            {{ trans('online.clear_filters') }}
                                         </button>
                                     </div>
                                 </li>
@@ -187,12 +190,17 @@ watch([selectedNationality, selectedResidence], () => {
                     </div>
                 </div>
 
+                <!-- Ad: between filter and user grid -->
+                <div class="mb-6">
+                    <GoogleAd slot-id="ONLINE_MEMBERS_TOP" format="horizontal" />
+                </div>
+
                 <!-- Users Grid -->
                 <div v-if="users.data.length > 0" class="row g-6 g-xl-9 mb-6 mb-xl-9">
                     <div
                         v-for="user in users.data"
                         :key="user.id"
-                        class="col-md-6 col-xl-4"
+                        class="col-md-6 col-xl-3"
                     >
                         <UserCard
                             :user="user"
@@ -209,13 +217,13 @@ watch([selectedNationality, selectedResidence], () => {
                         <div class="mb-10">
                             <i class="ki-outline ki-abstract-26 fs-5x text-gray-400"></i>
                         </div>
-                        <h3 class="text-gray-800 mb-3">No Online Members</h3>
+                        <h3 class="text-gray-800 mb-3">{{ trans('online.no_members_found') }}</h3>
                         <p class="text-gray-600 fs-5">
                             <template v-if="selectedNationality || selectedResidence">
-                                No members matching your filters are currently online.
+                                {{ trans('online.no_members_matching_your_filters_are_currently_online') }}
                             </template>
                             <template v-else>
-                                There are no other members online at the moment. Check back later!
+                                {{ trans('online.there_are_no_other_members_online_at_the_moment_check_back_later') }}
                             </template>
                         </p>
                         <button
@@ -223,7 +231,7 @@ watch([selectedNationality, selectedResidence], () => {
                             @click="resetFilters"
                             class="btn btn-primary mt-5"
                         >
-                            Clear Filters
+                            {{ trans('online.clear_filters') }}
                         </button>
                     </div>
                 </div>

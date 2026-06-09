@@ -1,4 +1,5 @@
 <?php
+
 return [
     'inbox' => 'الرسائل',
     'My Profile' => 'حسابي',
@@ -6,4 +7,34 @@ return [
     'My Projects' => 'مشاريعي',
     'My Subscription' => 'اشتراكي',
     'Payments' => 'المدفوعات',
+    'Mode' => 'الوضع',
+    'Light' => 'الوضع الفاتح',
+    'Dark' => 'الوضع الداكن',
+    'System' => 'الوضع المنظم',
+    'Language' => 'اللغة',
+    'Arabic' => 'العربية',
+    'English' => 'English',
+
+    'Account Settings' => 'إعدادات الحساب',
+    'Who Liked Me' => 'من أعجب بي',
+    'Who Visit Me?' => 'من زارني',
+    'Like and Ignore List' => 'قائمة الإعجاب والحظر',
+    'Smart Search' => 'البحث الذكي',
+    'Logout' => 'تسجيل الخروج',
+    'Logout Confirm' => 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+    'Cancel' => 'إلغاء',
+
+    'Home' => 'الرئيسية',
+    'Members' => 'الأعضاء',
+    'All Members' => 'جميع الأعضاء',
+    'Online' => 'المتصلون',
+    'New Members' => 'الأعضاء الجدد',
+    'VIP Search' => 'بحث VIP',
+    'Search' => 'بحث',
+    'Profile' => 'حسابي',
+
+    'pagination_showing' => 'عرض {from} إلى {to} من أصل {total}',
+    'Previous' => 'السابق',
+    'Next' => 'التالي',
+    'Image Requests' => 'طلبات الصور',
 ];

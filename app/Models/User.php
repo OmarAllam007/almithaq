@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Redis;
 
 class User extends Authenticatable
 {
@@ -21,8 +22,9 @@ class User extends Authenticatable
         'height', 'skin_color', 'body_shape', 'devotion', 'prayer', 'smoking',
         'beard', 'education_level', 'financial_status', 'field_of_work', 'job',
         'monthly_income', 'health_status', 'about_partner', 'about_self',
-        'full_name', 'phone_number', 'last_seen_at', 'is_active', 'profile_completed',
-        'is_admin', 'is_verified', 'verification_video_path', ];
+        'full_name', 'country_code', 'phone_number', 'last_seen_at', 'is_active',
+        'profile_completed', 'is_admin', 'is_verified', 'verification_video_path',
+        'smart_search_filters', ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -48,11 +50,13 @@ class User extends Authenticatable
             'child_count' => 'integer',
             'weight' => 'decimal:2',
             'height' => 'decimal:2',
-            'monthly_income' => 'decimal:2',
+            'monthly_income' => 'integer',
             'last_seen_at' => 'datetime',
+            'registration_type' => 'integer',
             'profile_completed' => 'boolean',
             'is_admin' => 'boolean',
             'is_verified' => 'boolean',
+            'smart_search_filters' => 'array',
         ];
     }
 
@@ -84,46 +88,46 @@ class User extends Authenticatable
 
     public function conversationsAsUserOne(): HasMany
     {
-        return $this->hasMany(Conversation::class , 'user_one_id');
+        return $this->hasMany(Conversation::class, 'user_one_id');
     }
 
     public function conversationsAsUserTwo(): HasMany
     {
-        return $this->hasMany(Conversation::class , 'user_two_id');
+        return $this->hasMany(Conversation::class, 'user_two_id');
     }
 
     public function sentMessages(): HasMany
     {
-        return $this->hasMany(Message::class , 'sender_id');
+        return $this->hasMany(Message::class, 'sender_id');
     }
 
     public function favorites(): BelongsToMany
     {
-        return $this->belongsToMany(User::class , 'favorites', 'user_id', 'favorited_user_id')
+        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
             ->withTimestamps();
     }
 
     public function favoritedBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class , 'favorites', 'favorited_user_id', 'user_id')
+        return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
             ->withTimestamps();
     }
 
     public function ignores(): BelongsToMany
     {
-        return $this->belongsToMany(User::class , 'ignores', 'user_id', 'ignored_user_id')
+        return $this->belongsToMany(User::class, 'ignores', 'user_id', 'ignored_user_id')
             ->withTimestamps();
     }
 
     public function ignoredBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class , 'ignores', 'ignored_user_id', 'user_id')
+        return $this->belongsToMany(User::class, 'ignores', 'ignored_user_id', 'user_id')
             ->withTimestamps();
     }
 
     public function visitedBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class , 'profile_visits', 'visited_user_id', 'visitor_id')
+        return $this->belongsToMany(User::class, 'profile_visits', 'visited_user_id', 'visitor_id')
             ->withTimestamps()
             ->distinct();
     }
@@ -133,6 +137,31 @@ class User extends Authenticatable
         return $this->hasMany(ProfileImage::class);
     }
 
+    public function sentImageRequests(): HasMany
+    {
+        return $this->hasMany(ImageRequest::class, 'requester_id');
+    }
+
+    public function receivedImageRequests(): HasMany
+    {
+        return $this->hasMany(ImageRequest::class, 'requested_user_id');
+    }
+
+    public function canViewImagesOf(int $userId): bool
+    {
+        return ImageRequest::where('requester_id', $this->id)
+            ->where('requested_user_id', $userId)
+            ->where('status', 'approved')
+            ->exists();
+    }
+
+    public function imageRequestStatusFor(int $userId): ?string
+    {
+        return ImageRequest::where('requester_id', $this->id)
+            ->where('requested_user_id', $userId)
+            ->value('status');
+    }
+
     public function mainProfileImage(): HasMany
     {
         return $this->hasMany(ProfileImage::class)->where('is_main', true);
@@ -140,11 +169,9 @@ class User extends Authenticatable
 
     public function isOnline(): bool
     {
-        if (!$this->last_seen_at) {
-            return false;
-        }
+        $score = Redis::zscore('online_users', $this->id);
 
-        return $this->last_seen_at->gt(now()->subMinutes(5));
+        return $score !== null && $score >= now()->subMinutes(10)->timestamp;
     }
 
     public function isFavoritedBy(int $userId): bool

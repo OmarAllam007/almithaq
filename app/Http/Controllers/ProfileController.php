@@ -14,8 +14,11 @@ use App\Models\Enums\FinancialStatus;
 use App\Models\Enums\HealthStatusType;
 use App\Models\Enums\MarriageStatus;
 use App\Models\Enums\MarriageType;
+use App\Models\Enums\MonthlyIncomeType;
 use App\Models\Enums\PrayerType;
 use App\Models\Enums\SkinColor;
+use App\Models\ImageRequest;
+use App\Models\ProfileImage;
 use App\Models\ProfileVisit;
 use App\Models\User;
 use App\Services\NotificationService;
@@ -46,13 +49,14 @@ class ProfileController extends Controller
             'devotions' => $enumToOptions(DevotionType::class),
             'prayer_commitments' => $enumToOptions(PrayerType::class),
             'yes_no_options' => [
-                ['value' => '1', 'label' => 'Yes'],
-                ['value' => '0', 'label' => 'No'],
+                ['value' => '1', 'label' => trans('enums.yes')],
+                ['value' => '0', 'label' => trans('enums.no')],
             ],
             'education_levels' => $enumToOptions(EducationLevel::class),
             'financial_statuses' => $enumToOptions(FinancialStatus::class),
             'health_statuses' => $enumToOptions(HealthStatusType::class),
             'fields_of_work' => $enumToOptions(FieldOfWork::class),
+            'monthly_incomes' => $enumToOptions(MonthlyIncomeType::class),
             'delete_account_reasons' => $enumToOptions(DeleteAccountReason::class),
         ]);
     }
@@ -65,18 +69,63 @@ class ProfileController extends Controller
         return redirect()->route('profile')->with('success', 'Profile updated successfully.');
     }
 
+    public function chatInfo(User $user): JsonResponse
+    {
+        $user->load('mainProfileImage');
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+            'is_online' => $user->isOnline(),
+            'last_seen_at' => $user->last_seen_at,
+            'profile_image' => $user->mainProfileImage->first()?->thumbnail_url,
+            'is_ignored' => $user->isIgnored(auth()->id()),
+        ]);
+    }
+
     public function show(User $user): JsonResponse
     {
+        $currentUserId = auth()->id();
+        $isOwner = $currentUserId === $user->id;
 
-        if (auth()->check() && auth()->id() !== $user->id) {
+        if (auth()->check() && ! $isOwner) {
             ProfileVisit::create([
-                'visitor_id' => auth()->id(),
+                'visitor_id' => $currentUserId,
                 'visited_user_id' => $user->id,
             ]);
-            $this->notificationService->notifyProfileVisit($user->id, auth()->id());
+            $this->notificationService->notifyProfileVisit($user->id, $currentUserId);
         }
 
-        $userData = UserProfileResource::make($user);
+        $imageRequestStatus = $isOwner ? null : ImageRequest::where('requester_id', $currentUserId)
+            ->where('requested_user_id', $user->id)
+            ->value('status');
+
+        $canViewImages = $isOwner || $imageRequestStatus === 'approved';
+
+        $galleryImages = $user->profileImages()
+            ->ordered()
+            ->get()
+            ->map(fn (ProfileImage $image) => [
+                'id' => $image->id,
+                'thumbnail_url' => $image->thumbnail_url,
+                'original_url' => $canViewImages ? $image->original_url : null,
+                'is_main' => $image->is_main,
+            ]);
+
+        $mainImage = $user->mainProfileImage->first();
+
+        $userData = array_merge(
+            UserProfileResource::make($user)->toArray(request()),
+            [
+                'image_request_status' => $imageRequestStatus,
+                'can_view_images' => $canViewImages,
+                'gallery_images' => $galleryImages,
+                'mainProfileImage' => $canViewImages
+                    ? ($mainImage?->original_url ?? $mainImage?->thumbnail_url)
+                    : $mainImage?->thumbnail_url,
+            ]
+        );
 
         return response()->json(['user' => $userData]);
     }

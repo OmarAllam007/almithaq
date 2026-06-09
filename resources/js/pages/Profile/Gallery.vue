@@ -2,6 +2,8 @@
 import { ref, computed, onUnmounted } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { store, destroy, setMain } from '@/actions/App/Http/Controllers/ProfileImageController';
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
 
 interface Image {
     id: number;
@@ -20,7 +22,6 @@ interface Props {
 const props = defineProps<Props>();
 
 // Debug: Log images data
-console.log('Gallery images:', props.images);
 
 const selectedFiles = ref<File[]>([]);
 const isDragging = ref(false);
@@ -128,20 +129,20 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <div class="app-main flex-column flex-row-fluid overflow-y-auto" id="kt_app_main" scroll-region>
         <div class="d-flex flex-column flex-column-fluid">
             <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
                 <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
                     <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">My Gallery</h1>
+                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">{{ trans('profile.my_gallery') }}</h1>
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
                             <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary">Home</a>
+                                <a href="/" class="text-muted text-hover-primary">{{ trans('home.home') }}</a>
                             </li>
                             <li class="breadcrumb-item">
                                 <span class="bullet w-5px h-2px bg-gray-500"></span>
                             </li>
-                            <li class="breadcrumb-item text-muted">Gallery</li>
+                            <li class="breadcrumb-item text-muted">{{ trans('profile.gallery') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -152,15 +153,15 @@ onUnmounted(() => {
                     <!-- Instructions Card -->
                     <div class="card mb-5">
                         <div class="card-body">
-                            <h3 class="card-title mb-4">Profile Image Verification</h3>
+                            <h3 class="card-title mb-4">{{ trans('profile.profile_image_verification') }}</h3>
                             <div class="text-gray-700">
-                                <p class="mb-2">Upload your profile images for verification. Please note:</p>
+                                <p class="mb-2">{{ trans('profile.upload_your_profile_images_for_verification_please_note') }}</p>
                                 <ul class="mb-0">
-                                    <li>You can upload up to 5 images</li>
-                                    <li>Only JPEG, PNG, and JPG formats are supported</li>
-                                    <li>Maximum file size is 5MB per image</li>
-                                    <li>Select one image as your main profile picture</li>
-                                    <li>All images require admin approval before being visible to others</li>
+                                    <li>{{ trans('profile.you_can_upload_up_to_5_images') }}</li>
+                                    <li>{{ trans('profile.only_jpeg_png_and_jpg_formats_are_supported') }}</li>
+                                    <li>{{ trans('profile.maximum_file_size_is_5mb_per_image') }}</li>
+                                    <li>{{ trans('profile.select_one_image_as_your_main_profile_picture') }}</li>
+                                    <li>{{ trans('profile.all_images_require_admin_approval_before_being_visible_to_others') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -169,7 +170,7 @@ onUnmounted(() => {
                     <!-- Upload Section -->
                     <div v-if="canUploadMore && totalImages < 5" class="card mb-5">
                         <div class="card-body">
-                            <h3 class="card-title mb-4">Upload Images ({{ totalImages }}/5)</h3>
+                            <h3 class="card-title mb-4">{{ trans('profile.upload_images') }} ({{ totalImages }}/5)</h3>
 
                             <!-- Drag & Drop Zone -->
                             <div
@@ -191,14 +192,14 @@ onUnmounted(() => {
                                 />
                                 <label for="imageUpload" class="cursor-pointer">
                                     <i class="ki-outline ki-file-up fs-3x text-primary mb-3"></i>
-                                    <p class="fs-5 fw-semibold mb-2 text-gray-700">Drop images here or click to upload</p>
-                                    <p class="fs-7 text-muted">You can upload {{ 5 - totalImages }} more image(s)</p>
+                                    <p class="fs-5 fw-semibold mb-2 text-gray-700">{{ trans('profile.drop_images_here_or_click_to_upload') }}</p>
+                                    <p class="fs-7 text-muted">{{ trans('profile.you_can_upload') }} {{ 5 - totalImages }} {{ trans('profile.more_image_s') }}</p>
                                 </label>
                             </div>
 
                             <!-- Selected Files Preview -->
                             <div v-if="selectedFiles.length > 0" class="mt-5">
-                                <h4 class="mb-3">Selected Images</h4>
+                                <h4 class="mb-3">{{ trans('profile.selected_images') }}</h4>
                                 <div class="d-flex flex-wrap gap-3">
                                     <div v-for="(file, index) in selectedFiles" :key="index" class="position-relative">
                                         <img
@@ -218,7 +219,7 @@ onUnmounted(() => {
                                 <!-- Upload Button -->
                                 <button @click="uploadImages" :disabled="form.processing" class="btn btn-primary mt-4">
                                     <i class="ki-outline ki-cloud-upload fs-3"></i>
-                                    {{ form.processing ? 'Uploading...' : 'Upload Images' }}
+                                        {{ form.processing ? trans('profile.uploading') : trans('profile.upload_images') }}
                                 </button>
                             </div>
 
@@ -232,32 +233,34 @@ onUnmounted(() => {
                     <!-- Current Images Grid -->
                     <div class="card">
                         <div class="card-body">
-                            <h3 class="card-title mb-4">Your Images</h3>
+                            <h3 class="card-title mb-4">{{ trans('profile.your_images') }}</h3>
 
                             <!-- Empty State -->
                             <div v-if="images.length === 0" class="py-10 text-center">
                                 <i class="ki-outline ki-picture fs-5x text-muted mb-3"></i>
-                                <p class="fs-5 text-muted">No images uploaded yet</p>
-                                <p class="fs-7 text-gray-600">Upload your first image to get started</p>
+                                <p class="fs-5 text-muted">{{ trans('profile.no_images_uploaded_yet') }}</p>
+                                <p class="fs-7 text-gray-600">{{ trans('profile.upload_your_first_image_to_get_started') }}</p>
                             </div>
 
                             <!-- Images Grid -->
                             <div v-else class="row g-5">
                                 <div v-for="image in images" :key="image.id" class="col-sm-6 col-md-4 col-lg-3 col-12">
                                     <div class="card position-relative h-100">
+                                        <!-- add them in -->
                                         <!-- Main Badge -->
-                                        <div v-if="image.is_main" class="badge badge-primary position-absolute start-0 top-0 m-2">
-                                            <i class="ki-outline ki-star fs-5"></i> Main
+                                        <div v-if="image.is_main" class="badge badge-primary position-absolute">
+                                            <i class="ki-outline ki-star fs-5"></i> {{ trans('profile.main') }}
                                         </div>
 
                                         <!-- Approval Badge -->
                                         <div
                                             :class="[
-                                                'badge position-absolute end-0 top-0 m-2',
+                                                'badge position-absolute',
                                                 image.is_approved ? 'badge-success' : 'badge-warning',
                                             ]"
+                                            v-if="!image.is_main"
                                         >
-                                            {{ image.is_approved ? 'Approved' : 'Pending' }}
+                                            {{ image.is_approved ? trans('profile.approved') : trans('profile.pending') }}
                                         </div>
 
                                         <!-- Image -->
@@ -271,17 +274,20 @@ onUnmounted(() => {
 
                                         <!-- Actions -->
                                         <div class="card-body d-flex flex-column gap-2">
-                                            <button
+                                            <Link
+                                                preserve-state
+                                                :href="route('profile.gallery.set-main', image.id)"
                                                 v-if="!image.is_main"
                                                 @click="setAsMainImage(image.id)"
                                                 class="btn btn-sm btn-light-primary w-100"
+                                                preserve-scroll
                                             >
                                                 <i class="ki-outline ki-star fs-4"></i>
-                                                Set as Main
-                                            </button>
-                                            <button @click="confirmDelete(image.id)" class="btn btn-sm btn-light-danger w-100">
+                                                {{ trans('profile.set_as_main') }}
+                                        </Link>
+                                            <button preserve-scroll @click="confirmDelete(image.id)" class="btn btn-sm btn-light-danger w-100">
                                                 <i class="ki-outline ki-trash fs-4"></i>
-                                                Delete
+                                                {{ trans('profile.delete') }}
                                             </button>
                                         </div>
                                     </div>
@@ -299,15 +305,15 @@ onUnmounted(() => {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirm Delete</h5>
+                    <h5 class="modal-title">{{ trans('profile.confirm_delete') }}</h5>
                     <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete this image? This action cannot be undone.</p>
+                    <p>{{ trans('profile.are_you_sure_you_want_to_delete_this_image_this_action_cannot_be_undone') }}</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" @click="showDeleteModal = false">Cancel</button>
-                    <button type="button" class="btn btn-danger" @click="deleteImage">Delete</button>
+                    <button type="button" class="btn btn-light" @click="showDeleteModal = false">{{ trans('profile.cancel') }}</button>
+                    <button type="button" class="btn btn-danger" @click="deleteImage">{{ trans('profile.delete') }}</button>
                 </div>
             </div>
         </div>

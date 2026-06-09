@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useLang } from '@/composables/useLang';
+
+const { trans } = useLang();
 
 interface PaginationLink {
     url: string | null;
@@ -38,10 +41,10 @@ const lastPage = computed(() => props.data.last_page);
 
 const getPageLabel = (label: string): string => {
     if (label === '&laquo; Previous') {
-        return 'Previous';
+        return trans('sidebar.Previous');
     }
     if (label === 'Next &raquo;') {
-        return 'Next';
+        return trans('sidebar.Next');
     }
     return label;
 };
@@ -50,7 +53,7 @@ const getPageLabel = (label: string): string => {
 <template>
     <div v-if="hasPages" class="d-flex flex-stack flex-wrap pt-10">
         <div class="fs-6 fw-semibold text-gray-700">
-            Showing {{ data.from }} to {{ data.to }} of {{ data.total }} entries
+            {{ trans('sidebar.pagination_showing', { from: data.from, to: data.to, total: data.total }) }}
         </div>
 
         <ul class="pagination">

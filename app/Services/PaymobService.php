@@ -31,10 +31,10 @@ class PaymobService implements PaymentServiceInterface
         try {
             // Step 1: Get authentication token
             $authToken = $this->getAuthToken();
-//dd($authToken);
+
             // Step 2: Create order
             $order = $this->createOrder($authToken, $data);
-//dd($order);
+
             // Step 3: Get payment key
             $paymentKey = $this->getPaymentKey($authToken, $order['id'], $data);
 
@@ -143,7 +143,7 @@ class PaymobService implements PaymentServiceInterface
             'merchant_order_id' => (string) Str::uuid(),
 
         ]);
-//dd($response->json());
+        // dd($response->json());
         if (! $response->successful()) {
             throw new \RuntimeException('Failed to create Paymob order');
         }

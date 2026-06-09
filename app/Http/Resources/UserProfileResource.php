@@ -33,7 +33,7 @@ class UserProfileResource extends JsonResource
             'age' => $this->age,
             'nationality' => Country::find($this->nationality)?->only('id', 'name', 'ar_name', 'flag'),
             'residence' => Country::find($this->residence)?->only('id', 'name', 'ar_name', 'flag'),
-            'registration_type' => $this->gender,
+            'registration_type' => $this->registration_type,
             'mainProfileImage' => $this->mainProfileImage->first()?->thumbnail_url,
             // Raw values for form editing
             'marriage_status' => $this->marriage_status,
@@ -42,7 +42,7 @@ class UserProfileResource extends JsonResource
             'monthly_income' => $this->monthly_income,
             'child_count' => $this->child_count,
             'city' => $this->city,
-            'religion' => 'Muslim',
+            'religion' => trans('profile.muslim'),
             'height' => $this->height,
             'weight' => $this->weight,
             'skin_color' => $this->skin_color,
@@ -57,10 +57,10 @@ class UserProfileResource extends JsonResource
             'job' => $this->job,
             'about_self' => $this->about_self,
             'about_partner' => $this->about_partner,
-            'is_favourite' => $this->isFavoritedBy(auth()->id()),
+            'is_favorited' => $this->isFavoritedBy(auth()->id()),
             'is_ignored' => $this->isIgnored(auth()->id()),
-            // Display labels
-            'marriage_status_label' => MarriageStatus::tryFrom($this->marriage_status)?->label(),
+            // Display labels — label reflects the user's own gender
+            'marriage_status_label' => MarriageStatus::tryFrom($this->marriage_status)?->labelForGender($this->registration_type === 1),
             'marriage_type_label' => MarriageType::tryFrom($this->marriage_type)?->label(),
             'health_status_label' => HealthStatusType::tryFrom($this->health_status)?->label(),
             'monthly_income_label' => MonthlyIncomeType::tryFrom($this->monthly_income)?->label(),
@@ -74,7 +74,9 @@ class UserProfileResource extends JsonResource
 
             //
 
-            'isOnline' => (bool) Redis::zscore('online_users', $this->id),
+            'is_verified' => (bool) $this->is_verified,
+            'is_subscriber' => $this->hasActiveSubscription(),
+            'is_online' => (bool) Redis::zscore('online_users', $this->id),
         ];
 
     }

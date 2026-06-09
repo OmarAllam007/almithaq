@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\UserProfileResource;
 use App\Models\Country;
+use App\Models\Enums\MarriageStatus;
+use App\Models\Enums\MarriageType;
+use App\Models\ImageRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -24,9 +26,14 @@ class OnlineMembersController extends Controller
         // 2. Fetch ALL online user IDs sorted by most recently active
         $allUserIds = Redis::zrevrange('online_users', 0, -1);
 
-        // 3. Hydrate User Models with filters
+        // 3. Hydrate User Models with filters (show only opposite gender)
+        $currentUser = Auth::user();
+        $oppositeType = $currentUser->registration_type === 1 ? 2 : 1;
+
         $query = User::whereIn('id', $allUserIds)
-            ->whereNot('id', Auth::id());
+            ->whereNot('id', Auth::id())
+            ->where('registration_type', $oppositeType)
+            ->with('mainProfileImage');
 
         // Apply filters
         if ($request->filled('nationality')) {
@@ -58,8 +65,45 @@ class OnlineMembersController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
+        $pageUserIds = $paginatedUsers->pluck('id')->all();
+        $viewableIds = ImageRequest::approvedViewersOf($currentUser->id, $pageUserIds);
+
+        $mappedUsers = $paginatedUsers->map(function (User $user) use ($viewableIds) {
+            $canViewImages = isset($viewableIds[$user->id]);
+            $image = $user->mainProfileImage->first();
+
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'age' => $user->age,
+                'nationality' => $user->nationality,
+                'residence' => $user->residence,
+                'marriage_status' => $user->marriage_status,
+                'mainProfileImage' => $canViewImages
+                    ? ($image?->original_url ?? $image?->thumbnail_url)
+                    : $image?->thumbnail_url,
+                'can_view_images' => $canViewImages,
+                'is_online' => true,
+                'is_favorited' => $user->isFavoritedBy(Auth::id()),
+                'is_ignored' => $user->isIgnored(Auth::id()),
+                'is_verified' => (bool) $user->is_verified,
+                'is_subscriber' => $user->hasActiveSubscription(),
+                'registration_type' => $user->registration_type,
+                'marriage_status_label' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_type_label' => MarriageType::tryFrom($user->marriage_type)?->label(),
+            ];
+        });
+
+        $usersResponse = new LengthAwarePaginator(
+            $mappedUsers,
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return Inertia::render('OnlineUsers/Index', [
-            'users' => UserProfileResource::collection($paginator),
+            'users' => $usersResponse,
             'countries' => $countries,
             'totalOnline' => $onlineCount ? max(0, $onlineCount - 1) : 0,
             'filters' => [

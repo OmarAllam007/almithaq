@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import UserCard from '@/components/UserCard.vue';
 import UserProfileModal from '@/components/UserProfileModal.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import Pagination from '@/components/Pagination.vue';
+import GoogleAd from '@/components/GoogleAd.vue';
+import Select2MultiInput from '@/components/Inputs/Select2MultiInput.vue';
 import { PaginationData } from '@/types/pagination';
 import axios from 'axios';
 import noUiSlider from 'nouislider';
 import 'nouislider/dist/nouislider.css';
+import { useLang } from '@/composables/useLang';
+const { trans } = useLang();
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
 
 interface Props {
     users: PaginationData | null;
@@ -25,6 +31,7 @@ const filters = ref({
     residence: props.cachedFilters?.residence || [],
     nationality: props.cachedFilters?.nationality || [],
     marriage_status: props.cachedFilters?.marriage_status || [],
+    marriage_type: props.cachedFilters?.marriage_type || [],
     age_min: props.cachedFilters?.age_min || 18,
     age_max: props.cachedFilters?.age_max || 60,
     body_shape: props.cachedFilters?.body_shape || [],
@@ -59,71 +66,70 @@ onMounted(() => {
 const initializeSliders = () => {
     nextTick(() => {
         // Age Slider
-        if (ageSlider.value && !ageSlider.value.noUiSlider) {
-            noUiSlider.create(ageSlider.value, {
+        const ageEl = ageSlider.value as any;
+        if (ageEl && !ageEl.noUiSlider) {
+            noUiSlider.create(ageEl, {
                 start: [filters.value.age_min, filters.value.age_max],
                 connect: true,
-                range: {
-                    'min': 18,
-                    'max': 100
-                },
+                direction: isRtl.value ? 'rtl' : 'ltr',
+                range: { min: 18, max: 100 },
                 step: 1,
                 tooltips: true,
                 format: {
                     to: (value) => Math.round(value),
-                    from: (value) => Number(value)
-                }
+                    from: (value) => Number(value),
+                },
             });
 
-            ageSlider.value.noUiSlider.on('update', (values: any) => {
+            ageEl.noUiSlider.on('update', (values: any) => {
                 filters.value.age_min = parseInt(values[0]);
                 filters.value.age_max = parseInt(values[1]);
             });
         }
 
         // Weight Slider
-        if (weightSlider.value && !weightSlider.value.noUiSlider) {
-            noUiSlider.create(weightSlider.value, {
+        const kgLabel = trans('smart.kg');
+        const weightEl = weightSlider.value as any;
+        if (weightEl && !weightEl.noUiSlider) {
+            noUiSlider.create(weightEl, {
                 start: [filters.value.weight_min, filters.value.weight_max],
                 connect: true,
-                range: {
-                    'min': 30,
-                    'max': 200
-                },
+                direction: isRtl.value ? 'rtl' : 'ltr',
+                range: { min: 30, max: 200 },
                 step: 1,
                 tooltips: true,
                 format: {
-                    to: (value) => Math.round(value) + ' kg',
-                    from: (value) => Number(String(value).replace(' kg', ''))
-                }
+                    to: (value) => Math.round(value) + ' ' + kgLabel,
+                    from: (value) => Number(String(value).replace(' ' + kgLabel, '')),
+                },
             });
 
-            weightSlider.value.noUiSlider.on('update', (values: any) => {
-                filters.value.weight_min = parseInt(String(values[0]).replace(' kg', ''));
-                filters.value.weight_max = parseInt(String(values[1]).replace(' kg', ''));
+            weightEl.noUiSlider.on('update', (values: any) => {
+                filters.value.weight_min = parseInt(String(values[0]));
+                filters.value.weight_max = parseInt(String(values[1]));
             });
         }
 
         // Height Slider
-        if (heightSlider.value && !heightSlider.value.noUiSlider) {
-            noUiSlider.create(heightSlider.value, {
+        const cmLabel = trans('smart.cm');
+        const heightEl = heightSlider.value as any;
+        if (heightEl && !heightEl.noUiSlider) {
+            noUiSlider.create(heightEl, {
                 start: [filters.value.height_min, filters.value.height_max],
                 connect: true,
-                range: {
-                    'min': 120,
-                    'max': 230
-                },
+                direction: isRtl.value ? 'rtl' : 'ltr',
+                range: { min: 120, max: 230 },
                 step: 1,
                 tooltips: true,
                 format: {
-                    to: (value) => Math.round(value) + ' cm',
-                    from: (value) => Number(String(value).replace(' cm', ''))
-                }
+                    to: (value) => Math.round(value) + ' ' + cmLabel,
+                    from: (value) => Number(String(value).replace(' ' + cmLabel, '')),
+                },
             });
 
-            heightSlider.value.noUiSlider.on('update', (values: any) => {
-                filters.value.height_min = parseInt(String(values[0]).replace(' cm', ''));
-                filters.value.height_max = parseInt(String(values[1]).replace(' cm', ''));
+            heightEl.noUiSlider.on('update', (values: any) => {
+                filters.value.height_min = parseInt(String(values[0]));
+                filters.value.height_max = parseInt(String(values[1]));
             });
         }
     });
@@ -192,7 +198,7 @@ const handleMessageFromModal = async (userId: number) => {
     handleCloseProfile();
 
     try {
-        const response = await axios.post('/conversations', {
+        await axios.post('/conversations', {
             recipient_id: userId,
         });
 
@@ -212,16 +218,16 @@ const handleMessageFromModal = async (userId: number) => {
                 <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
                     <div class="page-title d-flex flex-column justify-content-center me-3">
                         <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
-                            Smart Search
+                            {{ trans('smart.smart_search') }}
                         </h1>
                         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
                             <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary">Home</a>
+                                <a href="/" class="text-muted text-hover-primary">{{ trans('home.home') }}</a>
                             </li>
                             <li class="breadcrumb-item">
                                 <span class="bullet w-5px h-2px bg-gray-500"></span>
                             </li>
-                            <li class="breadcrumb-item text-muted">Smart Search</li>
+                            <li class="breadcrumb-item text-muted">{{ trans('smart.smart_search') }}</li>
                         </ul>
                     </div>
 
@@ -229,11 +235,11 @@ const handleMessageFromModal = async (userId: number) => {
                     <div class="d-flex gap-2" v-if="users">
                         <button @click="toggleFilters" class="btn btn-sm btn-primary">
                             <i class="ki-outline ki-filter fs-3 me-2"></i>
-                            {{ showFilters ? 'Hide Filters' : 'Edit Criteria' }}
+                            {{ showFilters ? trans('smart.hide_filters') : trans('smart.edit_criteria') }}
                         </button>
                         <button @click="clearAllFilters" class="btn btn-sm btn-light-danger">
                             <i class="ki-outline ki-trash fs-3 me-2"></i>
-                            Clear Filters
+                            {{ trans('smart.clear_filters') }}
                         </button>
                     </div>
                 </div>
@@ -248,30 +254,32 @@ const handleMessageFromModal = async (userId: number) => {
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Location & Nationality</h3>
+                                    <h3 class="card-title">{{ trans('smart.location_and_nationality') }}</h3>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row g-5">
+                                <div class="card-body py-7">
+                                    <div class="row g-5 align-items-stretch">
                                         <!-- Residence -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Residence</label>
-                                            <select v-model="filters.residence" class="form-select" multiple size="5">
-                                                <option v-for="country in countries" :key="country.id" :value="country.id">
-                                                    {{ country.name }}
-                                                </option>
-                                            </select>
-                                            <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                                        <div class="col-12 col-md pe-md-6">
+                                            <label class="form-label">{{ trans('smart.residence') }}</label>
+                                            <Select2MultiInput
+                                                v-model="filters.residence"
+                                                :options="countries.map(c => ({ value: c.id, label: isRtl ? c.ar_name : c.name }))"
+                                                :placeholder="trans('smart.select_country')"
+                                            />
+                                        </div>
+
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
                                         </div>
 
                                         <!-- Nationality -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Nationality</label>
-                                            <select v-model="filters.nationality" class="form-select" multiple size="5">
-                                                <option v-for="country in countries" :key="country.id" :value="country.id">
-                                                    {{ country.name }}
-                                                </option>
-                                            </select>
-                                            <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                                        <div class="col-12 col-md ps-md-6">
+                                            <label class="form-label">{{ trans('smart.nationality') }}</label>
+                                            <Select2MultiInput
+                                                v-model="filters.nationality"
+                                                :options="countries.map(c => ({ value: c.id, label: isRtl ? c.ar_name : c.name }))"
+                                                :placeholder="trans('smart.select_country')"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -282,13 +290,13 @@ const handleMessageFromModal = async (userId: number) => {
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Basic Information</h3>
+                                    <h3 class="card-title">{{ trans('smart.basic_information') }}</h3>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row g-5">
+                                <div class="card-body py-7">
+                                    <div class="row g-5 align-items-stretch">
                                         <!-- Marriage Status -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Marriage Status</label>
+                                        <div class="col-12 col-md pe-md-6">
+                                            <label class="form-label">{{ trans('smart.marriage_status') }}</label>
                                             <div class="d-flex flex-column gap-3">
                                                 <div v-for="status in filterOptions.marriage_statuses" :key="status.value" class="form-check">
                                                     <input
@@ -298,16 +306,42 @@ const handleMessageFromModal = async (userId: number) => {
                                                         type="checkbox"
                                                         :id="'marriage_' + status.value"
                                                     />
-                                                    <label class="form-check-label" :for="'marriage_' + status.value">
+                                                    <label class="form-check-label fw-semibold text-gray-800" :for="'marriage_' + status.value">
                                                         {{ status.label }}
                                                     </label>
                                                 </div>
                                             </div>
                                         </div>
 
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
+                                        </div>
+
+                                        <!-- Marriage Type -->
+                                        <div class="col-12 col-md ps-md-6">
+                                            <label class="form-label">{{ trans('smart.marriage_type') }}</label>
+                                            <div class="d-flex flex-column gap-3">
+                                                <div v-for="type in filterOptions.marriage_types" :key="type.value" class="form-check">
+                                                    <input
+                                                        v-model="filters.marriage_type"
+                                                        :value="type.value"
+                                                        class="form-check-input"
+                                                        type="checkbox"
+                                                        :id="'marriage_type_' + type.value"
+                                                    />
+                                                    <label class="form-check-label fw-semibold text-gray-800" :for="'marriage_type_' + type.value">
+                                                        {{ type.label }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Separator -->
+                                        <div class="col-12"><div class="separator separator-dashed"></div></div>
+
                                         <!-- Age Range -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Age Range</label>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">{{ trans('smart.age_range') }}</label>
                                             <div ref="ageSlider" class="mt-5"></div>
                                         </div>
                                     </div>
@@ -319,13 +353,13 @@ const handleMessageFromModal = async (userId: number) => {
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Physical Attributes</h3>
+                                    <h3 class="card-title">{{ trans('smart.physical_attributes') }}</h3>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row g-5">
+                                <div class="card-body py-7">
+                                    <div class="row g-5 align-items-stretch">
                                         <!-- Body Shape -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Body Shape</label>
+                                        <div class="col-12 col-md pe-md-6">
+                                            <label class="form-label">{{ trans('smart.body_shape') }}</label>
                                             <select v-model="filters.body_shape" class="form-select" multiple size="5">
                                                 <option v-for="shape in filterOptions.body_shapes" :key="shape.value" :value="shape.value">
                                                     {{ shape.label }}
@@ -333,9 +367,13 @@ const handleMessageFromModal = async (userId: number) => {
                                             </select>
                                         </div>
 
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
+                                        </div>
+
                                         <!-- Skin Color -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Skin Color</label>
+                                        <div class="col-12 col-md ps-md-6">
+                                            <label class="form-label">{{ trans('smart.skin_color') }}</label>
                                             <select v-model="filters.skin_color" class="form-select" multiple size="5">
                                                 <option v-for="color in filterOptions.skin_colors" :key="color.value" :value="color.value">
                                                     {{ color.label }}
@@ -343,15 +381,22 @@ const handleMessageFromModal = async (userId: number) => {
                                             </select>
                                         </div>
 
+                                        <!-- Separator -->
+                                        <div class="col-12"><div class="separator separator-dashed"></div></div>
+
                                         <!-- Weight Range -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Weight Range</label>
+                                        <div class="col-12 col-md pe-md-6">
+                                            <label class="form-label">{{ trans('smart.weight_range') }}</label>
                                             <div ref="weightSlider" class="mt-5"></div>
                                         </div>
 
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
+                                        </div>
+
                                         <!-- Height Range -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Height Range</label>
+                                        <div class="col-12 col-md ps-md-6">
+                                            <label class="form-label">{{ trans('smart.height_range') }}</label>
                                             <div ref="heightSlider" class="mt-5"></div>
                                         </div>
                                     </div>
@@ -363,13 +408,13 @@ const handleMessageFromModal = async (userId: number) => {
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Education & Career</h3>
+                                    <h3 class="card-title">{{ trans('smart.education_and_career') }}</h3>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row g-5">
+                                <div class="card-body py-7">
+                                    <div class="row g-5 align-items-stretch">
                                         <!-- Education Level -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Education Level</label>
+                                        <div class="col-12 col-md pe-md-6">
+                                            <label class="form-label">{{ trans('smart.education_level') }}</label>
                                             <select v-model="filters.education_level" class="form-select" multiple size="6">
                                                 <option v-for="level in filterOptions.education_levels" :key="level.value" :value="level.value">
                                                     {{ level.label }}
@@ -377,9 +422,13 @@ const handleMessageFromModal = async (userId: number) => {
                                             </select>
                                         </div>
 
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
+                                        </div>
+
                                         <!-- Financial Status -->
-                                        <div class="col-md-6">
-                                            <label class="form-label">Financial Status</label>
+                                        <div class="col-12 col-md ps-md-6">
+                                            <label class="form-label">{{ trans('smart.financial_status') }}</label>
                                             <select v-model="filters.financial_status" class="form-select" multiple size="6">
                                                 <option v-for="status in filterOptions.financial_statuses" :key="status.value" :value="status.value">
                                                     {{ status.label }}
@@ -395,13 +444,13 @@ const handleMessageFromModal = async (userId: number) => {
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Religious Practices</h3>
+                                    <h3 class="card-title">{{ trans('smart.religious_practices') }}</h3>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row g-5">
+                                <div class="card-body py-7">
+                                    <div class="row g-5 align-items-stretch">
                                         <!-- Devotion -->
-                                        <div class="col-md-4">
-                                            <label class="form-label">Devotion Level</label>
+                                        <div class="col-12 col-md pe-md-6">
+                                            <label class="form-label">{{ trans('smart.devotion_level') }}</label>
                                             <select v-model="filters.devotion" class="form-select" multiple size="5">
                                                 <option v-for="level in filterOptions.devotion_levels" :key="level.value" :value="level.value">
                                                     {{ level.label }}
@@ -409,9 +458,13 @@ const handleMessageFromModal = async (userId: number) => {
                                             </select>
                                         </div>
 
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
+                                        </div>
+
                                         <!-- Prayer -->
-                                        <div class="col-md-4">
-                                            <label class="form-label">Prayer Frequency</label>
+                                        <div class="col-12 col-md px-md-6">
+                                            <label class="form-label">{{ trans('smart.prayer_frequency') }}</label>
                                             <select v-model="filters.prayer" class="form-select" multiple size="5">
                                                 <option v-for="freq in filterOptions.prayer_frequencies" :key="freq.value" :value="freq.value">
                                                     {{ freq.label }}
@@ -419,9 +472,13 @@ const handleMessageFromModal = async (userId: number) => {
                                             </select>
                                         </div>
 
+                                        <div class="col-auto d-none d-md-flex align-items-stretch px-0">
+                                            <div class="border-start border-dashed border-gray-300"></div>
+                                        </div>
+
                                         <!-- Smoking -->
-                                        <div class="col-md-4">
-                                            <label class="form-label">Smoking</label>
+                                        <div class="col-12 col-md ps-md-6">
+                                            <label class="form-label">{{ trans('smart.smoking') }}</label>
                                             <div class="d-flex flex-column gap-3">
                                                 <div v-for="option in filterOptions.smoking_options" :key="option.value" class="form-check">
                                                     <input
@@ -447,21 +504,26 @@ const handleMessageFromModal = async (userId: number) => {
                             <div class="d-flex justify-content-center gap-3">
                                 <button @click="submitFilters" class="btn btn-lg btn-primary">
                                     <i class="ki-outline ki-magnifier fs-2 me-2"></i>
-                                    Search
+                                    {{ trans('smart.search') }}
                                 </button>
                                 <button @click="clearAllFilters" class="btn btn-lg btn-light-danger">
                                     <i class="ki-outline ki-trash fs-2 me-2"></i>
-                                    Clear All
+                                    {{ trans('smart.clear_all') }}
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Ad: above results, shown after search is submitted -->
+                    <div v-if="users && !showFilters" class="mb-6">
+                        <GoogleAd slot-id="SMART_SEARCH_RESULTS" format="horizontal" />
                     </div>
 
                     <!-- Results -->
                     <div v-if="users && !showFilters" class="row g-6 g-xl-9 mb-6 mb-xl-9">
                         <div v-if="users.data.length > 0" class="col-12">
                             <div class="row g-6 g-xl-9">
-                                <div v-for="user in users.data" :key="user.id" class="col-md-6 col-xl-4">
+                                <div v-for="user in users.data" :key="user.id" class="col-md-6 col-xl-3">
                                     <UserCard
                                         :user="user"
                                         :countries="countries"
@@ -480,12 +542,12 @@ const handleMessageFromModal = async (userId: number) => {
                                     <div class="mb-10">
                                         <i class="ki-outline ki-user fs-5x text-gray-400"></i>
                                     </div>
-                                    <h3 class="text-gray-800 mb-3">No Results Found</h3>
+                                    <h3 class="text-gray-800 mb-3">{{ trans('smart.no_results_found') }}</h3>
                                     <p class="text-gray-600 fs-5">
-                                        Try adjusting your search criteria to see more results.
+                                        {{ trans('smart.try_adjusting_your_search_criteria_to_see_more_results') }}
                                     </p>
                                     <button @click="toggleFilters" class="btn btn-primary mt-5">
-                                        Edit Search Criteria
+                                        {{ trans('smart.edit_search_criteria') }}
                                     </button>
                                 </div>
                             </div>
@@ -509,47 +571,54 @@ const handleMessageFromModal = async (userId: number) => {
 </template>
 
 <style>
-/* noUiSlider customization for Metronic theme */
+.noUi-target {
+    border: none;
+    box-shadow: none;
+    background: var(--bs-gray-200, #f1f1f4);
+    height: 6px;
+    border-radius: 3px;
+}
+
 .noUi-connect {
-    background: var(--bs-primary);
+    background: rgb(208, 46, 121);
+    border-radius: 3px;
 }
 
 .noUi-handle {
-    border: 1px solid var(--bs-primary);
     border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
-    box-shadow: 0 0.5rem 1rem 0.25rem rgba(0, 0, 0, 0.1);
+    background: rgb(208, 46, 121) !important;
+    border: 2.5px solid #fff !important;
+    box-shadow:
+        0 0 0 2px rgb(208, 46, 121),
+        0 2px 6px rgba(208, 46, 121, 0.35) !important;
+    width: 18px !important;
+    height: 18px !important;
+    top: -7px !important;
+    right: -9px !important;
+    cursor: grab;
 }
 
-.noUi-handle:before,
-.noUi-handle:after {
+.noUi-handle:active {
+    cursor: grabbing;
+    transform: scale(1.15);
+}
+
+[dir='rtl'] .noUi-handle {
+    right: auto !important;
+    left: -9px !important;
+}
+
+.noUi-handle::before,
+.noUi-handle::after {
     display: none;
 }
 
 .noUi-tooltip {
-    background: var(--bs-primary);
+    background: rgb(208, 46, 121);
     border: none;
     color: #fff;
     font-size: 0.85rem;
     padding: 4px 8px;
     border-radius: 4px;
-}
-
-.noUi-horizontal {
-    height: 6px;
-}
-
-.noUi-horizontal .noUi-handle {
-    width: 20px;
-    height: 20px;
-    right: -10px;
-    top: -7px;
-}
-
-.noUi-target {
-    background: #e4e6ef;
-    border: none;
-    box-shadow: none;
 }
 </style>

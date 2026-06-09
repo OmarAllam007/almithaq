@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\UserNotificationSent;
 use App\Models\Enums\NotificationType;
+use App\Models\User;
 use App\Models\UserNotification;
 
 class NotificationService
@@ -14,12 +16,29 @@ class NotificationService
      */
     public function notify(int $userId, NotificationType $type, ?int $actorId = null, ?array $data = null): UserNotification
     {
-        return UserNotification::create([
+        $notification = UserNotification::create([
             'user_id' => $userId,
             'actor_id' => $actorId,
             'type' => $type,
             'data' => $data,
         ]);
+
+        $broadcastTypes = [
+            NotificationType::LIKE,
+            NotificationType::NEW_MESSAGE,
+            NotificationType::IMAGE_REQUEST,
+            NotificationType::IMAGE_REQUEST_APPROVED,
+            NotificationType::IMAGE_REQUEST_REJECTED,
+        ];
+
+        if ($actorId && in_array($type, $broadcastTypes, strict: true)) {
+            $actor = User::with('mainProfileImage')->find($actorId);
+            if ($actor) {
+                broadcast(new UserNotificationSent($notification, $actor))->toOthers();
+            }
+        }
+
+        return $notification;
     }
 
     public function notifyLike(int $userId, int $actorId): UserNotification
@@ -47,6 +66,21 @@ class NotificationService
     public function notifySubscriptionRenewed(int $userId): UserNotification
     {
         return $this->notify($userId, NotificationType::SUBSCRIPTION_RENEWED);
+    }
+
+    public function notifyImageRequest(int $userId, int $actorId): UserNotification
+    {
+        return $this->notify($userId, NotificationType::IMAGE_REQUEST, $actorId);
+    }
+
+    public function notifyImageRequestApproved(int $userId, int $actorId): UserNotification
+    {
+        return $this->notify($userId, NotificationType::IMAGE_REQUEST_APPROVED, $actorId);
+    }
+
+    public function notifyImageRequestRejected(int $userId, int $actorId): UserNotification
+    {
+        return $this->notify($userId, NotificationType::IMAGE_REQUEST_REJECTED, $actorId);
     }
 
     public function getUnreadCount(int $userId): int

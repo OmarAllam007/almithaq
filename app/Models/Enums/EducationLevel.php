@@ -19,12 +19,12 @@ enum EducationLevel: int
     public function label(): string
     {
         return match ($this) {
-            self::ELEMENTARY_SCHOOL => 'Elementary school',
-            self::HIGH_SCHOOL => 'High school',
-            self::UNDERGRADUATE => 'Undergraduate',
-            self::GRADUATE => 'Graduate',
-            self::DOCTORAL => 'Doctoral',
-            self::SELF_STUDY => 'Self study',
+            self::ELEMENTARY_SCHOOL => trans('enums.education_elementary_school'),
+            self::HIGH_SCHOOL => trans('enums.education_high_school'),
+            self::UNDERGRADUATE => trans('enums.education_undergraduate'),
+            self::GRADUATE => trans('enums.education_graduate'),
+            self::DOCTORAL => trans('enums.education_doctoral'),
+            self::SELF_STUDY => trans('enums.education_self_study'),
         };
     }
 }

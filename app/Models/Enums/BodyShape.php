@@ -17,11 +17,11 @@ enum BodyShape: int
     public function label(): string
     {
         return match ($this) {
-            self::SLIM => 'Slim',
-            self::SPORTY => 'Sporty',
-            self::MEDIUM => 'Medium',
-            self::OBESE => 'Obese',
-            self::OVERWEIGHT => 'Overweight',
+            self::SLIM => trans('enums.body_shape_slim'),
+            self::SPORTY => trans('enums.body_shape_sporty'),
+            self::MEDIUM => trans('enums.body_shape_medium'),
+            self::OBESE => trans('enums.body_shape_obese'),
+            self::OVERWEIGHT => trans('enums.body_shape_overweight'),
         };
     }
 }

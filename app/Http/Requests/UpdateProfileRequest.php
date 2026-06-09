@@ -56,7 +56,7 @@ class UpdateProfileRequest extends FormRequest
             'financial_status' => ['nullable', 'integer'],
             'field_of_work' => ['nullable', 'integer'],
             'job' => ['nullable', 'string', 'max:255'],
-            'monthly_income' => ['nullable', 'numeric', 'min:0'],
+            'monthly_income' => ['nullable', 'integer'],
             'health_status' => ['nullable', 'integer'],
 
             // About Section

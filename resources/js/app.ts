@@ -3,7 +3,7 @@ import '../css/app.css';
 import { createPinia } from 'pinia';
 
 import AppLayout from '@/pages/layout/AppLayout.vue';
-import { createInertiaApp, Link } from '@inertiajs/vue3';
+import { createInertiaApp, Link, router } from '@inertiajs/vue3';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { configureEcho } from '@laravel/echo-vue';
@@ -31,9 +31,12 @@ createInertiaApp({
             throw new Error(`Page ${name} not found`);
         }
 
+        console.log(name);
         if (name.includes('Admin')) {
             page.default.layout = AdminLayout;
-        } else if (name.includes('Login') || name.includes('Register') || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword') || name.includes('Verification')) {
+        } else if (name.includes('Login') || name.includes('Register')
+            || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword')
+            || name.includes('Verification') || name.includes('Auth/Signup')) {
             page.default.layout = null;
         } else {
             page.default.layout = AppLayout;
@@ -52,4 +55,23 @@ createInertiaApp({
     progress: {
         color: '#4B5563',
     },
+});
+
+// Reinitialize Metronic KT components after every Inertia navigation
+// (SPA navigations don't reload the page, so KTMenu/KTDrawer etc. must be re-run)
+router.on('navigate', () => {
+    setTimeout(() => {
+        if (typeof (window as any).KTComponents !== 'undefined') {
+            (window as any).KTComponents.init();
+        } else {
+            // Fallback: reinit individual components if KTComponents isn't available
+            const kt = window as any;
+            kt.KTMenu?.init?.();
+            kt.KTDrawer?.init?.();
+            kt.KTScroll?.init?.();
+            kt.KTScrolltop?.init?.();
+            kt.KTSticky?.init?.();
+            kt.KTToggle?.init?.();
+        }
+    }, 50);
 });
