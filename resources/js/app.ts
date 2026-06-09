@@ -24,7 +24,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name: string): DefineComponent | Promise<DefineComponent> | { default: DefineComponent } => {
-        const pages = import.meta.glob<{ default: DefineComponent }>('./Pages/**/*.vue', { eager: true });
+        const pages = import.meta.glob<{ default: DefineComponent }>('./pages/**/*.vue', { eager: true });
         const page = pages[`./pages/${name}.vue`];
 
         if (!page) {
