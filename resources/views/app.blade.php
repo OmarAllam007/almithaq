@@ -13,8 +13,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 @include('_partials._header')
-    {{-- @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"]) --}}
-    @vite('resources/js/app.ts')
+    @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
     @inertiaHead
     @if(config('services.google_adsense.client'))
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('services.google_adsense.client') }}" crossorigin="anonymous"></script>
