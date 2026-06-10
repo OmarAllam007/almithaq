@@ -7,6 +7,7 @@ use App\Http\Controllers\CompleteProfileController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\DeleteAccountController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IgnoreController;
 use App\Http\Controllers\ImageRequestController;
@@ -34,6 +35,9 @@ Route::group(['middleware' => 'guest'], function () {
     Route::post('signup', [RegisterController::class, 'store'])->name('signup.store')->middleware('throttle:10,1');
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'store'])->name('login.store')->middleware('throttle:10,1');
+
+    Route::post('password/forgot/send-code', [ForgotPasswordController::class, 'sendCode'])->name('password.forgot.send')->middleware('throttle:5,1');
+    Route::post('password/forgot/reset', [ForgotPasswordController::class, 'reset'])->name('password.forgot.reset')->middleware('throttle:10,1');
 
 });
 

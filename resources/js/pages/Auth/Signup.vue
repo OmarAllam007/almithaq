@@ -5,7 +5,7 @@ import { switchLanguage } from '@/actions/App/Http/Controllers/LanguageControlle
 import { showAlertError } from '@/lib/utils';
 import PasswordInput from '@/components/Inputs/PasswordInput.vue';
 import { vueLang } from '@erag/lang-sync-inertia';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, ref, watch } from 'vue';
 import { route } from 'ziggy-js';
@@ -187,7 +187,8 @@ function handleSubmit() {
 }
 
 function switchLang(lang: string) {
-    window.location.href = switchLanguage.url(lang);
+    showLangDropdown.value = false;
+    router.visit(switchLanguage.url(lang), { preserveScroll: true });
 }
 </script>
 
