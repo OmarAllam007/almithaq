@@ -15,6 +15,7 @@ interface User {
     age: number;
     nationality: string | number | { id: number; name: string; ar_name: string };
     residence: string | number | { id: number; name: string; ar_name: string };
+    city?: { id: number; name: string; ar_name: string } | null;
     registration_type?: number; // 1 = male, 2 = female
     marriage_status: string;
     marriage_status_label?: string;
@@ -72,6 +73,11 @@ const getResidenceName = computed(() => {
     if (res && typeof res === 'object') return getCountryLabel(res);
     const country = props.countries?.find((c) => c.id === Number(res));
     return country ? getCountryLabel(country) : res;
+});
+
+const getCityName = computed(() => {
+    const city = props.user.city;
+    return city ? getCountryLabel(city) : '';
 });
 
 const toggleFavorite = async () => {
@@ -161,6 +167,13 @@ const handleCardClick = () => emit('viewProfile', props.user.id);
                     <i class="ki-outline ki-geolocation"></i>
                     {{ getResidenceName }}
                 </span>
+                <template v-if="getCityName">
+                    <span class="uc-meta__sep">·</span>
+                    <span class="uc-meta__item">
+                        <i class="ki-outline ki-home-2"></i>
+                        {{ getCityName }}
+                    </span>
+                </template>
             </div>
 
             <div class="uc-badges">

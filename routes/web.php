@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IgnoreController;
 use App\Http\Controllers\ImageRequestController;
 use App\Http\Controllers\InboxController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NewMembersController;
@@ -30,6 +31,8 @@ use App\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 // Auth::loginUsingId(1);
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
 Route::group(['middleware' => 'guest'], function () {
     Route::get('signup', [RegisterController::class, 'showSignupForm'])->name('signup');
     Route::post('signup', [RegisterController::class, 'store'])->name('signup.store')->middleware('throttle:10,1');
@@ -56,7 +59,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Routes requiring completed profile
     Route::group(['middleware' => [\App\Http\Middleware\EnsureProfileCompleted::class, \App\Http\Middleware\EnsureIsVerified::class]], function () {
-        Route::get('/', [HomeController::class, 'index'])->name('home');
+        Route::get('/home', [HomeController::class, 'index'])->name('home');
         // Debug routes (remove in production)
         if (app()->environment('local')) {
             Route::get('/test-broadcast', [\App\Http\Controllers\TestBroadcastController::class, 'testBroadcast']);

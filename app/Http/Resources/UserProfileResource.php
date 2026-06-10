@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\BodyShape;
 use App\Models\Enums\DevotionType;
@@ -41,7 +42,7 @@ class UserProfileResource extends JsonResource
             'health_status' => $this->health_status,
             'monthly_income' => $this->monthly_income,
             'child_count' => $this->child_count,
-            'city' => $this->city,
+            'city' => City::find($this->city)?->only('id', 'name', 'ar_name'),
             'religion' => trans('profile.muslim'),
             'height' => $this->height,
             'weight' => $this->weight,

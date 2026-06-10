@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CompleteProfileRequest;
+use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\BodyShape;
 use App\Models\Enums\DevotionType;
@@ -47,6 +48,15 @@ class CompleteProfileController extends Controller
                 'flag' => $c->flag,
             ]);
 
+        $cities = City::select(['id', 'country_id', 'name', 'ar_name'])
+            ->orderBy($locale === 'ar' ? 'ar_name' : 'name')
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'country_id' => $c->country_id,
+                'name' => trim($locale === 'ar' ? ($c->ar_name ?: $c->name) : $c->name),
+            ]);
+
         // Marriage types filtered by registration type
         $husbandMarriageTypes = [MarriageType::FIRST_WIFE, MarriageType::SECOND_WIFE, MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
         $wifeMarriageTypes = [MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
@@ -68,6 +78,7 @@ class CompleteProfileController extends Controller
 
         return Inertia::render('Auth/CompleteProfile', [
             'countries' => $countries,
+            'cities' => $cities,
             'marriage_types' => $marriageTypes,
             'marriage_statuses' => $marriageStatuses,
             'devotions' => $this->enumToOptions(DevotionType::class),

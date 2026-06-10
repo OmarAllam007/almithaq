@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface Option {
     value: number | string;
@@ -10,6 +10,7 @@ const props = defineProps<{
     modelValue: number | string;
     options: Option[];
     placeholder?: string;
+    disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -38,6 +39,9 @@ onMounted(() => {
         // @ts-ignore
         $(selectEl.value).val(props.modelValue).trigger('change.select2');
     }
+
+    // @ts-ignore
+    $(selectEl.value).prop('disabled', !!props.disabled);
 });
 
 watch(
@@ -50,6 +54,28 @@ watch(
             // @ts-ignore
             $(selectEl.value).val(newVal).trigger('change.select2');
         }
+    },
+);
+
+// When the option list changes (e.g. cascading selects), let select2 re-sync
+// its rendered selection against the freshly rendered <option> elements.
+watch(
+    () => props.options,
+    async () => {
+        await nextTick();
+        if (!selectEl.value) return;
+        // @ts-ignore
+        $(selectEl.value).val(props.modelValue ?? '').trigger('change.select2');
+    },
+    { deep: true },
+);
+
+watch(
+    () => props.disabled,
+    (val) => {
+        if (!selectEl.value) return;
+        // @ts-ignore
+        $(selectEl.value).prop('disabled', !!val);
     },
 );
 

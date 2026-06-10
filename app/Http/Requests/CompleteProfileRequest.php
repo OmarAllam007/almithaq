@@ -30,7 +30,7 @@ class CompleteProfileRequest extends FormRequest
             // Personal Information
             'residence' => ['required', 'integer'],
             'nationality' => ['required', 'integer'],
-            'city' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'integer', 'exists:cities,id'],
             'religion' => ['required', 'string', 'max:255'],
             'weight' => ['required', 'numeric', 'min:30', 'max:300'],
             'height' => ['required', 'numeric', 'min:100', 'max:250'],

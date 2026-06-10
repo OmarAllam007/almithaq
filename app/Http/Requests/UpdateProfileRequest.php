@@ -37,7 +37,7 @@ class UpdateProfileRequest extends FormRequest
             // Location Information
             'residence' => ['nullable', 'integer', 'exists:countries,id'],
             'nationality' => ['nullable', 'integer', 'exists:countries,id'],
-            'city' => ['nullable', 'max:255'],
+            'city' => ['nullable', 'integer', 'exists:cities,id'],
 
             // Physical Attributes
             'weight' => ['nullable', 'numeric', 'min:30', 'max:300'],

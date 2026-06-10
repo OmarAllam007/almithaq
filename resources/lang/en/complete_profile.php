@@ -23,6 +23,7 @@ return [
     'residence' => 'Country of Residence',
     'nationality' => 'Nationality',
     'city' => 'City',
+    'city-select-residence-first' => 'Select your country of residence first',
     'religion' => 'Religion',
     'religion-option' => 'Islamic only',
     'weight' => 'Weight (kg)',

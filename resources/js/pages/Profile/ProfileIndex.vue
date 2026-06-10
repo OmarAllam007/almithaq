@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import ProfileSection from '@/components/Profile/ProfileSection.vue';
 import ProfileField from '@/components/Profile/ProfileField.vue';
@@ -13,6 +13,7 @@ type SelectOption = { value: string; label: string };
 
 interface Props {
     countries: Array<{ id: number; name: string; ar_name: string; flag: string }>;
+    cities: Array<{ id: number; country_id: number; name: string }>;
     marriage_types: SelectOption[];
     marriage_statuses: SelectOption[];
     skin_colors: SelectOption[];
@@ -48,7 +49,7 @@ const form = useForm({
     child_count: toStr(user.value.child_count),
     residence: toStr(user.value.residence?.id),
     nationality: toStr(user.value.nationality?.id),
-    city: user.value.city,
+    city: toStr(user.value.city?.id),
     weight: Number.parseInt(user.value.weight),
     height: Number.parseInt(user.value.height),
     skin_color: toStr(user.value.skin_color),
@@ -79,6 +80,28 @@ const countryDisplayName = (country: any): string => {
     return isArabic.value ? (country.ar_name || country.name) : country.name;
 };
 
+// City options are scoped to the selected residence country.
+const cityOptions = computed(() =>
+    props.cities
+        .filter((c) => String(c.country_id) === String(form.residence))
+        .map((c) => ({ value: c.id.toString(), label: c.name }))
+);
+
+const cityDisplayName = (city: any): string => {
+    if (!city) return '';
+    return isArabic.value ? (city.ar_name || city.name) : city.name;
+};
+
+// Reset the chosen city whenever the residence country changes.
+watch(
+    () => form.residence,
+    (newResidence, oldResidence) => {
+        if (newResidence !== oldResidence) {
+            form.city = '';
+        }
+    }
+);
+
 const toggleEdit = () => {
     if (isEditing.value) {
         // Cancel edit - reset form
@@ -96,6 +119,7 @@ const saveProfile = () => {
         child_count: data.child_count ? parseInt(data.child_count) : null,
         residence: data.residence ? parseInt(data.residence) : null,
         nationality: data.nationality ? parseInt(data.nationality) : null,
+        city: data.city ? parseInt(data.city) : null,
         skin_color: data.skin_color ? parseInt(data.skin_color) : null,
         body_shape: data.body_shape ? parseInt(data.body_shape) : null,
         devotion: data.devotion ? parseInt(data.devotion) : null,
@@ -300,8 +324,9 @@ const submitDeleteAccount = () => {
                             <ProfileField :label="trans('profile.residence')" type="select" :value="form.residence"
                                 :display-value="countryDisplayName(user.residence)" @update:value="(v) => (form.residence = v)"
                                 :is-editing="isEditing" :options="countryOptions" :error="form.errors.residence" />
-                            <ProfileField :label="trans('profile.city')" :value="form.city" @update:value="(v) => (form.city = v)"
-                                :is-editing="isEditing" :error="form.errors.city" />
+                            <ProfileField :label="trans('profile.city')" type="select" :value="form.city"
+                                :display-value="cityDisplayName(user.city)" @update:value="(v) => (form.city = v)"
+                                :is-editing="isEditing" :options="cityOptions" :error="form.errors.city" />
                         </ProfileSection>
                     </div>
 

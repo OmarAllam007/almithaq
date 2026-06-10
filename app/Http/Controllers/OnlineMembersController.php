@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\MarriageStatus;
 use App\Models\Enums\MarriageType;
@@ -78,6 +79,7 @@ class OnlineMembersController extends Controller
                 'age' => $user->age,
                 'nationality' => $user->nationality,
                 'residence' => $user->residence,
+                'city' => City::find($user->city)?->only('id', 'name', 'ar_name'),
                 'marriage_status' => $user->marriage_status,
                 'mainProfileImage' => $canViewImages
                     ? ($image?->original_url ?? $image?->thumbnail_url)

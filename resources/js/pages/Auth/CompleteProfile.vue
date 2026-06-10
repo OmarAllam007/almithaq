@@ -4,7 +4,7 @@ import Select2Input from '@/components/Inputs/Select2Input.vue';
 import { showAlertError } from '@/lib/utils';
 import { vueLang } from '@erag/lang-sync-inertia';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, type PropType } from 'vue';
+import { computed, onMounted, ref, watch, type PropType } from 'vue';
 
 const { __ } = vueLang();
 const page = usePage();
@@ -22,8 +22,15 @@ interface Country {
     flag: string;
 }
 
+interface City {
+    id: number;
+    country_id: number;
+    name: string;
+}
+
 const props = defineProps({
     countries: { type: Array as PropType<Country[]>, required: true },
+    cities: { type: Array as PropType<City[]>, required: true },
     marriage_types: { type: Array as PropType<EnumOption[]>, required: true },
     marriage_statuses: { type: Array as PropType<EnumOption[]>, required: true },
     devotions: { type: Array as PropType<EnumOption[]>, required: true },
@@ -72,6 +79,23 @@ const form = useForm({
     about_self: '',
     full_name: '',
 });
+
+// City options are scoped to the selected residence country.
+const cityOptions = computed(() =>
+    props.cities
+        .filter((c) => String(c.country_id) === String(form.residence))
+        .map((c) => ({ value: c.id, label: c.name })),
+);
+
+// Reset the chosen city whenever the residence country changes.
+watch(
+    () => form.residence,
+    (newResidence, oldResidence) => {
+        if (newResidence !== oldResidence) {
+            form.city = '';
+        }
+    },
+);
 
 const childCount = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 const weightRange = Array.from({ length: 126 }, (_, i) => i + 45);
@@ -311,7 +335,12 @@ function handleSubmit() {
 
                                             <div class="fv-row mb-5">
                                                 <label class="required form-label">{{ __('complete_profile.city') }}</label>
-                                                <input type="text" class="form-control form-control-lg rounded-2" v-model="form.city" />
+                                                <Select2Input
+                                                    v-model="form.city"
+                                                    :options="cityOptions"
+                                                    :disabled="!form.residence"
+                                                    :placeholder="form.residence ? __('complete_profile.select-placeholder') : __('complete_profile.city-select-residence-first')"
+                                                />
                                                 <div v-if="form.errors.city" class="fv-plugins-message-container">
                                                     <div class="fv-help-block"><span role="alert">{{ form.errors.city }}</span></div>
                                                 </div>

@@ -23,6 +23,7 @@ return [
     'residence' => 'بلد الإقامة',
     'nationality' => 'الجنسية',
     'city' => 'المدينة',
+    'city-select-residence-first' => 'اختر دولة الإقامة أولاً',
     'religion' => 'الديانة',
     'religion-option' => 'الإسلام فقط',
     'weight' => 'الوزن (كجم)',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserProfileResource;
+use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\BodyShape;
 use App\Models\Enums\DeleteAccountReason;
@@ -40,8 +41,18 @@ class ProfileController extends Controller
             'label' => $case->label(),
         ])->toArray();
 
+        $locale = app()->getLocale();
+
         return Inertia::render('Profile/ProfileIndex', [
             'countries' => Country::orderBy('name')->select(['id', 'name', 'ar_name', 'flag'])->get(),
+            'cities' => City::select(['id', 'country_id', 'name', 'ar_name'])
+                ->orderBy($locale === 'ar' ? 'ar_name' : 'name')
+                ->get()
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'country_id' => $c->country_id,
+                    'name' => trim($locale === 'ar' ? ($c->ar_name ?: $c->name) : $c->name),
+                ]),
             'marriage_types' => $enumToOptions(MarriageType::class),
             'marriage_statuses' => $enumToOptions(MarriageStatus::class),
             'skin_colors' => $enumToOptions(SkinColor::class),

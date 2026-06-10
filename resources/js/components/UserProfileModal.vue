@@ -30,6 +30,7 @@ interface User {
     registration_type?: number;
     nationality: Country | null;
     residence?: Country | null;
+    city?: Country | null;
     marriage_status: string | number;
     marriage_status_label?: string;
     marriage_type_label?: string;
@@ -399,6 +400,15 @@ watch(
                                                 <div>
                                                     <div class="text-muted fs-7">{{ trans('profile.residence') }}</div>
                                                     <div class="fw-semibold text-gray-800">{{ getCountryName(user.residence) }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-if="user.city" class="col-6">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="ki-outline ki-home-2 fs-3 text-gray-600"></i>
+                                                <div>
+                                                    <div class="text-muted fs-7">{{ trans('profile.city') }}</div>
+                                                    <div class="fw-semibold text-gray-800">{{ getCountryName(user.city) }}</div>
                                                 </div>
                                             </div>
                                         </div>
