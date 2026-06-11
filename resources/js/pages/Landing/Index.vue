@@ -4,6 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { route } from 'ziggy-js';
 import { vueLang } from '@erag/lang-sync-inertia';
+import LandingFooter from './_Shared/LandingFooter.vue';
 
 interface Member {
     id: number;
@@ -574,65 +575,7 @@ const values = computed(() => [
         </section>
 
         <!-- ============ FOOTER ============ -->
-        <footer class="footer">
-            <div class="shell footer__grid">
-                <div class="footer__brand">
-                    <a class="brand brand--light" href="#top" @click.prevent="navTo('top')">
-                        <span class="brand__mark" aria-hidden="true">
-                            <svg viewBox="0 0 40 28" fill="none">
-                                <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
-                                <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
-                            </svg>
-                        </span>
-                        <span class="brand__text">
-                            <span class="brand__name">{{ isRtl ? 'خطوبة' : 'Khotobah' }}</span>
-                            <span class="brand__sub">{{ isRtl ? 'Khotobah' : 'خطوبة' }}</span>
-                        </span>
-                    </a>
-                    <p>{{ __('landing.footer-tagline') }}</p>
-                    <div class="footer__lang">
-                        <button type="button" :class="{ active: !isRtl }" @click="switchLang('en')">English</button>
-                        <span>/</span>
-                        <button type="button" :class="{ active: isRtl }" @click="switchLang('ar')">العربية</button>
-                    </div>
-                </div>
-
-                <div class="footer__col">
-                    <h4>{{ __('landing.footer-explore') }}</h4>
-                    <a href="#features" @click.prevent="navTo('features')">{{ __('landing.nav-features') }}</a>
-                    <a href="#values" @click.prevent="navTo('values')">{{ __('landing.nav-values') }}</a>
-                    <a href="#members" @click.prevent="navTo('members')">{{ __('landing.nav-members') }}</a>
-                    <a href="#mobile-app" @click.prevent="navTo('mobile-app')">{{ __('landing.nav-app') }}</a>
-                </div>
-
-                <div class="footer__col">
-                    <h4>{{ __('landing.footer-company') }}</h4>
-                    <a href="#" @click.prevent>{{ __('landing.footer-about') }}</a>
-                    <a href="#" @click.prevent>{{ __('landing.footer-stories') }}</a>
-                    <a href="#" @click.prevent>{{ __('landing.footer-pricing') }}</a>
-                </div>
-
-                <div class="footer__col">
-                    <h4>{{ __('landing.footer-support') }}</h4>
-                    <a href="#" @click.prevent>{{ __('landing.footer-help') }}</a>
-                    <a href="#" @click.prevent>{{ __('landing.footer-safety') }}</a>
-                    <a href="#" @click.prevent>{{ __('landing.footer-contact') }}</a>
-                </div>
-
-                <div class="footer__col footer__col--cta">
-                    <Link :href="route('signup')" class="btn btn--solid">{{ __('landing.nav-signup') }}</Link>
-                    <Link :href="route('login')" class="btn btn--ghost btn--ghost-light">{{ __('landing.nav-login') }}</Link>
-                </div>
-            </div>
-
-            <div class="shell footer__bottom">
-                <span>© {{ new Date().getFullYear() }} Khotobah · {{ __('landing.footer-rights') }}</span>
-                <div class="footer__legal">
-                    <a href="#" @click.prevent>{{ __('landing.footer-privacy') }}</a>
-                    <a href="#" @click.prevent>{{ __('landing.footer-terms') }}</a>
-                </div>
-            </div>
-        </footer>
+        <LandingFooter />
     </div>
 </template>
 

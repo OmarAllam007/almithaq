@@ -51,8 +51,7 @@ function switchLang(lang: string): void {
             <div class="footer__col">
                 <h4>{{ __('landing.footer-company') }}</h4>
                 <Link :href="route('about')">{{ __('landing.footer-about') }}</Link>
-                <a href="#" @click.prevent>{{ __('landing.footer-stories') }}</a>
-                <a href="#" @click.prevent>{{ __('landing.footer-pricing') }}</a>
+             
             </div>
 
             <div class="footer__col">

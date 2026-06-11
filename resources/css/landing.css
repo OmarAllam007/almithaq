@@ -1,5 +1,6 @@
-/* Shared landing-area styles — all scoped under .landing to avoid app conflicts */
 @import url('https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600,600i,700');
+
+/* Shared landing-area styles — all scoped under .landing to avoid app conflicts */
 
 .landing {
     --ink: #2c0a18;
