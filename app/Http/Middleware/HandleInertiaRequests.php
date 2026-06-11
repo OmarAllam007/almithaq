@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                     'is_verified' => $user->isVerified(),
                     'has_active_subscription' => $user->hasActiveSubscription(),
                 ]),
-                'profile_image' => $user?->mainProfileImage()?->first()?->thumbnail_url,
+                'profile_image' => $user?->mainProfileImage()?->first()?->original_url,
             ] : null,
             'locale' => $locale,
             'lang' => $this->getLanguageData($locale),

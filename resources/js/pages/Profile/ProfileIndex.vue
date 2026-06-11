@@ -220,7 +220,9 @@ const submitDeleteAccount = () => {
                             <div class="d-flex flex-sm-nowrap flex-wrap">
                                 <div class="me-7 mb-4">
                                     <div class="symbol symbol-100px symbol-lg-100px symbol-fixed position-relative">
-                                        <img :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" alt="image" />
+                                        <img 
+                                        style="object-fit: cover;"
+                                        :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" alt="image" />
                                         <div
                                             class="translate-middle bg-success rounded-circle border-body
                                              h-20px w-20px bottom-0 mb-6 border border-4 start-100 top-100">

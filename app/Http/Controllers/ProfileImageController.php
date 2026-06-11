@@ -24,6 +24,7 @@ class ProfileImageController extends Controller
                 return [
                     'id' => $image->id,
                     'thumbnail_url' => $image->thumbnail_url,
+                    'original_url' => $image->original_url,
                     'is_main' => $image->is_main,
                     'is_approved' => $image->is_approved,
                     'order' => $image->order,

@@ -8,6 +8,7 @@ const { trans } = useLang();
 interface Image {
     id: number;
     thumbnail_url: string;
+    original_url: string;
     is_main: boolean;
     is_approved: boolean;
     order: number;
@@ -265,11 +266,10 @@ onUnmounted(() => {
 
                                         <!-- Image -->
                                         <img
-                                            :src="image.thumbnail_url"
+                                            :src="image.original_url"
                                             :alt="`Profile image ${image.id}`"
                                             class="card-img-top"
                                             style="height: 200px; object-fit: cover"
-                                            @error="(e) => console.error('Image load error:', image.thumbnail_url, e)"
                                         />
 
                                         <!-- Actions -->
