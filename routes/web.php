@@ -26,6 +26,7 @@ use App\Http\Controllers\QuickSearchController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\SmartSearchController;
+use App\Http\Controllers\StaticPagesController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserInteractionsController;
 use App\Http\Controllers\VerificationController;
@@ -33,6 +34,11 @@ use Illuminate\Support\Facades\Route;
 
 // Auth::loginUsingId(1);
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/about', [StaticPagesController::class, 'about'])->name('about');
+Route::get('/contact', [StaticPagesController::class, 'contact'])->name('contact');
+Route::post('/contact', [StaticPagesController::class, 'sendContact'])->name('contact.send')->middleware('throttle:5,1');
+Route::get('/privacy', [StaticPagesController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [StaticPagesController::class, 'terms'])->name('terms');
 
 Route::group(['middleware' => 'guest'], function () {
     Route::get('signup', [RegisterController::class, 'showSignupForm'])->name('signup');
