@@ -12,6 +12,7 @@ return [
     'age_range_label' => '{min} – {max} سنة',
     'nationality' => 'الجنسية',
     'residence' => 'المنطقة',
+    'city' => 'المدينة',
     'marriage_status' => 'حالة الزواج',
     'clear_filters' => 'مسح الفلاتر',
 ];

@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'title' => 'Identity Verification',
+    'subtitle' => 'Verify your identity to access the platform',
+    'why_title' => 'Why is verification required?',
+    'why_body' => 'To ensure the safety and authenticity of our community, we require all users to upload a short verification video 10sec max. This helps prevent fake accounts and protects all members.',
+    'why_note' => 'Your video will only be reviewed by an admin',
+    'why_note_suffix' => ' and will never be shared publicly.',
+    'pending_title' => 'Pending Admin Approval',
+    'pending_body' => "Your verification video has been uploaded successfully! An administrator will review it shortly. You'll gain full access once approved.",
+    'under_review' => 'Under Review',
+    'rejected_note' => 'If your video was rejected, you can re-upload a new one below.',
+    'logout' => 'Logout',
+    'requirements_title' => 'Upload Requirements',
+    'video_formats_label' => 'Video Formats',
+    'video_formats_value' => 'MP4, MOV, AVI, WebM, MKV',
+    'max_size_label' => 'Max File Size',
+    'max_size_value' => '10 MB',
+    'drop_title' => 'Drop your video here',
+    'drop_subtitle' => 'or click to browse files',
+    'choose_file' => 'Choose File',
+    'remove_file' => 'Remove file',
+    'submit_btn' => 'Upload Verification Video',
+    'uploading' => 'Uploading...',
+    'uploaded_percent' => '% uploaded',
+];

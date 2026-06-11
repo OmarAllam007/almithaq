@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title_khotobah'=> 'Khotobah App',
+    'title_khotobah' => 'Khotobah App',
     'home' => 'Home',
     'years_old' => 'years old',
     'message' => 'Message',
@@ -25,6 +25,8 @@ return [
     'all_nationalities' => 'All Nationalities',
     'residence' => 'Residence',
     'all_countries' => 'All Countries',
+    'city' => 'City',
+    'all_cities' => 'All Cities',
     'marriage_status' => 'Marriage Status',
     'any_status' => 'Any Status',
     'age_range' => 'Age Range',

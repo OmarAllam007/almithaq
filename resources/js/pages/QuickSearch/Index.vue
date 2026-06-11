@@ -19,9 +19,16 @@ interface Country {
     ar_name: string;
 }
 
+interface City {
+    id: number;
+    name: string;
+    ar_name: string;
+}
+
 interface Filters {
     nationality: number | null;
     residence: number | null;
+    city: City | null;
     marriage_status: number | null;
     marriage_status_label: string | null;
     age_min: number;
@@ -59,6 +66,11 @@ const activeFilterChips = computed(() => {
     if (props.filters.residence) {
         const name = getCountryName(props.filters.residence);
         if (name) chips.push({ label: trans('quick_search.residence'), value: name });
+    }
+
+    if (props.filters.city) {
+        const cityName = isRtl.value ? props.filters.city.ar_name : props.filters.city.name;
+        chips.push({ label: trans('quick_search.city'), value: cityName });
     }
 
     if (props.filters.marriage_status && props.filters.marriage_status_label) {

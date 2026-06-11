@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title_khotobah'=> 'تطبيق خطوبة',
+    'title_khotobah' => 'تطبيق خطوبة',
     'home' => 'الرئيسية',
     'years_old' => 'سنة',
     'message' => 'رسالة',
@@ -25,6 +25,8 @@ return [
     'all_nationalities' => 'جميع الجنسيات',
     'residence' => 'المنطقة',
     'all_countries' => 'جميع الدول',
+    'city' => 'المدينة',
+    'all_cities' => 'جميع المدن',
     'marriage_status' => 'حالة الزواج',
     'any_status' => 'أي حالة',
     'age_range' => 'مدى العمر',

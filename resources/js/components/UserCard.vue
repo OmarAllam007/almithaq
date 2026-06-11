@@ -109,11 +109,11 @@ const handleCardClick = () => emit('viewProfile', props.user.id);
         <div class="uc-photo">
             
             <img
-                :src="user.mainProfileImage || '/assets/media/auth/no-image-for-user.png'"
+                :src="user.mainProfileImage || (isFemale ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')"
                 :alt="user.username"
                 class="uc-photo__img"
-                :class="{ 'uc-photo__img--blurred': user.can_view_images === false }"
-                @error="($event.target as HTMLImageElement).src = '/assets/media/auth/no-image-for-user.png'"
+                :class="{ 'uc-photo__img--blurred': user.can_view_images === false && !!user.mainProfileImage }"
+                @error="($event.target as HTMLImageElement).src = isFemale ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png'"
             />
 
             <div class="uc-photo__gradient"></div>

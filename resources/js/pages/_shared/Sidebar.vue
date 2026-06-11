@@ -100,7 +100,7 @@ const currentLanguageBadge = computed(() => {
                     :class="{ 'sidebar-subscriber-avatar': $page.props.auth?.user?.has_active_subscription }"
                     data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
                     :data-kt-menu-placement="isRtl ? 'bottom-start' : 'bottom-end'">
-                    <img :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" alt="user" style="width: 40px; height: 40px; object-fit: cover;" />
+                    <img :src="$page.props.auth?.profile_image || ($page.props.auth?.user?.registration_type === 2 ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')" alt="user" style="width: 40px; height: 40px; object-fit: cover;" />
                     <div v-if="$page.props.auth?.user?.has_active_subscription"
                         :class="[
                             'position-absolute rounded-circle h-8px w-8px mt-n3 top-100',
@@ -122,7 +122,7 @@ const currentLanguageBadge = computed(() => {
                         <div class="menu-content d-flex align-items-center px-3">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-50px me-5">
-                                <img alt="Logo" :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" style="width: 50px; height: 50px; object-fit: cover;" />
+                                <img alt="Logo" :src="$page.props.auth?.profile_image || ($page.props.auth?.user?.registration_type === 2 ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')" style="width: 50px; height: 50px; object-fit: cover;" />
                             </div>
                             <!--end::Avatar-->
                             <!--begin::Username-->

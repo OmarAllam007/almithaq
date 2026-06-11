@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CitiesController;
 use App\Http\Controllers\Api\UsernameCheckController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -129,6 +130,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Quick Search (from home page filters)
         Route::get('quick-search', [QuickSearchController::class, 'index'])->name('quick-search.index');
+        Route::get('api/cities', [CitiesController::class, 'index'])->name('api.cities');
 
         // Smart Search
         Route::get('smart-search', [SmartSearchController::class, 'index'])->name('smart-search.index');

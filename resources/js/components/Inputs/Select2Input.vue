@@ -92,3 +92,10 @@ onBeforeUnmount(() => {
         <option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
     </select>
 </template>
+
+<style>
+[dir='rtl'] .select2-container--bootstrap5 .select2-selection__clear {
+    right: auto;
+    left: 3rem;
+}
+</style>

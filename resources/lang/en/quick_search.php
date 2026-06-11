@@ -12,6 +12,7 @@ return [
     'age_range_label' => '{min} – {max} years',
     'nationality' => 'Nationality',
     'residence' => 'Residence',
+    'city' => 'City',
     'marriage_status' => 'Marriage Status',
     'clear_filters' => 'Clear Filters',
 ];

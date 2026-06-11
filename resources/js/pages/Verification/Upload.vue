@@ -2,6 +2,7 @@
 import { useForm, usePage, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { route } from 'ziggy-js';
+import { useLang } from '@/composables/useLang';
 
 interface Props {
     hasVideo: boolean;
@@ -11,6 +12,8 @@ interface Props {
 const props = defineProps<Props>();
 const page = usePage();
 const flash = computed(() => (page.props as any).flash);
+const { trans } = useLang();
+const isRtl = computed(() => (page.props as any).locale === 'ar');
 const dragActive = ref(false);
 const previewUrl = ref<string | null>(null);
 
@@ -93,7 +96,7 @@ const submitForm = () => {
 </script>
 
 <template>
-    <div class="verification-page d-flex flex-column flex-root" id="kt_app_root">
+    <div class="verification-page d-flex flex-column flex-root" id="kt_app_root" :dir="isRtl ? 'rtl' : 'ltr'">
         <div class="d-flex flex-column flex-column-fluid">
             <div class="d-flex flex-column flex-lg-row-fluid p-lg-10 w-100 p-5">
                 <div class="d-flex flex-center flex-column w-100">
@@ -104,19 +107,18 @@ const submitForm = () => {
                             <div class="verification-icon-wrapper mb-5">
                                 <i class="ki-outline ki-shield-tick fs-3x text-primary"></i>
                             </div>
-                            <h1 class="fw-bold fs-2x text-gray-900 mb-2">Identity Verification</h1>
-                            <p class="text-muted fw-semibold fs-5">Verify your identity to access the platform</p>
+                            <h1 class="fw-bold fs-2x text-gray-900 mb-2">{{ trans('verification.title') }}</h1>
+                            <p class="text-muted fw-semibold fs-5">{{ trans('verification.subtitle') }}</p>
                         </div>
 
                         <!-- Alert: Why Verification is Needed -->
                         <div class="alert alert-dismissible bg-light-warning border border-warning d-flex flex-column flex-sm-row p-5 mb-8">
                             <i class="ki-outline ki-information-4 fs-2hx text-warning me-4 mb-5 mb-sm-0"></i>
                             <div class="d-flex flex-column pe-0 pe-sm-10">
-                                <h4 class="fw-semibold text-gray-900">Why is verification required?</h4>
+                                <h4 class="fw-semibold text-gray-900">{{ trans('verification.why_title') }}</h4>
                                 <span class="text-gray-700 fs-6">
-                                    To ensure the safety and authenticity of our community, we require all users to upload a short
-                                    verification video. This helps prevent fake accounts and protects all members.
-                                    <strong>Your video will only be reviewed by an admin</strong> and will never be shared publicly.
+                                    {{ trans('verification.why_body') }}
+                                    <strong>{{ trans('verification.why_note') }}</strong>{{ trans('verification.why_note_suffix') }}
                                 </span>
                             </div>
                         </div>
@@ -129,25 +131,24 @@ const submitForm = () => {
                                         <i class="ki-outline ki-time fs-4x text-warning"></i>
                                     </div>
                                 </div>
-                                <h2 class="fw-bold text-gray-900 mb-3">Pending Admin Approval</h2>
+                                <h2 class="fw-bold text-gray-900 mb-3">{{ trans('verification.pending_title') }}</h2>
                                 <p class="text-gray-600 fs-5 mb-8 mw-500px mx-auto">
-                                    Your verification video has been uploaded successfully! An administrator will review
-                                    it shortly. You'll gain full access once approved.
+                                    {{ trans('verification.pending_body') }}
                                 </p>
                                 <div class="d-flex flex-center gap-4">
                                     <span class="badge badge-light-warning fs-6 py-3 px-5">
                                         <i class="ki-outline ki-timer fs-4 me-1"></i>
-                                        Under Review
+                                        {{ trans('verification.under_review') }}
                                     </span>
                                 </div>
                                 <div class="separator my-8"></div>
                                 <p class="text-gray-500 fs-7 mb-4">
-                                    If your video was rejected, you can re-upload a new one below.
+                                    {{ trans('verification.rejected_note') }}
                                 </p>
                                 <Link :href="route('logout')" method="post"
                                     class="btn btn-sm btn-light-danger">
                                     <i class="ki-outline ki-exit-right fs-4 me-1"></i>
-                                    Logout
+                                    {{ trans('verification.logout') }}
                                 </Link>
                             </div>
                         </div>
@@ -158,20 +159,20 @@ const submitForm = () => {
                                 <form @submit.prevent="submitForm">
                                     <!-- Upload Requirements -->
                                     <div class="d-flex flex-column mb-8">
-                                        <h3 class="fw-bold text-gray-900 fs-3 mb-4">Upload Requirements</h3>
+                                        <h3 class="fw-bold text-gray-900 fs-3 mb-4">{{ trans('verification.requirements_title') }}</h3>
                                         <div class="d-flex flex-wrap gap-4">
                                             <div class="d-flex align-items-center bg-light-primary rounded p-3 flex-grow-1">
                                                 <i class="ki-outline ki-film fs-2 text-primary me-3"></i>
                                                 <div>
-                                                    <span class="fw-bold text-gray-800 d-block fs-7">Video Formats</span>
-                                                    <span class="text-gray-600 fs-8">MP4, MOV, AVI, WebM, MKV</span>
+                                                    <span class="fw-bold text-gray-800 d-block fs-7">{{ trans('verification.video_formats_label') }}</span>
+                                                    <span class="text-gray-600 fs-8">{{ trans('verification.video_formats_value') }}</span>
                                                 </div>
                                             </div>
                                             <div class="d-flex align-items-center bg-light-info rounded p-3 flex-grow-1">
                                                 <i class="ki-outline ki-data fs-2 text-info me-3"></i>
                                                 <div>
-                                                    <span class="fw-bold text-gray-800 d-block fs-7">Max File Size</span>
-                                                    <span class="text-gray-600 fs-8">10 MB</span>
+                                                    <span class="fw-bold text-gray-800 d-block fs-7">{{ trans('verification.max_size_label') }}</span>
+                                                    <span class="text-gray-600 fs-8">{{ trans('verification.max_size_value') }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -192,11 +193,11 @@ const submitForm = () => {
                                         <!-- No File Selected -->
                                         <div v-if="!form.video" class="text-center py-10">
                                             <i class="ki-outline ki-cloud-add fs-4x mb-5 text-gray-400 d-block"></i>
-                                            <h4 class="fw-semibold text-gray-800 mb-2">Drop your video here</h4>
-                                            <p class="text-gray-500 fs-7 mb-5">or click to browse files</p>
+                                            <h4 class="fw-semibold text-gray-800 mb-2">{{ trans('verification.drop_title') }}</h4>
+                                            <p class="text-gray-500 fs-7 mb-5">{{ trans('verification.drop_subtitle') }}</p>
                                             <label class="btn btn-primary btn-sm cursor-pointer">
                                                 <i class="ki-outline ki-folder-added fs-4 me-1"></i>
-                                                Choose File
+                                                {{ trans('verification.choose_file') }}
                                                 <input
                                                     id="verification_video_input"
                                                     type="file"
@@ -233,7 +234,7 @@ const submitForm = () => {
                                                         type="button"
                                                         class="btn btn-icon btn-sm btn-light-danger"
                                                         @click="removeFile"
-                                                        title="Remove file"
+                                                        :title="trans('verification.remove_file')"
                                                     >
                                                         <i class="ki-outline ki-cross fs-3"></i>
                                                     </button>
@@ -257,7 +258,7 @@ const submitForm = () => {
                                         <Link :href="route('logout')" method="post"
                                             class="btn btn-light-danger">
                                             <i class="ki-outline ki-exit-right fs-4 me-1"></i>
-                                            Logout
+                                            {{ trans('verification.logout') }}
                                         </Link>
 
                                         <button
@@ -268,11 +269,11 @@ const submitForm = () => {
                                         >
                                             <span v-if="!form.processing">
                                                 <i class="ki-outline ki-shield-tick fs-3 me-1"></i>
-                                                Upload Verification Video
+                                                {{ trans('verification.submit_btn') }}
                                             </span>
                                             <span v-else class="d-flex align-items-center">
                                                 <span class="spinner-border spinner-border-sm me-2"></span>
-                                                Uploading...
+                                                {{ trans('verification.uploading') }}
                                             </span>
                                         </button>
                                     </div>
@@ -290,7 +291,7 @@ const submitForm = () => {
                                 ></div>
                             </div>
                             <span class="text-gray-500 fs-8 mt-2 d-block text-center">
-                                {{ form.progress?.percentage || 0 }}% uploaded
+                                {{ form.progress?.percentage || 0 }}{{ trans('verification.uploaded_percent') }}
                             </span>
                         </div>
 

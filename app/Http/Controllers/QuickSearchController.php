@@ -25,7 +25,7 @@ class QuickSearchController extends Controller
         $isBrowsingMaleProfiles = $currentUser->registration_type === 2;
 
         $query = User::query()
-            ->select(['id', 'username', 'age', 'nationality', 'residence', 'marriage_status', 'marriage_type', 'registration_type', 'last_seen_at'])
+            ->select(['id', 'username', 'age', 'nationality', 'residence', 'city', 'marriage_status', 'marriage_type', 'registration_type', 'last_seen_at'])
             ->with('mainProfileImage')
             ->where('id', '!=', $currentUser->id)
             ->where('registration_type', $oppositeType);
@@ -48,6 +48,10 @@ class QuickSearchController extends Controller
 
         if ($request->filled('age_max')) {
             $query->where('age', '<=', (int) $request->age_max);
+        }
+
+        if ($request->filled('city_id')) {
+            $query->where('city', (int) $request->city_id);
         }
 
         $paginator = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
@@ -114,12 +118,17 @@ class QuickSearchController extends Controller
                 ?->labelForGender($isBrowsingMaleProfiles);
         }
 
+        $cityFilter = $request->filled('city_id')
+            ? City::find((int) $request->city_id)?->only(['id', 'name', 'ar_name'])
+            : null;
+
         return Inertia::render('QuickSearch/Index', [
             'users' => $users,
             'countries' => $countries,
             'filters' => [
                 'nationality' => $request->filled('nationality') ? (int) $request->nationality : null,
                 'residence' => $request->filled('residence') ? (int) $request->residence : null,
+                'city' => $cityFilter,
                 'marriage_status' => $request->filled('marriage_status') ? (int) $request->marriage_status : null,
                 'marriage_status_label' => $marriageStatusLabel,
                 'age_min' => $request->input('age_min', 18),

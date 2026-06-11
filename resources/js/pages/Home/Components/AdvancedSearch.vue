@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import noUiSlider from 'nouislider';
 import 'nouislider/dist/nouislider.css';
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import { useLang } from '@/composables/useLang';
 import Select2Input from '@/components/Inputs/Select2Input.vue';
 const { trans } = useLang();
@@ -22,10 +23,35 @@ const props = withDefaults(defineProps<Props>(), {
 const filters = ref({
     nationality: '' as number | '',
     residence: '' as number | '',
+    city_id: '' as number | '',
     age_min: 18,
     age_max: 60,
     marriage_status: '' as number | '',
 });
+
+const cities = ref<Array<{ value: number; label: string }>>([]);
+const isLoadingCities = ref(false);
+
+watch(
+    () => filters.value.residence,
+    async (newResidence) => {
+        filters.value.city_id = '';
+        cities.value = [];
+
+        if (newResidence === '') return;
+
+        isLoadingCities.value = true;
+        try {
+            const response = await axios.get('/api/cities', { params: { country_id: newResidence } });
+            cities.value = response.data.map((c: { id: number; name: string; ar_name: string }) => ({
+                value: c.id,
+                label: isRtl.value ? c.ar_name : c.name,
+            }));
+        } finally {
+            isLoadingCities.value = false;
+        }
+    },
+);
 
 const countryOptions = computed(() =>
     props.countries.map((c) => ({
@@ -108,6 +134,9 @@ const handleSearch = () => {
     if (filters.value.residence !== '') {
         payload.residence = filters.value.residence;
     }
+    if (filters.value.city_id !== '') {
+        payload.city_id = filters.value.city_id;
+    }
     if (filters.value.marriage_status !== '') {
         payload.marriage_status = filters.value.marriage_status;
     }
@@ -119,10 +148,13 @@ const resetFilters = () => {
     filters.value = {
         nationality: '',
         residence: '',
+        city_id: '',
         age_min: 18,
         age_max: 60,
         marriage_status: '',
     };
+
+    cities.value = [];
 
     if (ageSlider.value?.noUiSlider) {
         ageSlider.value.noUiSlider.set([18, 60]);
@@ -159,6 +191,17 @@ const resetFilters = () => {
                             :options="countryOptions"
                             :placeholder="trans('home.all_countries')"
                             @update:model-value="(v) => (filters.residence = parseCountryValue(v))"
+                        />
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label fw-semibold text-gray-700">{{ trans('home.city') }}</label>
+                        <Select2Input
+                            :model-value="filters.city_id"
+                            :options="cities"
+                            :placeholder="trans('home.all_cities')"
+                            :disabled="filters.residence === '' || isLoadingCities"
+                            @update:model-value="(v) => (filters.city_id = parseCountryValue(v))"
                         />
                     </div>
 

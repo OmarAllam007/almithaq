@@ -222,7 +222,7 @@ const submitDeleteAccount = () => {
                                     <div class="symbol symbol-100px symbol-lg-100px symbol-fixed position-relative">
                                         <img 
                                         style="object-fit: cover;"
-                                        :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" alt="image" />
+                                        :src="$page.props.auth?.profile_image || (user.registration_type === 2 ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')" alt="image" />
                                         <div
                                             class="translate-middle bg-success rounded-circle border-body
                                              h-20px w-20px bottom-0 mb-6 border border-4 start-100 top-100">

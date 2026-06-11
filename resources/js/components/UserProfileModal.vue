@@ -293,7 +293,7 @@ watch(
                                 <div class="position-relative mb-4">
                                     <div class="symbol symbol-100px symbol-circle" :class="{ 'modal-subscriber-avatar': user.is_subscriber }">
                                         <img
-                                            :src="user.mainProfileImage || '/assets/media/auth/no-image-for-user.png'"
+                                            :src="user.mainProfileImage || (isFemale ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')"
                                             :alt="user.username"
                                             class="rounded-circle"
                                             style="width:100px;height:100px;object-fit:cover;"
