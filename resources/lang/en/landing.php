@@ -13,7 +13,7 @@ return [
     'hero-eyebrow' => 'A covenant worth keeping',
     'hero-title-1' => 'Where sincere hearts',
     'hero-title-2' => 'meet with intention',
-    'hero-desc' => 'Almithaq is a serious, values-led matrimonial community for those seeking a lifelong partner. No games, no noise — only meaningful connections built on respect and faith.',
+    'hero-desc' => 'Khotobah is a values-driven matrimonial community for those seeking a lifelong partner through a sincere and purposeful path to marriage. Rooted in faith, respect, and family values, we help meaningful connections grow into blessed marriages. No games, no distractions — only genuine intentions and lasting companionship.',
     'hero-cta-primary' => 'Begin your journey',
     'hero-cta-secondary' => 'I already have an account',
     'hero-trust' => 'Trusted by thousands of sincere seekers',
@@ -38,7 +38,7 @@ return [
     'feature-4-desc' => 'When hearts align, take the next step toward a blessed marriage.',
 
     // Values
-    'values-eyebrow' => 'Why Almithaq',
+    'values-eyebrow' => 'Why Khotobah',
     'values-title' => 'A space built on trust, privacy, and sincerity',
     'value-1-title' => 'Privacy first',
     'value-1-desc' => 'Your photos and details stay yours. Share them only with people you choose.',
@@ -62,7 +62,7 @@ return [
     // Mobile app
     'app-eyebrow' => 'Take it with you',
     'app-title' => 'Your search, in your pocket',
-    'app-desc' => 'Stay connected wherever you are. Get instant notifications, chat on the move, and never miss a meaningful match with the Almithaq app.',
+    'app-desc' => 'Stay connected wherever you are. Get instant notifications, chat on the move, and never miss a meaningful match with the Khotobah app.',
     'app-feature-1' => 'Instant match alerts',
     'app-feature-2' => 'Secure private messaging',
     'app-feature-3' => 'Browse anywhere, anytime',

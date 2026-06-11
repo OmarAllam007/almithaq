@@ -3,6 +3,7 @@ import '../css/app.css';
 import { createPinia } from 'pinia';
 
 import AppLayout from '@/pages/layout/AppLayout.vue';
+import LandingLayout from '@/pages/layout/LandingLayout.vue';
 import { createInertiaApp, Link, router } from '@inertiajs/vue3';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
@@ -34,6 +35,8 @@ createInertiaApp({
         console.log(name);
         if (name.includes('Admin')) {
             page.default.layout = AdminLayout;
+        } else if (name.includes('Landing')) {
+            page.default.layout = LandingLayout;
         } else if (name.includes('Login') || name.includes('Register')
             || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword')
             || name.includes('Verification') || name.includes('Auth/Signup')) {

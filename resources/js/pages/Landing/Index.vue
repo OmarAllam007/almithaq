@@ -148,10 +148,11 @@ const values = computed(() => [
             href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600,600i,700"
             rel="stylesheet"
         />
-        <title>{{ __('landing.hero-title-1') }} — Almithaq</title>
+        <title>{{ __('landing.hero-title-1') }} — Khotobah</title>
     </Head>
 
     <div class="landing" :dir="isRtl ? 'rtl' : 'ltr'" :class="{ 'is-ar': isRtl }">
+
         <!-- ============ NAV ============ -->
         <header class="nav" :class="{ scrolled }">
             <div class="shell nav__inner">
@@ -163,8 +164,8 @@ const values = computed(() => [
                         </svg>
                     </span>
                     <span class="brand__text">
-                        <span class="brand__name">Almithaq</span>
-                        <span class="brand__sub">الميثاق</span>
+                        <span class="brand__name">Khotobah</span>
+                        <span class="brand__sub">خطوبة</span>
                     </span>
                 </a>
 
@@ -418,8 +419,8 @@ const values = computed(() => [
                         <div class="member__name">
                             <span>{{ m.username }}</span>
                             <svg v-if="m.is_verified" class="member__verified" viewBox="0 0 24 24" fill="none">
-                                <path d="m12 2 2.4 1.7 2.9-.2 1 2.7 2.4 1.7-.7 2.8.7 2.8-2.4 1.7-1 2.7-2.9-.2L12 22l-2.4-1.6-2.9.2-1-2.7-2.4-1.7.7-2.8-.7-2.8 2.4-1.7 1-2.7 2.9.2L12 2Z" fill="currentColor" />
-                                <path d="m9.3 12 1.9 1.9 3.5-3.6" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="12" r="10" fill="currentColor" />
+                                <path d="m8 12.5 2.8 2.8 5.2-5.6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </div>
                         <span v-if="m.age" class="member__age">{{ __('landing.members-years', { age: m.age }) }}</span>
@@ -467,7 +468,7 @@ const values = computed(() => [
                         <div class="phone__notch"></div>
                         <div class="phone__screen">
                             <div class="phone__top">
-                                <span class="phone__brand">Almithaq</span>
+                                <span class="phone__brand">Khotobah</span>
                                 <span class="phone__live"><i></i>{{ __('landing.members-online-now') }}</span>
                             </div>
                             <div class="phone__bubble phone__bubble--in">{{ __('landing.feature-3-title') }}</div>
@@ -508,8 +509,8 @@ const values = computed(() => [
                             </svg>
                         </span>
                         <span class="brand__text">
-                            <span class="brand__name">Almithaq</span>
-                            <span class="brand__sub">الميثاق</span>
+                            <span class="brand__name">Khotobah</span>
+                            <span class="brand__sub">خطوبة</span>
                         </span>
                     </a>
                     <p>{{ __('landing.footer-tagline') }}</p>
@@ -549,7 +550,7 @@ const values = computed(() => [
             </div>
 
             <div class="shell footer__bottom">
-                <span>© {{ new Date().getFullYear() }} Almithaq · {{ __('landing.footer-rights') }}</span>
+                <span>© {{ new Date().getFullYear() }} Khotobah · {{ __('landing.footer-rights') }}</span>
                 <div class="footer__legal">
                     <a href="#" @click.prevent>{{ __('landing.footer-privacy') }}</a>
                     <a href="#" @click.prevent>{{ __('landing.footer-terms') }}</a>
@@ -699,122 +700,8 @@ const values = computed(() => [
 .btn__arrow { width: 18px; height: 18px; }
 .is-ar .btn__arrow { rotate: 180deg; }
 
-/* ===== NAV ===== */
-.nav {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    transition: background 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
-}
-.nav.scrolled {
-    background: rgba(251, 245, 239, 0.85);
-    backdrop-filter: blur(14px);
-    box-shadow: 0 1px 0 var(--line);
-}
-.nav__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    height: 74px;
-}
-.brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--plum); }
-.brand__mark { color: var(--rose); display: inline-flex; }
-.brand__mark svg { width: 40px; height: 28px; }
-.brand__text { display: flex; flex-direction: column; line-height: 1; }
-.brand__name { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.01em; color: var(--plum); }
-.brand__sub { font-size: 0.72rem; color: var(--rose); font-weight: 600; margin-top: 2px; }
-.brand--light .brand__name { color: #fff; }
-.brand--light .brand__sub { color: var(--gold-soft); }
-.brand--light .brand__mark { color: var(--gold-soft); }
-
-.nav__links { display: flex; gap: 1.8rem; }
-.nav__links a {
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: var(--plum);
-    text-decoration: none;
-    position: relative;
-    opacity: 0.85;
-    transition: opacity 0.2s ease;
-}
-.nav__links a::after {
-    content: '';
-    position: absolute;
-    left: 0; bottom: -6px;
-    width: 0; height: 2px;
-    background: var(--rose);
-    transition: width 0.25s ease;
-}
-.nav__links a:hover { opacity: 1; }
-.nav__links a:hover::after { width: 100%; }
-
-.nav__actions { display: flex; align-items: center; gap: 0.7rem; }
-
-.lang { position: relative; }
-.lang__toggle {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.82rem; font-weight: 700; color: var(--plum);
-    cursor: pointer;
-}
-.lang__toggle img { width: 16px; height: 16px; border-radius: 3px; }
-.lang__menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    inset-inline-end: 0;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 0.75rem;
-    box-shadow: 0 18px 40px -18px rgba(69, 17, 42, 0.4);
-    padding: 0.3rem;
-    min-width: 160px;
-    z-index: 60;
-}
-.lang__menu button {
-    display: flex; align-items: center; gap: 0.55rem;
-    width: 100%;
-    padding: 0.55rem 0.7rem;
-    border: none; background: none; cursor: pointer;
-    border-radius: 0.5rem;
-    font-size: 0.88rem; font-weight: 600; color: var(--plum);
-    text-align: start;
-}
-.lang__menu button img { width: 18px; height: 18px; border-radius: 3px; }
-.lang__menu button:hover { background: var(--cream-2); }
-.lang__menu button.active { color: var(--rose); background: var(--blush); }
-
-.burger {
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-    background: none; border: none; cursor: pointer;
-    padding: 6px;
-}
-.burger span { width: 22px; height: 2px; background: var(--plum); border-radius: 2px; }
-
-.nav__mobile {
-    display: none;
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.8rem 1.5rem 1.4rem;
-    background: rgba(251, 245, 239, 0.97);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--line);
-}
-.nav__mobile a {
-    padding: 0.7rem 0.4rem;
-    font-weight: 600; color: var(--plum); text-decoration: none;
-    border-bottom: 1px solid var(--line);
-}
-.nav__mobile-actions { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
-.nav__mobile-actions .btn { flex: 1; }
-
 /* ===== HERO ===== */
-.hero { position: relative; padding: 3.5rem 0 5rem; overflow: hidden; }
+.hero { position: relative; padding: 5rem 0 5rem; overflow: hidden; }
 .hero__glow {
     position: absolute;
     border-radius: 50%;
@@ -879,13 +766,19 @@ const values = computed(() => [
     border: 2px solid;
 }
 .ring--a {
-    inset: 8% 30% 22% 8%;
+    width: 65%;
+    height: 65%;
+    top: 5%;
+    left: 5%;
     border-color: rgba(208, 46, 121, 0.55);
     box-shadow: inset 0 0 40px rgba(208, 46, 121, 0.12);
     animation: floaty 6s ease-in-out infinite;
 }
 .ring--b {
-    inset: 22% 8% 8% 30%;
+    width: 65%;
+    height: 65%;
+    bottom: 5%;
+    right: 5%;
     border-color: rgba(199, 154, 63, 0.6);
     box-shadow: inset 0 0 40px rgba(199, 154, 63, 0.14);
     animation: floaty 6s ease-in-out infinite reverse;
@@ -1123,7 +1016,7 @@ const values = computed(() => [
     display: inline-flex; align-items: center; gap: 0.3rem;
     font-weight: 700; color: var(--plum); font-size: 1rem;
 }
-.member__verified { width: 17px; height: 17px; color: var(--rose); }
+.member__verified { width: 18px; height: 18px; color: var(--rose); }
 .member__age { font-size: 0.82rem; color: rgba(44, 10, 24, 0.55); margin-top: 0.15rem; }
 .member__join {
     margin-top: 0.9rem;
@@ -1303,8 +1196,120 @@ const values = computed(() => [
 /* ===== Transitions ===== */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-6px); }
-.slide-enter-active, .slide-leave-active { transition: opacity 0.25s ease, transform 0.25s ease; overflow: hidden; }
-.slide-enter-from, .slide-leave-to { opacity: 0; transform: translateY(-12px); }
+
+/* ===== NAV ===== */
+.nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    transition: background 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+}
+.nav.scrolled {
+    background: rgba(251, 245, 239, 0.85);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--line);
+}
+.nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 74px;
+}
+.nav__links { display: flex; gap: 1.8rem; }
+.nav__links a {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--plum);
+    text-decoration: none;
+    position: relative;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+.nav__links a::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -6px;
+    width: 0; height: 2px;
+    background: var(--rose);
+    transition: width 0.25s ease;
+}
+.nav__links a:hover { opacity: 1; }
+.nav__links a:hover::after { width: 100%; }
+.nav__actions { display: flex; align-items: center; gap: 0.7rem; }
+
+.lang { position: relative; }
+.lang__toggle {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem; font-weight: 700; color: var(--plum);
+    cursor: pointer;
+}
+.lang__toggle img { width: 16px; height: 16px; border-radius: 3px; }
+.lang__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    inset-inline-end: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    box-shadow: 0 18px 40px -18px rgba(69, 17, 42, 0.4);
+    padding: 0.3rem;
+    min-width: 160px;
+    z-index: 60;
+}
+.lang__menu button {
+    display: flex; align-items: center; gap: 0.55rem;
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border: none; background: none; cursor: pointer;
+    border-radius: 0.5rem;
+    font-size: 0.88rem; font-weight: 600; color: var(--plum);
+    text-align: start;
+}
+.lang__menu button img { width: 18px; height: 18px; border-radius: 3px; }
+.lang__menu button:hover { background: var(--cream-2); }
+.lang__menu button.active { color: var(--rose); background: var(--blush); }
+
+.burger {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    background: none; border: none; cursor: pointer;
+    padding: 6px;
+}
+.burger span { width: 22px; height: 2px; background: var(--plum); border-radius: 2px; }
+
+.nav__mobile {
+    display: none;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 1.5rem 1.4rem;
+    background: rgba(251, 245, 239, 0.97);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+}
+.nav__mobile a {
+    padding: 0.7rem 0.4rem;
+    font-weight: 600; color: var(--plum); text-decoration: none;
+    border-bottom: 1px solid var(--line);
+}
+.nav__mobile-actions { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
+.nav__mobile-actions .btn { flex: 1; }
+
+/* ===== Brand ===== */
+.brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--plum); }
+.brand__mark { color: var(--rose); display: inline-flex; }
+.brand__mark svg { width: 40px; height: 28px; }
+.brand__text { display: flex; flex-direction: column; line-height: 1; }
+.brand__name { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.01em; color: var(--plum); }
+.brand__sub { font-size: 0.72rem; color: var(--rose); font-weight: 600; margin-top: 2px; }
+.brand--light .brand__name { color: #fff; }
+.brand--light .brand__sub { color: var(--gold-soft); }
+.brand--light .brand__mark { color: var(--gold-soft); }
 
 /* ===== Responsive ===== */
 @media (max-width: 980px) {
