@@ -173,7 +173,7 @@ const values = computed(() => [
                     <a href="#features" @click.prevent="navTo('features')">{{ __('landing.nav-features') }}</a>
                     <a href="#values" @click.prevent="navTo('values')">{{ __('landing.nav-values') }}</a>
                     <a href="#members" @click.prevent="navTo('members')">{{ __('landing.nav-members') }}</a>
-                    <a href="#app" @click.prevent="navTo('app')">{{ __('landing.nav-app') }}</a>
+                    <a href="#mobile-app" @click.prevent="navTo('mobile-app')">{{ __('landing.nav-app') }}</a>
                 </nav>
 
                 <div class="nav__actions">
@@ -211,7 +211,7 @@ const values = computed(() => [
                     <a href="#features" @click.prevent="navTo('features')">{{ __('landing.nav-features') }}</a>
                     <a href="#values" @click.prevent="navTo('values')">{{ __('landing.nav-values') }}</a>
                     <a href="#members" @click.prevent="navTo('members')">{{ __('landing.nav-members') }}</a>
-                    <a href="#app" @click.prevent="navTo('app')">{{ __('landing.nav-app') }}</a>
+                    <a href="#mobile-app" @click.prevent="navTo('mobile-app')">{{ __('landing.nav-app') }}</a>
                     <div class="nav__mobile-actions">
                         <Link :href="route('login')" class="btn btn--ghost">{{ __('landing.nav-login') }}</Link>
                         <Link :href="route('signup')" class="btn btn--solid">{{ __('landing.nav-signup') }}</Link>
@@ -437,7 +437,7 @@ const values = computed(() => [
         </section>
 
         <!-- ============ MOBILE APP ============ -->
-        <section id="app" class="section app">
+        <section id="mobile-app" class="section app">
             <div class="shell app__grid">
                 <div class="app__copy reveal">
                     <span class="eyebrow"><span class="eyebrow__diamond"></span>{{ __('landing.app-eyebrow') }}</span>
@@ -526,7 +526,7 @@ const values = computed(() => [
                     <a href="#features" @click.prevent="navTo('features')">{{ __('landing.nav-features') }}</a>
                     <a href="#values" @click.prevent="navTo('values')">{{ __('landing.nav-values') }}</a>
                     <a href="#members" @click.prevent="navTo('members')">{{ __('landing.nav-members') }}</a>
-                    <a href="#app" @click.prevent="navTo('app')">{{ __('landing.nav-app') }}</a>
+                    <a href="#mobile-app" @click.prevent="navTo('mobile-app')">{{ __('landing.nav-app') }}</a>
                 </div>
 
                 <div class="footer__col">
