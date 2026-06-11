@@ -6,9 +6,9 @@
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-    <link rel="icon" href="{{asset('assets/logos/mlogo.png')}}" sizes="any">
-    <link rel="icon" href="{{asset('assets/logos/mlogo.png')}}" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="assets/logos/mlogo.png">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />

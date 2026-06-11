@@ -80,9 +80,17 @@ const currentLanguageBadge = computed(() => {
         <!--begin::Logo-->
         <div class="d-flex flex-stack px-lg-6 py-lg-8 px-4 py-3" id="kt_app_sidebar_logo">
             <!--begin::Logo image-->
-            <Link href="/">
-                <img alt="Logo" src="/assets/media/logos/logo.png" class="h-20px h-lg-25px theme-light-show" />
-                <img alt="Logo" src="/assets/media/logos/logo.png" class="h-20px h-lg-25px theme-dark-show" />
+            <Link href="/" class="brand">
+                <span class="brand__mark" aria-hidden="true">
+                    <svg viewBox="0 0 40 28" fill="none">
+                        <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
+                        <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
+                    </svg>
+                </span>
+                <span class="brand__text">
+                    <span class="brand__name">{{ isRtl ? 'خطوبة' : 'Khotobah' }}</span>
+                    <span class="brand__sub">{{ isRtl ? 'Khotobah' : 'خطوبة' }}</span>
+                </span>
             </Link>
             <!--end::Logo image-->
             <!--begin::User menu-->
@@ -444,6 +452,40 @@ const currentLanguageBadge = computed(() => {
 </template>
 
 <style scoped>
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: #45112a;
+}
+.brand__mark {
+    color: #d02e79;
+    display: inline-flex;
+    flex-shrink: 0;
+}
+.brand__mark svg {
+    width: 36px;
+    height: 25px;
+}
+.brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+.brand__name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: #45112a;
+}
+.brand__sub {
+    font-size: 0.65rem;
+    color: #d02e79;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
 .sidebar-subscriber-avatar {
     position: relative;
 }
