@@ -2,7 +2,7 @@
 
 return [
     // Navigation
-    'nav-features' => 'كيف يعمل',
+    'nav-features' => 'كيف نعمل',
     'nav-values' => 'قيمنا',
     'nav-members' => 'الأعضاء',
     'nav-app' => 'التطبيق',

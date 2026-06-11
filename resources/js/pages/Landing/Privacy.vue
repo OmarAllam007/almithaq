@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { Head, Link  } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { vueLang } from '@erag/lang-sync-inertia';
 import LandingNav from './_Shared/LandingNav.vue';
 import LandingFooter from './_Shared/LandingFooter.vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const { __ } = vueLang();
 const page = usePage();
@@ -132,15 +133,7 @@ onBeforeUnmount(() => {
                         <p class="legal-section-block__body">{{ sec.body }}</p>
                     </div>
 
-                    <div class="legal-contact-cta reveal">
-                        <p>
-                            {{ isRtl ? 'للاستفسار عن هذه السياسة: ' : 'Questions? Contact us at ' }}
-                            <a href="mailto:contact@khotobah.com">contact@khotobah.com</a>
-                        </p>
-                        <Link :href="route('privacy')" class="btn btn--outline">
-                            {{ isRtl ? 'نسخة للطباعة' : 'Print version' }}
-                        </Link>
-                    </div>
+                   
                 </div>
             </div>
         </section>

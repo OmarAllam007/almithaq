@@ -134,6 +134,8 @@ onBeforeUnmount(() => {
                         <p class="legal-section-block__body">{{ sec.body }}</p>
                     </div>
 
+                   <!-- 
+                    
                     <div class="legal-contact-cta reveal">
                         <p>
                             {{ isRtl ? 'للاستفسار عن هذه الشروط: ' : 'Questions about these Terms? ' }}
@@ -143,6 +145,7 @@ onBeforeUnmount(() => {
                             {{ isRtl ? 'سياسة الخصوصية' : 'Privacy Policy' }}
                         </Link>
                     </div>
+                   -->
                 </div>
             </div>
         </section>

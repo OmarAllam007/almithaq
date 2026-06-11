@@ -34,7 +34,6 @@ onBeforeUnmount(() => {
 
 <template>
     <Head>
-        <link rel="preconnect" href="https://fonts.bunny.net" />
         <title>{{ __('pages.nav-about') }} — Khotobah</title>
     </Head>
 
