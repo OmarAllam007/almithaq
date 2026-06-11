@@ -1,7 +1,7 @@
 <?php
 
 return [
-
+    'title_khotobah'=> 'تطبيق خطوبة',
     'home' => 'الرئيسية',
     'years_old' => 'سنة',
     'message' => 'رسالة',

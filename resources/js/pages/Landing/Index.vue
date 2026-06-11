@@ -164,8 +164,8 @@ const values = computed(() => [
                         </svg>
                     </span>
                     <span class="brand__text">
-                        <span class="brand__name">Khotobah</span>
-                        <span class="brand__sub">خطوبة</span>
+                        <span class="brand__name">{{ isRtl ? 'خطوبة' : 'Khotobah' }}</span>
+                        <span class="brand__sub">{{ isRtl ? 'Khotobah' : 'خطوبة' }}</span>
                     </span>
                 </a>
 
@@ -509,8 +509,8 @@ const values = computed(() => [
                             </svg>
                         </span>
                         <span class="brand__text">
-                            <span class="brand__name">Khotobah</span>
-                            <span class="brand__sub">خطوبة</span>
+                            <span class="brand__name">{{ isRtl ? 'خطوبة' : 'Khotobah' }}</span>
+                            <span class="brand__sub">{{ isRtl ? 'Khotobah' : 'خطوبة' }}</span>
                         </span>
                     </a>
                     <p>{{ __('landing.footer-tagline') }}</p>

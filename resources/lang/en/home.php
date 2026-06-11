@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'title_khotobah'=> 'Khotobah App',
     'home' => 'Home',
     'years_old' => 'years old',
     'message' => 'Message',
