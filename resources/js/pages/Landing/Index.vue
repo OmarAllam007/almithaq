@@ -225,6 +225,7 @@ const values = computed(() => [
         >
             <div class="nav__offcanvas-stripe" aria-hidden="true"></div>
 
+            
             <div class="nav__offcanvas-header">
                 <a class="brand" href="#top" @click.prevent="navTo('top')">
                     <span class="brand__mark" aria-hidden="true">
@@ -1576,6 +1577,7 @@ const values = computed(() => [
     pointer-events: none;
     z-index: 0;
 }
+
 .is-ar .nav__offcanvas-glow { right: auto; left: -50px; }
 
 /* ===== Brand ===== */
