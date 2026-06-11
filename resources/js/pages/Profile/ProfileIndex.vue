@@ -247,7 +247,7 @@ const submitDeleteAccount = () => {
                                                 <a href="#"
                                                     class="d-flex align-items-center text-hover-primary me-5 mb-2 text-gray-500">
                                                     <i class="ki-outline ki-geolocation fs-4 me-1"></i>{{
-                                                    user.residence.name }}
+                                                    user.residence?.name }}
                                                 </a>
                                                 <a href="#" v-if="user.email"
                                                     class="d-flex align-items-center text-hover-primary mb-2 text-gray-500">

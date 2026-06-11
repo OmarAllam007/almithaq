@@ -89,11 +89,11 @@ const currentLanguageBadge = computed(() => {
             <div class="ms-3">
                 <!--begin::Menu wrapper-->
                 <div class="position-relative symbol symbol-circle symbol-40px cursor-pointer"
-                    :class="{ 'sidebar-subscriber-avatar': $page.props.auth?.user.has_active_subscription }"
+                    :class="{ 'sidebar-subscriber-avatar': $page.props.auth?.user?.has_active_subscription }"
                     data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
                     :data-kt-menu-placement="isRtl ? 'bottom-start' : 'bottom-end'">
                     <img :src="$page.props.auth?.profile_image || '/assets/media/auth/no-image-for-user.png'" alt="user" style="width: 40px; height: 40px; object-fit: cover;" />
-                    <div v-if="$page.props.auth?.user.has_active_subscription"
+                    <div v-if="$page.props.auth?.user?.has_active_subscription"
                         :class="[
                             'position-absolute rounded-circle h-8px w-8px mt-n3 top-100',
                             isRtl ? 'end-100 me-n3' : 'start-100 ms-n3',
@@ -120,7 +120,7 @@ const currentLanguageBadge = computed(() => {
                             <!--begin::Username-->
                             <div class="d-flex flex-column">
                                 <div class="fw-bold d-flex align-items-center fs-5">
-                                    {{ $page.props.auth?.user.name
+                                    {{ $page.props.auth?.user?.name
                                     }}
                                     <!-- <span class="fw-bold fs-8 ms-2 px-2 py-1 badge"
                                         :class="$page.props.auth?.user.has_active_subscription ? 'subscriber-type-badge' : 'badge-light-success'">
@@ -130,7 +130,7 @@ const currentLanguageBadge = computed(() => {
                                         }}</span> -->
                                 </div>
                                 <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">{{
-                                    $page.props.auth?.user.email }}</a>
+                                    $page.props.auth?.user?.email }}</a>
                             </div>
                             <!--end::Username-->
                         </div>
