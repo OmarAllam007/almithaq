@@ -200,25 +200,100 @@ const values = computed(() => [
                     <Link :href="route('login')" class="btn btn--ghost">{{ __('landing.nav-login') }}</Link>
                     <Link :href="route('signup')" class="btn btn--solid">{{ __('landing.nav-signup') }}</Link>
 
-                    <button class="burger" type="button" @click="mobileNav = !mobileNav" aria-label="Menu">
+                    <button class="burger" :class="{ 'is-open': mobileNav }" type="button" @click="mobileNav = !mobileNav" aria-label="Menu">
                         <span></span><span></span><span></span>
                     </button>
                 </div>
             </div>
 
-            <transition name="slide">
-                <div v-if="mobileNav" class="nav__mobile">
-                    <a href="#features" @click.prevent="navTo('features')">{{ __('landing.nav-features') }}</a>
-                    <a href="#values" @click.prevent="navTo('values')">{{ __('landing.nav-values') }}</a>
-                    <a href="#members" @click.prevent="navTo('members')">{{ __('landing.nav-members') }}</a>
-                    <a href="#mobile-app" @click.prevent="navTo('mobile-app')">{{ __('landing.nav-app') }}</a>
-                    <div class="nav__mobile-actions">
-                        <Link :href="route('login')" class="btn btn--ghost">{{ __('landing.nav-login') }}</Link>
-                        <Link :href="route('signup')" class="btn btn--solid">{{ __('landing.nav-signup') }}</Link>
-                    </div>
-                </div>
-            </transition>
         </header>
+
+        <!-- ============ OFF-CANVAS NAV ============ -->
+        <div
+            class="nav__backdrop"
+            :class="{ 'is-open': mobileNav }"
+            @click="mobileNav = false"
+            aria-hidden="true"
+        ></div>
+
+        <aside
+            class="nav__offcanvas"
+            :class="{ 'is-open': mobileNav }"
+            role="dialog"
+            aria-modal="true"
+            :aria-hidden="!mobileNav"
+        >
+            <div class="nav__offcanvas-stripe" aria-hidden="true"></div>
+
+            <div class="nav__offcanvas-header">
+                <a class="brand" href="#top" @click.prevent="navTo('top')">
+                    <span class="brand__mark" aria-hidden="true">
+                        <svg viewBox="0 0 40 28" fill="none">
+                            <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
+                            <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
+                        </svg>
+                    </span>
+                    <span class="brand__text">
+                        <span class="brand__name">{{ isRtl ? 'خطوبة' : 'Khotobah' }}</span>
+                        <span class="brand__sub">{{ isRtl ? 'Khotobah' : 'خطوبة' }}</span>
+                    </span>
+                </a>
+                <button class="nav__offcanvas-close" type="button" @click="mobileNav = false" aria-label="Close navigation">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="nav__offcanvas-links">
+                <a href="#features" @click.prevent="navTo('features')">
+                    <span class="nav__offcanvas-num">01</span>
+                    <span>{{ __('landing.nav-features') }}</span>
+                    <svg class="nav__offcanvas-arrow" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+                <a href="#values" @click.prevent="navTo('values')">
+                    <span class="nav__offcanvas-num">02</span>
+                    <span>{{ __('landing.nav-values') }}</span>
+                    <svg class="nav__offcanvas-arrow" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+                <a href="#members" @click.prevent="navTo('members')">
+                    <span class="nav__offcanvas-num">03</span>
+                    <span>{{ __('landing.nav-members') }}</span>
+                    <svg class="nav__offcanvas-arrow" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+                <a href="#mobile-app" @click.prevent="navTo('mobile-app')">
+                    <span class="nav__offcanvas-num">04</span>
+                    <span>{{ __('landing.nav-app') }}</span>
+                    <svg class="nav__offcanvas-arrow" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+            </nav>
+
+            <div class="nav__offcanvas-footer">
+                <div class="nav__offcanvas-lang">
+                    <button type="button" :class="{ active: !isRtl }" @click="switchLang('en')">
+                        <img src="/assets/media/flags/united-states.svg" alt="" /> English
+                    </button>
+                    <span>/</span>
+                    <button type="button" :class="{ active: isRtl }" @click="switchLang('ar')">
+                        <img src="/assets/media/flags/saudi-arabia.svg" alt="" /> العربية
+                    </button>
+                </div>
+                <div class="nav__offcanvas-actions">
+                    <Link :href="route('login')" class="btn btn--outline">{{ __('landing.nav-login') }}</Link>
+                    <Link :href="route('signup')" class="btn btn--solid">{{ __('landing.nav-signup') }}</Link>
+                </div>
+            </div>
+
+            <div class="nav__offcanvas-glow" aria-hidden="true"></div>
+        </aside>
 
         <!-- ============ HERO ============ -->
         <section id="top" class="hero">
@@ -1281,24 +1356,227 @@ const values = computed(() => [
     background: none; border: none; cursor: pointer;
     padding: 6px;
 }
-.burger span { width: 22px; height: 2px; background: var(--plum); border-radius: 2px; }
+.burger span {
+    display: block;
+    width: 22px; height: 2px;
+    background: var(--plum); border-radius: 2px;
+    transform-origin: center;
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+}
+.burger.is-open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.burger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.burger.is-open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-.nav__mobile {
-    display: none;
+/* ===== Off-canvas backdrop ===== */
+.nav__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 10, 24, 0.56);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 54;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+.nav__backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ===== Off-canvas panel ===== */
+.nav__offcanvas {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(360px, 88vw);
+    background: var(--cream);
+    z-index: 55;
+    display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.8rem 1.5rem 1.4rem;
-    background: rgba(251, 245, 239, 0.97);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--line);
+    box-shadow: -32px 0 72px rgba(44, 10, 24, 0.24);
+    transform: translateX(calc(100% + 4px));
+    transition: transform 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+    overflow: hidden;
 }
-.nav__mobile a {
-    padding: 0.7rem 0.4rem;
-    font-weight: 600; color: var(--plum); text-decoration: none;
-    border-bottom: 1px solid var(--line);
+.is-ar .nav__offcanvas {
+    right: auto;
+    left: 0;
+    box-shadow: 32px 0 72px rgba(44, 10, 24, 0.24);
+    transform: translateX(calc(-100% - 4px));
 }
-.nav__mobile-actions { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
-.nav__mobile-actions .btn { flex: 1; }
+.nav__offcanvas.is-open {
+    transform: translateX(0);
+}
+
+.nav__offcanvas-stripe {
+    height: 4px;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+}
+.is-ar .nav__offcanvas-stripe {
+    background: linear-gradient(270deg, var(--rose), var(--gold));
+}
+
+.nav__offcanvas-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.3rem 1.6rem;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+}
+
+.nav__offcanvas-close {
+    display: grid;
+    place-items: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--blush);
+    border: 1.5px solid var(--blush);
+    cursor: pointer;
+    color: var(--plum);
+    flex-shrink: 0;
+    transition: background 0.22s ease, color 0.22s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav__offcanvas-close:hover { background: var(--rose); color: #fff; transform: rotate(90deg); }
+.nav__offcanvas-close svg { width: 18px; height: 18px; }
+
+.nav__offcanvas-links {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+}
+.nav__offcanvas:not(.is-open) .nav__offcanvas-links a { opacity: 0; }
+.nav__offcanvas.is-open .nav__offcanvas-links a {
+    animation: offcanvasLinkIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.is-ar .nav__offcanvas.is-open .nav__offcanvas-links a {
+    animation-name: offcanvasLinkInRtl;
+}
+.nav__offcanvas.is-open .nav__offcanvas-links a:nth-child(1) { animation-delay: 0.14s; }
+.nav__offcanvas.is-open .nav__offcanvas-links a:nth-child(2) { animation-delay: 0.20s; }
+.nav__offcanvas.is-open .nav__offcanvas-links a:nth-child(3) { animation-delay: 0.26s; }
+.nav__offcanvas.is-open .nav__offcanvas-links a:nth-child(4) { animation-delay: 0.32s; }
+@keyframes offcanvasLinkIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes offcanvasLinkInRtl {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.nav__offcanvas-links a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--plum);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    transition: color 0.2s ease, background 0.2s ease, padding-inline-start 0.22s ease;
+    overflow: hidden;
+}
+.nav__offcanvas-links a::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--rose), var(--gold));
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.is-ar .nav__offcanvas-links a::before { left: auto; right: 0; }
+.nav__offcanvas-links a:hover {
+    color: var(--rose);
+    background: linear-gradient(90deg, var(--blush), transparent);
+    padding-inline-start: 2rem;
+}
+.nav__offcanvas-links a:hover::before { transform: scaleY(1); }
+
+.nav__offcanvas-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--rose);
+    opacity: 0.5;
+    letter-spacing: 0.1em;
+    min-width: 1.6rem;
+    flex-shrink: 0;
+}
+.is-ar .nav__offcanvas-num { font-family: 'Cairo', serif; letter-spacing: 0; }
+
+.nav__offcanvas-arrow {
+    width: 15px; height: 15px;
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    color: var(--rose);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.is-ar .nav__offcanvas-arrow { rotate: 180deg; }
+.nav__offcanvas-links a:hover .nav__offcanvas-arrow {
+    opacity: 1;
+    transform: translateX(4px);
+}
+.is-ar .nav__offcanvas-links a:hover .nav__offcanvas-arrow {
+    transform: translateX(-4px);
+}
+
+.nav__offcanvas-footer {
+    flex-shrink: 0;
+    padding: 1.4rem 1.6rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.nav__offcanvas-lang {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--line);
+}
+.nav__offcanvas-lang button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none; border: none; cursor: pointer;
+    color: rgba(44, 10, 24, 0.6);
+    font-weight: 600; font-size: 0.88rem; padding: 0;
+    transition: color 0.2s ease;
+}
+.nav__offcanvas-lang button img { width: 16px; height: 16px; border-radius: 3px; }
+.nav__offcanvas-lang button.active { color: var(--rose); }
+.nav__offcanvas-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+.nav__offcanvas-actions .btn { width: 100%; justify-content: center; }
+
+.nav__offcanvas-glow {
+    position: absolute;
+    bottom: 50px;
+    right: -50px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(208, 46, 121, 0.1), transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+.is-ar .nav__offcanvas-glow { right: auto; left: -50px; }
 
 /* ===== Brand ===== */
 .brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--plum); }
@@ -1315,7 +1593,6 @@ const values = computed(() => [
 @media (max-width: 980px) {
     .nav__links { display: none; }
     .burger { display: flex; }
-    .nav__mobile { display: flex; }
     .nav__actions .btn { display: none; }
     .hero__grid { grid-template-columns: 1fr; gap: 2.5rem; }
     .hero__art { order: -1; }
