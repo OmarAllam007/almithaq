@@ -10,6 +10,7 @@ import { computed, ref } from 'vue';
 import { route } from 'ziggy-js';
 
 declare const Swal: any;
+declare const toastr: any;
 
 const { __ } = vueLang();
 const page = usePage();
@@ -27,8 +28,15 @@ const canSubmit = computed(() => {
 });
 
 const submit = () => {
-    form.processing = true;
-    form.post(route('login'));
+    form.post(route('login'), {
+        onSuccess: () => {
+            toastr.success(__('login.sign-in-success'));
+        },
+        onError: () => {
+            const msg = form.errors.username || form.errors.password || __('login.sign-in-error');
+            toastr.error(msg);
+        },
+    });
 };
 
 function switchLang(lang: string) {

@@ -24,13 +24,13 @@ class LoginController extends Controller
         $user = User::where('username', $request->username)->first();
         if (! $user) {
             return back()->withErrors([
-                'username' => 'The provided credentials does not match our records.',
+                'username' => __('login.sign-in-error-credentials'),
             ]);
         }
 
         if (! Hash::check($request->password, $user->password)) {
             return back()->withErrors([
-                'password' => 'The provided credentials does not match our records.',
+                'username' => __('login.sign-in-error-credentials'),
             ]);
         }
 

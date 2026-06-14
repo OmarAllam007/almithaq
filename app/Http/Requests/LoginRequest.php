@@ -19,13 +19,12 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
-            'username.required' => 'The username field is required.',
-            'password.required' => 'The password field is required.',
-            'username.exists' => 'The provided credentials does not match our records.',
-            'password.required' => 'The provided credentials does not match our records.',
+            'username.required' => __('login.sign-in-error-username-required'),
+            'password.required' => __('login.sign-in-error-password-required'),
+            'username.exists' => __('login.sign-in-error-credentials'),
         ];
     }
 }

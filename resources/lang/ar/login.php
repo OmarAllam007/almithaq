@@ -9,6 +9,11 @@ return [
     'sign-in-input-password' => 'كلمة المرور',
     'sign-in-forgot-password' => 'نسيت كلمة المرور؟',
     'sign-in-submit' => 'تسجيل الدخول',
+    'sign-in-success' => 'تم تسجيل الدخول بنجاح. أهلاً بك!',
+    'sign-in-error' => 'اسم المستخدم أو كلمة المرور غير صحيحة. يرجى المحاولة مجدداً.',
+    'sign-in-error-username-required' => 'حقل اسم المستخدم مطلوب.',
+    'sign-in-error-password-required' => 'حقل كلمة المرور مطلوب.',
+    'sign-in-error-credentials' => 'بيانات تسجيل الدخول غير صحيحة.',
     'general-progress' => 'يرجى الانتظار...',
     'general-or' => 'أو',
 

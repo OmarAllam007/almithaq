@@ -9,6 +9,11 @@ return [
     'sign-in-input-password' => 'Password',
     'sign-in-forgot-password' => 'Forgot Password ?',
     'sign-in-submit' => 'Sign In',
+    'sign-in-success' => 'Signed in successfully. Welcome back!',
+    'sign-in-error' => 'Invalid username or password. Please try again.',
+    'sign-in-error-username-required' => 'The username field is required.',
+    'sign-in-error-password-required' => 'The password field is required.',
+    'sign-in-error-credentials' => 'The provided credentials do not match our records.',
     'general-progress' => 'Please wait...',
     'general-or' => 'Or',
 
