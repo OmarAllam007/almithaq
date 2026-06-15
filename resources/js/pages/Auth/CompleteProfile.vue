@@ -74,6 +74,8 @@ function switchLang(lang: string): void {
 
 const form = useForm({
     email: '',
+    country_code: '+966',
+    phone_number: '',
     marriage_type: '',
     marriage_status: '',
     child_count: 0,
@@ -133,6 +135,38 @@ watch(
     },
 );
 
+const phoneCountryCodes = [
+    { dial: '+966', en: 'Saudi Arabia', ar: 'السعودية' },
+    { dial: '+971', en: 'UAE', ar: 'الإمارات' },
+    { dial: '+965', en: 'Kuwait', ar: 'الكويت' },
+    { dial: '+974', en: 'Qatar', ar: 'قطر' },
+    { dial: '+973', en: 'Bahrain', ar: 'البحرين' },
+    { dial: '+968', en: 'Oman', ar: 'عُمان' },
+    { dial: '+962', en: 'Jordan', ar: 'الأردن' },
+    { dial: '+20', en: 'Egypt', ar: 'مصر' },
+    { dial: '+212', en: 'Morocco', ar: 'المغرب' },
+    { dial: '+216', en: 'Tunisia', ar: 'تونس' },
+    { dial: '+213', en: 'Algeria', ar: 'الجزائر' },
+    { dial: '+218', en: 'Libya', ar: 'ليبيا' },
+    { dial: '+249', en: 'Sudan', ar: 'السودان' },
+    { dial: '+967', en: 'Yemen', ar: 'اليمن' },
+    { dial: '+963', en: 'Syria', ar: 'سوريا' },
+    { dial: '+961', en: 'Lebanon', ar: 'لبنان' },
+    { dial: '+964', en: 'Iraq', ar: 'العراق' },
+    { dial: '+970', en: 'Palestine', ar: 'فلسطين' },
+    { dial: '+60', en: 'Malaysia', ar: 'ماليزيا' },
+    { dial: '+62', en: 'Indonesia', ar: 'إندونيسيا' },
+    { dial: '+92', en: 'Pakistan', ar: 'باكستان' },
+    { dial: '+880', en: 'Bangladesh', ar: 'بنغلاديش' },
+    { dial: '+90', en: 'Turkey', ar: 'تركيا' },
+    { dial: '+98', en: 'Iran', ar: 'إيران' },
+    { dial: '+1', en: 'USA / Canada', ar: 'أمريكا / كندا' },
+    { dial: '+44', en: 'UK', ar: 'بريطانيا' },
+    { dial: '+49', en: 'Germany', ar: 'ألمانيا' },
+    { dial: '+33', en: 'France', ar: 'فرنسا' },
+    { dial: '+61', en: 'Australia', ar: 'أستراليا' },
+];
+
 const childCount = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 const weightRange = Array.from({ length: 126 }, (_, i) => i + 45);
 const heightRange = Array.from({ length: 100 }, (_, i) => i + 120);
@@ -167,6 +201,8 @@ function getStepValidationErrors(step: number): string[] {
         if (!form.marriage_type) errors.push(__('complete_profile.validation-marriage-type'));
         if (showChildCount.value && (form.child_count === null || form.child_count.toString() === '')) errors.push(__('complete_profile.validation-child-count'));
         if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.push(__('complete_profile.validation-email'));
+        if (!form.country_code) errors.push(__('complete_profile.validation-country-code-required'));
+        if (!form.phone_number) errors.push(__('complete_profile.validation-phone-required'));
     } else if (step === 2) {
         if (!form.residence) errors.push(__('complete_profile.validation-residence'));
         if (!form.nationality) errors.push(__('complete_profile.validation-nationality'));
@@ -201,7 +237,7 @@ function validateCurrentStep(): boolean {
     if (step === 1) {
         const emailValid = !form.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
         const childCountValid = !showChildCount.value || (form.child_count !== null && form.child_count.toString() !== '');
-        return !!(form.marriage_status && form.marriage_type && childCountValid && emailValid);
+        return !!(form.marriage_status && form.marriage_type && childCountValid && emailValid && form.country_code && form.phone_number);
     } else if (step === 2) {
         return !!(form.residence && form.nationality && form.city && form.religion && form.weight && form.height && form.skin_color && form.body_shape);
     } else if (step === 3) {
@@ -338,6 +374,21 @@ function handleSubmit() {
                                                 <input type="email" class="form-control form-control-lg rounded-2" v-model="form.email" />
                                                 <div v-if="form.errors.email" class="fv-plugins-message-container">
                                                     <div class="fv-help-block"><span role="alert">{{ form.errors.email }}</span></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="fv-row mb-5">
+                                                <label class="required form-label">{{ __('complete_profile.phone') }}</label>
+                                                <div class="d-flex gap-2">
+                                                    <select class="form-select form-select-lg themed-select" style="width: auto; min-width: 155px; flex-shrink: 0" v-model="form.country_code">
+                                                        <option v-for="c in phoneCountryCodes" :key="c.dial" :value="c.dial">
+                                                            {{ c.dial }} {{ isRtl ? c.ar : c.en }}
+                                                        </option>
+                                                    </select>
+                                                    <input type="tel" class="form-control form-control-lg rounded-2 flex-grow-1" v-model="form.phone_number" :placeholder="__('complete_profile.phone')" />
+                                                </div>
+                                                <div v-if="form.errors.phone_number || form.errors.country_code" class="fv-plugins-message-container">
+                                                    <div class="fv-help-block"><span role="alert">{{ form.errors.country_code || form.errors.phone_number }}</span></div>
                                                 </div>
                                             </div>
 

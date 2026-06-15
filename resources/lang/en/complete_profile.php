@@ -17,6 +17,8 @@ return [
 
     // Fields
     'email' => 'Email (optional)',
+    'phone' => 'Phone Number',
+    'phone-code' => 'Code',
     'marriage-type' => 'Marriage Type',
     'marriage-status' => 'Marriage Status',
     'child-count' => 'Child Count',
@@ -53,6 +55,10 @@ return [
     'btn-submit-short' => 'Done',
 
     // Validation
+    'validation-phone-required' => 'Phone number is required',
+    'validation-country-code-required' => 'Country code is required',
+    'validation-phone-invalid' => 'Please enter a valid mobile number for the selected country code',
+
     'validation-title' => 'Please Complete All Required Fields',
     'validation-error-title' => 'Validation Error',
     'validation-marriage-type' => 'Marriage Type is required',

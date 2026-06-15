@@ -17,6 +17,8 @@ return [
 
     // Fields
     'email' => 'البريد الإلكتروني (اختياري)',
+    'phone' => 'رقم الهاتف',
+    'phone-code' => 'الرمز',
     'marriage-type' => 'نوع الزواج',
     'marriage-status' => 'الحالة الإجتماعية',
     'child-count' => 'عدد الأبناء',
@@ -53,6 +55,10 @@ return [
     'btn-submit-short' => 'تم',
 
     // Validation
+    'validation-phone-required' => 'رقم الهاتف مطلوب',
+    'validation-country-code-required' => 'رمز الدولة مطلوب',
+    'validation-phone-invalid' => 'يرجى إدخال رقم هاتف محمول صحيح لرمز الدولة المحدد',
+
     'validation-title' => 'يرجى إكمال جميع الحقول المطلوبة',
     'validation-error-title' => 'خطأ في التحقق',
     'validation-marriage-type' => 'نوع الزواج مطلوب',
