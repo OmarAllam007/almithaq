@@ -18,7 +18,7 @@ return [
     // Fields
     'email' => 'البريد الإلكتروني (اختياري)',
     'marriage-type' => 'نوع الزواج',
-    'marriage-status' => 'الحالة الزوجية',
+    'marriage-status' => 'الحالة الإجتماعية',
     'child-count' => 'عدد الأبناء',
     'residence' => 'بلد الإقامة',
     'nationality' => 'الجنسية',
@@ -56,7 +56,7 @@ return [
     'validation-title' => 'يرجى إكمال جميع الحقول المطلوبة',
     'validation-error-title' => 'خطأ في التحقق',
     'validation-marriage-type' => 'نوع الزواج مطلوب',
-    'validation-marriage-status' => 'الحالة الزوجية مطلوبة',
+    'validation-marriage-status' => 'الحالة الإجتماعية مطلوبة',
     'validation-child-count' => 'عدد الأبناء مطلوب',
     'validation-email' => 'يرجى إدخال بريد إلكتروني صحيح',
     'validation-residence' => 'بلد الإقامة مطلوب',

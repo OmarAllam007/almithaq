@@ -4,6 +4,8 @@ return [
     // MarriageType
     'marriage_type_first_wife' => 'زوجة أولى',
     'marriage_type_second_wife' => 'زوجة ثانية',
+    'marriage_type_third_wife' => 'زوجة ثالثة',
+    'marriage_type_fourth_wife' => 'زوجة رابعة',
     'marriage_type_only_one_wife' => 'الوحيدة',
     'marriage_type_accept_polygamy' => 'تقبل التعدد',
 

@@ -197,3 +197,16 @@ body {
     padding-left: 2.25rem;
     text-align: right;
 }
+
+/* Toastr success color override */
+.toastr-success {
+    background-color: #025c04 !important;
+}
+.toastr-success .toastr-title,
+.toastr-success .toastr-message,
+.toastr-success .toastr-close-button {
+    color: #ffffff !important;
+}
+.toastr-success .toastr-progress {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+}

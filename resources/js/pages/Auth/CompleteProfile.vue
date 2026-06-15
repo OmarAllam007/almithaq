@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { store } from '@/actions/App/Http/Controllers/CompleteProfileController';
+import { switchLanguage } from '@/actions/App/Http/Controllers/LanguageController';
 import Select2Input from '@/components/Inputs/Select2Input.vue';
 import { showAlertError } from '@/lib/utils';
 import { vueLang } from '@erag/lang-sync-inertia';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch, type PropType } from 'vue';
 
 const { __ } = vueLang();
@@ -51,6 +52,25 @@ const totalSteps = 4;
 let stepperInstance: any = null;
 
 const showBeardField = computed(() => props.user.registration_type === 1);
+const isHusband = computed(() => props.user.registration_type === 1);
+const isSingle = computed(() => String(form.marriage_status) === '1');
+const showChildCount = computed(() => !isSingle.value);
+
+const isMarried = computed(() => String(form.marriage_status) === '2');
+
+const filteredMarriageTypes = computed(() => {
+    if (!isHusband.value) return props.marriage_types;
+    if (isMarried.value) {
+        // Married husband: second (2), third (5), fourth (6)
+        return props.marriage_types.filter((t) => [2, 5, 6].includes(t.value));
+    }
+    // Single / divorced / widowed: first wife only (1)
+    return props.marriage_types.filter((t) => t.value === 1);
+});
+
+function switchLang(lang: string): void {
+    router.visit(switchLanguage.url(lang), { preserveScroll: true });
+}
 
 const form = useForm({
     email: '',
@@ -97,6 +117,22 @@ watch(
     },
 );
 
+// When marriage status changes, reset dependent fields.
+watch(
+    () => form.marriage_status,
+    (newStatus, oldStatus) => {
+        if (newStatus === oldStatus) return;
+        form.marriage_type = '';
+        // Auto-select first wife for husband when not married (single/divorced/widowed)
+        if (isHusband.value && String(newStatus) !== '2') {
+            form.marriage_type = 1 as any;
+        }
+        if (String(newStatus) === '1') {
+            form.child_count = 0;
+        }
+    },
+);
+
 const childCount = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 const weightRange = Array.from({ length: 126 }, (_, i) => i + 45);
 const heightRange = Array.from({ length: 100 }, (_, i) => i + 120);
@@ -127,9 +163,9 @@ function getStepValidationErrors(step: number): string[] {
     const errors: string[] = [];
 
     if (step === 1) {
-        if (!form.marriage_type) errors.push(__('complete_profile.validation-marriage-type'));
         if (!form.marriage_status) errors.push(__('complete_profile.validation-marriage-status'));
-        if (form.child_count === null || form.child_count.toString() === '') errors.push(__('complete_profile.validation-child-count'));
+        if (!form.marriage_type) errors.push(__('complete_profile.validation-marriage-type'));
+        if (showChildCount.value && (form.child_count === null || form.child_count.toString() === '')) errors.push(__('complete_profile.validation-child-count'));
         if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.push(__('complete_profile.validation-email'));
     } else if (step === 2) {
         if (!form.residence) errors.push(__('complete_profile.validation-residence'));
@@ -164,7 +200,8 @@ function validateCurrentStep(): boolean {
 
     if (step === 1) {
         const emailValid = !form.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
-        return !!(form.marriage_type && form.marriage_status && form.child_count !== null && form.child_count.toString() !== '' && emailValid);
+        const childCountValid = !showChildCount.value || (form.child_count !== null && form.child_count.toString() !== '');
+        return !!(form.marriage_status && form.marriage_type && childCountValid && emailValid);
     } else if (step === 2) {
         return !!(form.residence && form.nationality && form.city && form.religion && form.weight && form.height && form.skin_color && form.body_shape);
     } else if (step === 3) {
@@ -226,7 +263,21 @@ function handleSubmit() {
             <div class="d-flex flex-column flex-lg-row-fluid p-lg-10 w-100 p-5">
                 <div class="d-flex flex-center flex-column w-100">
                     <div class="mw-900px w-100">
-                        <div class="pb-lg-10 pb-5 text-center">
+                        <div class="pb-lg-10 pb-5 text-center position-relative">
+                            <div class="position-absolute top-0 end-0 d-flex gap-1">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm py-1 px-3 fw-bold"
+                                    :class="!isRtl ? 'btn-primary' : 'btn-light'"
+                                    @click="switchLang('en')"
+                                >EN</button>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm py-1 px-3 fw-bold"
+                                    :class="isRtl ? 'btn-primary' : 'btn-light'"
+                                    @click="switchLang('ar')"
+                                >AR</button>
+                            </div>
                             <h2 class="fw-bold fs-2 text-gray-900">{{ __('complete_profile.title') }}</h2>
                             <div class="text-muted fw-semibold fs-6">{{ __('complete_profile.subtitle') }}</div>
                         </div>
@@ -291,16 +342,16 @@ function handleSubmit() {
                                             </div>
 
                                             <div class="fv-row mb-5">
-                                                <label class="required form-label">{{ __('complete_profile.marriage-type') }}</label>
-                                                <Select2Input v-model="form.marriage_type" :options="marriage_types" :placeholder="__('complete_profile.select-placeholder')" />
-                                            </div>
-
-                                            <div class="fv-row mb-5">
                                                 <label class="required form-label">{{ __('complete_profile.marriage-status') }}</label>
                                                 <Select2Input v-model="form.marriage_status" :options="marriage_statuses" :placeholder="__('complete_profile.select-placeholder')" />
                                             </div>
 
                                             <div class="fv-row mb-5">
+                                                <label class="required form-label">{{ __('complete_profile.marriage-type') }}</label>
+                                                <Select2Input v-model="form.marriage_type" :options="filteredMarriageTypes" :placeholder="__('complete_profile.select-placeholder')" />
+                                            </div>
+
+                                            <div v-if="showChildCount" class="fv-row mb-5">
                                                 <label class="required form-label">{{ __('complete_profile.child-count') }}</label>
                                                 <select class="form-select form-select-lg themed-select" v-model="form.child_count">
                                                     <option v-for="count in childCount" :key="count" :value="count">{{ count }}</option>

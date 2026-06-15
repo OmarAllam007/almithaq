@@ -58,7 +58,7 @@ class CompleteProfileController extends Controller
             ]);
 
         // Marriage types filtered by registration type
-        $husbandMarriageTypes = [MarriageType::FIRST_WIFE, MarriageType::SECOND_WIFE, MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
+        $husbandMarriageTypes = [MarriageType::FIRST_WIFE, MarriageType::SECOND_WIFE, MarriageType::THIRD_WIFE, MarriageType::FOURTH_WIFE];
         $wifeMarriageTypes = [MarriageType::ONLY_ONE_WIFE, MarriageType::ACCEPT_POLYGAMY];
 
         $marriageTypes = array_map(
@@ -68,7 +68,7 @@ class CompleteProfileController extends Controller
 
         // Marriage statuses filtered by registration type
         $isHusband = $user->registration_type === RegistrationType::AS_HUSBAND;
-        $husbandMarriageStatuses = [MarriageStatus::SINGLE, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED];
+        $husbandMarriageStatuses = [MarriageStatus::SINGLE, MarriageStatus::MARRIED, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED];
         $wifeMarriageStatuses = [MarriageStatus::SINGLE, MarriageStatus::DIVORCED, MarriageStatus::WIDOWED];
 
         $marriageStatuses = array_map(

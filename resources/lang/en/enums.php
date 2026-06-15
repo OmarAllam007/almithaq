@@ -12,7 +12,9 @@ return [
     'marriage_status_widowed_female' => 'widowed',
     // MarriageType
     'marriage_type_first_wife' => 'First wife',
-    'marriage_type_second_wife' => 'Second wife (looking for)',
+    'marriage_type_second_wife' => 'Second wife',
+    'marriage_type_third_wife' => 'Third wife',
+    'marriage_type_fourth_wife' => 'Fourth wife',
     'marriage_type_only_one_wife' => 'Only one wife',
     'marriage_type_accept_polygamy' => 'Accept polygamy',
 
