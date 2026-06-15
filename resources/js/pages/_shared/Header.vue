@@ -14,6 +14,14 @@ const page = usePage();
 const isRtl = computed(() => page.props.locale === 'ar');
 const drawerDirection = computed(() => isRtl.value ? 'start' : 'end');
 
+function isActive(routeName: string): boolean {
+    try {
+        return route().current(routeName) ?? false;
+    } catch {
+        return false;
+    }
+}
+
 // Notification state
 interface Notification {
     id: number;
@@ -152,7 +160,8 @@ onUnmounted(() => {
                         id="#kt_header_menu" data-kt-menu="true">
                         <!--begin:Menu item-->
                         <Link :href="route('signup')" data-kt-menu-placement="bottom-start"
-                            class="menu-item here show menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            :class="{ 'here show': isActive('signup') }"
                             v-if="!$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -164,7 +173,9 @@ onUnmounted(() => {
                         <!--end:Menu item-->
 
                         <Link :href="route('login')" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                            data-kt-menu-placement="bottom-start" class="menu-item menu-lg-down-accordion me-lg-2 me-0"
+                            data-kt-menu-placement="bottom-start"
+                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            :class="{ 'here show': isActive('login') }"
                             v-if="!$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -175,8 +186,9 @@ onUnmounted(() => {
                         </Link>
 
                         <!--begin:Menu item-->
-                        <Link :href="route('signup')" data-kt-menu-placement="bottom-start"
+                        <Link :href="route('home')" data-kt-menu-placement="bottom-start"
                             class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            :class="{ 'here show': isActive('home') }"
                             v-if="$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -189,7 +201,8 @@ onUnmounted(() => {
 
                         <!--begin:Menu item-->
                         <Link :href="route('members-online')" data-kt-menu-placement="bottom-start"
-                            class="menu-item  menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            :class="{ 'here show': isActive('members-online') }"
                             v-if="$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -202,7 +215,8 @@ onUnmounted(() => {
 
                         <!--begin:Menu item-->
                         <Link :href="route('new-members')" data-kt-menu-placement="bottom-start"
-                            class="menu-item  menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            :class="{ 'here show': isActive('new-members') }"
                             v-if="$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -216,6 +230,7 @@ onUnmounted(() => {
                         <!--begin:Menu item-->
                         <Link :href="route('smart-search.index')" data-kt-menu-placement="bottom-start"
                             class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
+                            :class="{ 'here show': isActive('smart-search.index') }"
                             v-if="$page.props.auth?.user">
                             <!--begin:Menu link-->
                             <span class="menu-link">

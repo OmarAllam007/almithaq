@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" width="1200" height="500">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbf5ef;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fce8f3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="roseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d02e79;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e85fa0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c79a3f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6c878;stop-opacity:1" />
+    </linearGradient>
+    <filter id="ringGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="6" stdDeviation="18" flood-color="#d02e79" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="500" fill="url(#bgGrad)" rx="32"/>
+
+  <!-- Gold top bar -->
+  <rect x="0" y="0" width="1200" height="6" fill="url(#goldGrad)" rx="3"/>
+
+  <!-- === BRAND MARK (centered left block) === -->
+  <!-- Soft outer glow rings -->
+  <circle cx="290" cy="250" r="128" fill="none" stroke="#d02e79" stroke-width="1.2" opacity="0.10"/>
+  <circle cx="380" cy="250" r="128" fill="none" stroke="#d02e79" stroke-width="1.2" opacity="0.10"/>
+
+  <!-- Main left ring -->
+  <circle cx="290" cy="250" r="108" fill="none" stroke="url(#roseGrad)" stroke-width="14" filter="url(#ringGlow)"/>
+  <!-- Main right ring (softer) -->
+  <circle cx="380" cy="250" r="108" fill="none" stroke="url(#roseGrad)" stroke-width="14" opacity="0.50"/>
+
+  <!-- Gold accent dots at the 2 intersection points -->
+  <circle cx="335" cy="152" r="10" fill="url(#goldGrad)"/>
+  <circle cx="335" cy="348" r="10" fill="url(#goldGrad)"/>
+
+  <!-- === TEXT BLOCK (right side, vertically centered) === -->
+  <!-- Arabic: خطوبة -->
+  <text
+    x="720"
+    y="240"
+    font-family="'Noto Sans Arabic', Cairo, 'Segoe UI', Arial, sans-serif"
+    font-size="118"
+    font-weight="800"
+    fill="#45112a"
+    text-anchor="middle"
+  >خطوبة</text>
+
+  <!-- English: KHOTOBAH -->
+  <text
+    x="720"
+    y="318"
+    font-family="Cairo, 'Segoe UI', Arial, sans-serif"
+    font-size="40"
+    font-weight="700"
+    fill="url(#roseGrad)"
+    text-anchor="middle"
+    letter-spacing="9"
+  >KHOTOBAH</text>
+
+  <!-- Gold divider -->
+  <line x1="545" y1="352" x2="895" y2="352" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Tagline -->
+  <text
+    x="720"
+    y="395"
+    font-family="'Noto Sans Arabic', Cairo, 'Segoe UI', Arial, sans-serif"
+    font-size="24"
+    font-weight="400"
+    fill="#45112a"
+    text-anchor="middle"
+    opacity="0.45"
+    letter-spacing="0.5"
+  >منصة الزواج الإسلامي</text>
+</svg>
