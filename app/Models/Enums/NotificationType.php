@@ -16,7 +16,7 @@ enum NotificationType: string
     public function label(): string
     {
         return match ($this) {
-            self::LIKE => trans('home.liked your profile'),
+            self::LIKE => trans('home.lik   ed your profile'),
             self::IGNORE => trans('home.ignored your profile'),
             self::PROFILE_VISIT => trans('home.visited your profile'),
             self::NEW_MESSAGE => trans('home.sent you a message'),

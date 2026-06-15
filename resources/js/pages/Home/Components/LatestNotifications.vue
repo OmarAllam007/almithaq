@@ -37,6 +37,9 @@ const typeConfig: Record<string, { icon: string; color: string; bg: string; labe
     new_message: { icon: 'ki-outline ki-message-text-2', color: '#009ef7', bg: '#f0faff', labelKey: 'sent you a message' },
     subscription_renewed: { icon: 'ki-outline ki-verify', color: '#50cd89', bg: '#f0fff8', labelKey: 'subscription renewed' },
     ignore: { icon: 'ki-outline ki-cross-circle', color: '#f1416c', bg: '#fff5f8', labelKey: 'ignored your profile' },
+    image_request: { icon: 'ki-outline ki-picture', color: '#f59e0b', bg: '#fffbeb', labelKey: 'requested to view your images' },
+    image_request_approved: { icon: 'ki-outline ki-check-circle', color: '#50cd89', bg: '#f0fff8', labelKey: 'approved your image request' },
+    image_request_rejected: { icon: 'ki-outline ki-cross-circle', color: '#f1416c', bg: '#fff5f8', labelKey: 'rejected your image request' },
 };
 
 const getConfig = (type: string) => {
