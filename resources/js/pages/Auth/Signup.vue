@@ -53,6 +53,7 @@ const phoneCountryCodes = [
 
 const form = useForm({
     registration_type: '',
+    name: '',
     username: '',
     password: '',
     confirm_password: '',
@@ -70,7 +71,7 @@ function isUsernameLengthValid(): boolean {
 
 function isUsernameCharsValid(): boolean {
     if (!form.username) return true;
-    return /^[a-zA-Z]+$/.test(form.username);
+    return /^[a-zA-Z0-9]+$/.test(form.username);
 }
 
 function isPasswordLengthValid(): boolean {
@@ -140,6 +141,7 @@ watch(
 const validationHints = computed<string[]>(() => {
     const hints: string[] = [];
     if (!form.registration_type) hints.push(__('signup.validation-account-type'));
+    if (!form.name) hints.push(__('signup.validation-name-required'));
     if (!form.username) hints.push(__('signup.validation-username-required'));
     if (form.username && !isUsernameCharsValid()) hints.push(__('signup.validation-username-chars'));
     if (form.username && !isUsernameLengthValid()) hints.push(__('signup.validation-username-length'));
@@ -162,6 +164,7 @@ const validationHints = computed<string[]>(() => {
 const canSubmit = computed(() => {
     return !!(
         form.registration_type &&
+        form.name &&
         form.username &&
         isUsernameCharsValid() &&
         isUsernameLengthValid() &&
@@ -263,6 +266,19 @@ function switchLang(lang: string) {
                         <p v-if="form.errors.registration_type" class="field__error">{{ form.errors.registration_type }}</p>
                     </div>
 
+                    <!-- Display name -->
+                    <div class="field">
+                        <label class="field__label">{{ __('signup.name-label') }}</label>
+                        <input
+                            type="text"
+                            class="field__input"
+                            v-model="form.name"
+                            maxlength="50"
+                        />
+                        <p v-if="form.errors.name" class="field__error">{{ form.errors.name }}</p>
+                        <p class="field__hint">{{ __('signup.name-public-hint') }}</p>
+                    </div>
+
                     <!-- Username + Age row -->
                     <div class="row g-3 mb-3">
                         <div class="col-8">
@@ -286,6 +302,7 @@ function switchLang(lang: string) {
                                 </span>
                             </div>
                             <p v-if="form.errors.username" class="field__error">{{ form.errors.username }}</p>
+                            <p class="field__hint">{{ __('signup.username-private-hint') }}</p>
                         </div>
                         <div class="col-4">
                             <label class="field__label">{{ __('signup.age-label') }}</label>
@@ -535,6 +552,7 @@ function switchLang(lang: string) {
 }
 .field__input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(208, 46, 121, 0.1); }
 .field__error { font-size: 0.8rem; color: #dc2626; margin: 0.3rem 0 0; }
+.field__hint { font-size: 0.76rem; color: rgba(44, 10, 24, 0.5); margin: 0.25rem 0 0; }
 
 /* Account type */
 .reg-type-group { display: flex; gap: 0.75rem; }

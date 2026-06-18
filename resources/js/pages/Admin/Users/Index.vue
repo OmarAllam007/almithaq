@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { router, usePage, Link } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import Pagination from '@/components/Pagination.vue';
 
@@ -189,6 +189,9 @@ watch([selectedNationality, selectedRegistrationType, selectedIsActive, selected
                                             Manage all registered users
                                         </div>
                                     </div>
+                                    <Link :href="route('admin.users.create')" class="btn btn-primary">
+                                        <i class="ki-outline ki-plus fs-4 me-1"></i>Add User
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -333,6 +336,13 @@ watch([selectedNationality, selectedRegistrationType, selectedIsActive, selected
                                         <td class="text-end">
                                             <div v-if="confirmingDelete !== user.id"
                                                 class="d-flex justify-content-end gap-1">
+                                                <!-- Edit -->
+                                                <Link :href="route('admin.users.edit', user.id)"
+                                                    class="btn btn-icon btn-sm btn-light-primary"
+                                                    title="Edit">
+                                                    <i class="ki-outline ki-pencil fs-5"></i>
+                                                </Link>
+
                                                 <!-- Deactivate -->
                                                 <button v-if="user.is_active" @click="deactivateUser(user.id)"
                                                     class="btn btn-icon btn-sm btn-light-warning" :disabled="processing"

@@ -310,7 +310,7 @@ watch(
 
                                 <!-- Name + flags -->
                                 <h4 class="fw-bold mb-1" :class="user.is_subscriber ? 'modal-subscriber-name' : 'text-gray-900'">
-                                    {{ user.username }}
+                                    {{ user.name }}
                                     <span v-if="user.nationality?.flag">{{ user.nationality.flag }}</span>
                                     <i v-if="user.is_subscriber" class="ki-outline ki-verify fs-3" style="color:#f6a723;"></i>
                                     <i :class="user.is_verified ? 'ki-solid ki-shield-tick fs-3 modal-verified-icon' : 'ki-outline ki-shield-tick fs-3 modal-unverified-icon'"></i>

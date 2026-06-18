@@ -11,6 +11,14 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
     // Admin Users
     Route::get('/users', [AdminUserController::class, 'index'])
         ->name('admin.users.index');
+    Route::get('/users/create', [AdminUserController::class, 'create'])
+        ->name('admin.users.create');
+    Route::post('/users', [AdminUserController::class, 'store'])
+        ->name('admin.users.store');
+    Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])
+        ->name('admin.users.edit');
+    Route::put('/users/{user}', [AdminUserController::class, 'update'])
+        ->name('admin.users.update');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])
         ->name('admin.users.destroy');
     Route::post('/users/{user}/deactivate', [AdminUserController::class, 'deactivate'])

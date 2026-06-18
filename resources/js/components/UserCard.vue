@@ -147,7 +147,7 @@ const handleCardClick = () => emit('viewProfile', props.user.id);
             <!-- Name overlay -->
             <div class="uc-photo__footer">
                 <div class="uc-username">
-                    {{ user.username }}
+                    {{ user.name }}
                     <i v-if="user.is_subscriber" class="ki-outline ki-verify uc-verify"></i>
                     <i :class="user.is_verified ? 'ki-solid ki-shield-tick uc-verified-icon' : 'ki-outline ki-shield-tick uc-unverified-icon'"></i>
                 </div>

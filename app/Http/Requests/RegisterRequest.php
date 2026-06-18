@@ -26,7 +26,8 @@ class RegisterRequest extends FormRequest
     {
         return [
             'registration_type' => ['required', 'in:wife,husband'],
-            'username' => ['required', 'string', 'alpha', 'max:20', 'unique:users,username'],
+            'name' => ['required', 'string', 'max:50', 'regex:/^[\pL\s]+$/u'],
+            'username' => ['required', 'string', 'alpha_num', 'max:20', 'unique:users,username'],
             'password' => ['required', 'string', 'min:8'],
             'age' => ['required', 'integer', 'min:18', 'max:100'],
             'country_code' => ['required', 'string', 'max:5'],
