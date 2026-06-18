@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:prune-online-users')->everyMinute();
+Schedule::command('app:shuffle-fake-online-users')->hourly();

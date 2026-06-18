@@ -52,10 +52,6 @@ const getPageLabel = (label: string): string => {
 
 <template>
     <div v-if="hasPages" class="d-flex flex-stack flex-wrap pt-10">
-        <div class="fs-6 fw-semibold text-gray-700">
-            {{ trans('sidebar.pagination_showing', { from: data.from, to: data.to, total: data.total }) }}
-        </div>
-
         <ul class="pagination">
             <li
                 v-for="(link, index) in data.links"
