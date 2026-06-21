@@ -34,6 +34,7 @@ class NewMembersController extends Controller
                 'marriage_status',
                 'marriage_type',
                 'registration_type',
+                'is_verified',
                 'last_seen_at',
             ])
             ->with('mainProfileImage')
