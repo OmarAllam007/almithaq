@@ -151,6 +151,7 @@ const handleCardClick = () => emit('viewProfile', props.user.id);
                     <i v-if="user.is_subscriber" class="ki-outline ki-verify uc-verify"></i>
                     <i :class="user.is_verified ? 'ki-solid ki-shield-tick uc-verified-icon' : 'ki-outline ki-shield-tick uc-unverified-icon'"></i>
                 </div>
+                <div class="uc-handle">@{{ user.username }}</div>
                 <div class="uc-age-line">{{ user.age }} {{ trans('home.years_old') }}</div>
             </div>
         </div>
@@ -492,6 +493,14 @@ const handleCardClick = () => emit('viewProfile', props.user.id);
     line-height: 1.25;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
     letter-spacing: 0.01em;
+}
+
+.uc-handle {
+    font-size: 0.72rem;
+    opacity: 0.72;
+    margin-top: 1px;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .uc-age-line {

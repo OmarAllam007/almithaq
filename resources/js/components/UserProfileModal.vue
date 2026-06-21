@@ -315,6 +315,7 @@ watch(
                                     <i v-if="user.is_subscriber" class="ki-outline ki-verify fs-3" style="color:#f6a723;"></i>
                                     <i :class="user.is_verified ? 'ki-solid ki-shield-tick fs-3 modal-verified-icon' : 'ki-outline ki-shield-tick fs-3 modal-unverified-icon'"></i>
                                 </h4>
+                                <p class="text-muted fs-7 mb-2">@{{ user.username }}</p>
 
                                 <!-- Premium badge -->
                                 <div v-if="user.is_subscriber" class="mb-2">

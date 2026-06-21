@@ -110,6 +110,7 @@ class SmartSearchService
 
             return [
                 'id' => $user->id,
+                'name' => $user->name,
                 'username' => $user->username,
                 'age' => $user->age,
                 'nationality' => $user->nationality,

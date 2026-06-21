@@ -26,6 +26,7 @@ class NewMembersController extends Controller
         $query = User::query()
             ->select([
                 'id',
+                'name',
                 'username',
                 'age',
                 'nationality',
@@ -100,6 +101,7 @@ class NewMembersController extends Controller
 
             return [
                 'id' => $user->id,
+                'name' => $user->name,
                 'username' => $user->username,
                 'age' => $user->age,
                 'nationality' => $user->nationality,
