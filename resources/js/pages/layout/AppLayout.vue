@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdBlockDetector from '@/components/AdBlockDetector.vue';
 import Header from '@/pages/_shared/Header.vue';
 import Sidebar from '@/pages/_shared/Sidebar.vue';
 import BottomNav from '@/pages/_shared/BottomNav.vue';
@@ -107,6 +108,7 @@ watch(
 </script>
 
 <template>
+    <AdBlockDetector />
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root" :dir="$page.props.locale === 'ar' ? 'rtl' : 'ltr'">
         <!--begin::Page-->
         <div class="app-page flex-column flex-column-fluid" id="kt_app_page">

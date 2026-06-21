@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdBlockDetector from '@/components/AdBlockDetector.vue';
 import { Head } from '@inertiajs/vue3';
 </script>
 
@@ -11,5 +12,6 @@ import { Head } from '@inertiajs/vue3';
         />
     </Head>
 
+    <AdBlockDetector />
     <slot />
 </template>
