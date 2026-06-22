@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import UserCard from '@/components/UserCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
@@ -39,6 +39,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
+const countryName = (c: Country) => isRtl.value ? (c.ar_name || c.name) : c.name;
 
 const selectedNationality = ref<number | undefined>(props.filters.nationality);
 const selectedResidence = ref<number | undefined>(props.filters.residence);
@@ -152,7 +156,7 @@ watch([selectedNationality, selectedResidence], () => {
                                                     :key="country.id"
                                                     :value="country.id"
                                                 >
-                                                    {{ country.name }}
+                                                    {{ countryName(country) }}
                                                 </option>
                                             </select>
                                         </div>
@@ -170,7 +174,7 @@ watch([selectedNationality, selectedResidence], () => {
                                                     :key="country.id"
                                                     :value="country.id"
                                                 >
-                                                    {{ country.name }}
+                                                    {{ countryName(country) }}
                                                 </option>
                                             </select>
                                         </div>

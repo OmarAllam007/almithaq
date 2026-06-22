@@ -569,7 +569,7 @@ watch(
                                         <div class="modal-gallery-lock-content">
                                             <i class="ki-outline ki-lock fs-2x mb-3" :class="imageRequestStatus === 'rejected' ? 'text-danger' : 'text-gray-500'"></i>
 
-                                            <template v-if="imageRequestStatus === null">
+                                            <template v-if="imageRequestStatus === null && user.gallery_images?.length">
                                                 <p class="text-muted fs-7 mb-3">{{ trans('image_requests.gallery_locked_desc') }}</p>
                                                 <button
                                                     class="btn btn-sm btn-primary"
@@ -580,6 +580,9 @@ watch(
                                                     <i v-else class="ki-outline ki-picture fs-6 me-1"></i>
                                                     {{ trans('image_requests.request_images') }}
                                                 </button>
+                                            </template>
+                                            <template v-else-if="imageRequestStatus === null">
+                                                <p class="text-muted fs-7 mb-0">{{ trans('profile.not_specified') }}</p>
                                             </template>
 
                                             <template v-else-if="imageRequestStatus === 'pending'">

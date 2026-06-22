@@ -108,7 +108,7 @@ class OnlineMembersController extends Controller
         return Inertia::render('OnlineUsers/Index', [
             'users' => $usersResponse,
             'countries' => $countries,
-            'totalOnline' => $onlineCount ? max(0, $onlineCount - 1) : 0,
+            'totalOnline' => $total,
             'filters' => [
                 'nationality' => $request->nationality,
                 'residence' => $request->residence,
