@@ -169,7 +169,7 @@ const values = computed(() => [
                     <a href="#features" @click.prevent="navTo('features')">{{ __('landing.nav-features') }}</a>
                     <a href="#values" @click.prevent="navTo('values')">{{ __('landing.nav-values') }}</a>
                     <a href="#members" @click.prevent="navTo('members')">{{ __('landing.nav-members') }}</a>
-                    <a href="#mobile-app" @click.prevent="navTo('mobile-app')">{{ __('landing.nav-app') }}</a>
+                    <!-- mobile app nav link hidden until app is ready -->
                 </nav>
 
                 <div class="nav__actions">
@@ -264,13 +264,7 @@ const values = computed(() => [
                         <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </a>
-                <a href="#mobile-app" @click.prevent="navTo('mobile-app')">
-                    <span class="nav__offcanvas-num">04</span>
-                    <span>{{ __('landing.nav-app') }}</span>
-                    <svg class="nav__offcanvas-arrow" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </a>
+                <!-- mobile app off-canvas link hidden until app is ready -->
             </nav>
 
             <div class="nav__offcanvas-footer">
@@ -508,7 +502,7 @@ const values = computed(() => [
             </div>
         </section>
 
-        <!-- ============ MOBILE APP ============ -->
+        <!-- ============ MOBILE APP (commented until mobile app is ready) ============
         <section id="mobile-app" class="section app">
             <div class="shell app__grid">
                 <div class="app__copy reveal">
@@ -558,6 +552,7 @@ const values = computed(() => [
                 </div>
             </div>
         </section>
+        ============================================================ -->
 
         <!-- ============ FINAL CTA ============ -->
         <section class="cta">

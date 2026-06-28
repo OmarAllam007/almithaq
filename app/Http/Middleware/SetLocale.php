@@ -10,28 +10,23 @@ use Illuminate\Support\Facades\Session;
 class SetLocale
 {
 
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
-        // Get locale from session, user preference, or default to 'en'
         $locale = Session::get('locale');
 
-        // If no session locale, check user's saved preference
         if (!$locale && auth()->check()) {
-            $locale = auth()->user()->language ?? 'en';
+            $locale = auth()->user()->language ?? 'ar';
         }
 
-        // If still no locale, default to 'en'
         if (!$locale) {
-            $locale = 'en';
+            $locale = 'ar';
+            Session::put('locale', $locale);
         }
 
-        // Validate locale
-        $validLocales = ['en', 'ar'];
-        if (!in_array($locale, $validLocales)) {
-            $locale = 'en';
+        if (!in_array($locale, ['en', 'ar'])) {
+            $locale = 'ar';
         }
 
-        // Set the application locale
         App::setLocale($locale);
 
         return $next($request);
