@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\MessagesRead;
 use App\Models\Conversation;
+use App\Models\ImageRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -61,6 +62,12 @@ class ConversationController extends Controller
         $otherUser = $conversation->getOtherUser($user->id);
         $otherUser->load('mainProfileImage');
 
+        $canViewImages = ImageRequest::where('requester_id', $user->id)
+            ->where('requested_user_id', $otherUser->id)
+            ->value('status') === 'approved';
+
+        $mainImage = $otherUser->mainProfileImage->first();
+
         return response()->json([
             'conversation' => [
                 'id' => $conversation->id,
@@ -68,13 +75,16 @@ class ConversationController extends Controller
                     'id' => $otherUser->id,
                     'name' => $otherUser->name,
                     'username' => $otherUser->username,
+                    'registration_type' => $otherUser->registration_type,
                     'age' => $otherUser->age,
                     'nationality' => $otherUser->nationality,
                     'residence' => $otherUser->residence,
                     'is_online' => $otherUser->isOnline(),
                     'last_seen_at' => $otherUser->last_seen_at,
-                    'registration_type' => $otherUser->registration_type,
-                    'profile_image' => $otherUser->mainProfileImage->first()?->thumbnail_url,
+                    'profile_image' => $canViewImages
+                        ? ($mainImage?->original_url ?? $mainImage?->thumbnail_url)
+                        : $mainImage?->thumbnail_url,
+                    'can_view_images' => $canViewImages,
                     'is_ignored' => $otherUser->isIgnored($user->id),
                 ],
             ],

@@ -84,6 +84,12 @@ class ProfileController extends Controller
     {
         $user->load('mainProfileImage');
 
+        $canViewImages = ImageRequest::where('requester_id', auth()->id())
+            ->where('requested_user_id', $user->id)
+            ->value('status') === 'approved';
+
+        $mainImage = $user->mainProfileImage->first();
+
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
@@ -91,7 +97,10 @@ class ProfileController extends Controller
             'registration_type' => $user->registration_type,
             'is_online' => $user->isOnline(),
             'last_seen_at' => $user->last_seen_at,
-            'profile_image' => $user->mainProfileImage->first()?->thumbnail_url,
+            'profile_image' => $canViewImages
+                ? ($mainImage?->original_url ?? $mainImage?->thumbnail_url)
+                : $mainImage?->thumbnail_url,
+            'can_view_images' => $canViewImages,
             'is_ignored' => $user->isIgnored(auth()->id()),
         ]);
     }

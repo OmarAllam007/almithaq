@@ -40,6 +40,7 @@ interface OtherUser {
     is_online: boolean;
     last_seen_at?: string;
     profile_image?: string | null;
+    can_view_images?: boolean;
     is_ignored?: boolean;
 }
 
@@ -405,6 +406,7 @@ watch(
                                     :src="otherUser.profile_image || defaultAvatar"
                                     :alt="otherUser.name"
                                     class="rounded-circle"
+                                    :class="{ 'cd-avatar--blurred': otherUser.can_view_images === false && !!otherUser.profile_image }"
                                     @error="($event.target as HTMLImageElement).src = defaultAvatar"
                                 />
                             </div>
@@ -663,6 +665,10 @@ watch(
 }
 
 /* ─── Safety notice ─────────────────────────────────────── */
+.cd-avatar--blurred {
+    filter: blur(6px) brightness(0.88);
+}
+
 .cd-safety-notice {
     background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
     font-size: 0.76rem;
