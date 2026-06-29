@@ -94,7 +94,11 @@ const insertEmoji = (emoji: string) => {
 
 const otherUser = computed(() => conversationData.value?.other_user ?? pendingOtherUser.value);
 
-const isOnline = computed(() => otherUser?.value?.id ? usePresenceStore().isUserOnline(otherUser.value.id) : false);
+const presenceStore = usePresenceStore();
+const isOnline = computed(() => {
+    if (!otherUser.value) return false;
+    return presenceStore.isUserOnline(otherUser.value.id) || (otherUser.value.is_online ?? false);
+});
 
 const lastSeenText = computed(() => {
     if (!otherUser.value?.last_seen_at) {
@@ -407,7 +411,7 @@ watch(
                             ></div>
                         </div>
                         <div class="flex-grow-1">
-                            <h5 class="fw-bold mb-0 text-gray-900">{{ otherUser.username }}</h5>
+                            <h5 class="fw-bold mb-0 text-gray-900">{{ otherUser.name }}</h5>
                             <Transition name="typing-status" mode="out-in">
                                 <span v-if="otherUserTyping" class="text-primary fs-7 fw-semibold">
                                     {{ trans('chat.typing') }}<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
