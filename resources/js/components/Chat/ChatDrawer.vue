@@ -33,6 +33,7 @@ interface OtherUser {
     id: number;
     name: string;
     username: string;
+    registration_type?: number;
     age?: number;
     nationality?: string | number;
     residence?: string | number;
@@ -93,6 +94,8 @@ const insertEmoji = (emoji: string) => {
 };
 
 const otherUser = computed(() => conversationData.value?.other_user ?? pendingOtherUser.value);
+const isFemale = computed(() => otherUser.value?.registration_type === 2);
+const defaultAvatar = computed(() => isFemale.value ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png');
 
 const presenceStore = usePresenceStore();
 const isOnline = computed(() => {
@@ -399,10 +402,10 @@ watch(
                         <div class="position-relative">
                             <div class="symbol symbol-45px">
                                 <img
-                                    :src="otherUser.profile_image || '/assets/media/auth/no-image-for-user.png'"
-                                    :alt="otherUser.username"
+                                    :src="otherUser.profile_image || defaultAvatar"
+                                    :alt="otherUser.name"
                                     class="rounded-circle"
-                                    @error="($event.target as HTMLImageElement).src = '/assets/media/auth/no-image-for-user.png'"
+                                    @error="($event.target as HTMLImageElement).src = defaultAvatar"
                                 />
                             </div>
                             <div

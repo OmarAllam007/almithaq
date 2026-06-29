@@ -73,6 +73,7 @@ class ConversationController extends Controller
                     'residence' => $otherUser->residence,
                     'is_online' => $otherUser->isOnline(),
                     'last_seen_at' => $otherUser->last_seen_at,
+                    'registration_type' => $otherUser->registration_type,
                     'profile_image' => $otherUser->mainProfileImage->first()?->thumbnail_url,
                     'is_ignored' => $otherUser->isIgnored($user->id),
                 ],

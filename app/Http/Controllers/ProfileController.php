@@ -88,6 +88,7 @@ class ProfileController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'username' => $user->username,
+            'registration_type' => $user->registration_type,
             'is_online' => $user->isOnline(),
             'last_seen_at' => $user->last_seen_at,
             'profile_image' => $user->mainProfileImage->first()?->thumbnail_url,
