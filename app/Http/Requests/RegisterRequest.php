@@ -27,6 +27,7 @@ class RegisterRequest extends FormRequest
         return [
             'registration_type' => ['required', 'in:wife,husband'],
             'name' => ['required', 'string', 'max:50', 'regex:/^[\pL\s]+$/u'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'username' => ['required', 'string', 'alpha_num', 'max:20', 'unique:users,username'],
             'password' => ['required', 'string', 'min:8'],
             'age' => ['required', 'integer', 'min:18', 'max:100'],
@@ -63,6 +64,9 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'email.required' => __('signup.validation-email-required'),
+            'email.email' => __('signup.validation-email-invalid'),
+            'email.unique' => __('signup.validation-email-taken'),
             'full_phone.phone' => __('signup.validation-phone-invalid'),
             'phone_number.unique' => __('signup.validation-phone-taken'),
             'phone_number.required' => __('signup.validation-phone-required'),

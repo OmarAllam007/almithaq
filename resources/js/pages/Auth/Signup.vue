@@ -54,6 +54,7 @@ const phoneCountryCodes = [
 const form = useForm({
     registration_type: '',
     name: '',
+    email: '',
     username: '',
     password: '',
     confirm_password: '',
@@ -142,6 +143,8 @@ const validationHints = computed<string[]>(() => {
     const hints: string[] = [];
     if (!form.registration_type) hints.push(__('signup.validation-account-type'));
     if (!form.name) hints.push(__('signup.validation-name-required'));
+    if (!form.email) hints.push(__('signup.validation-email-required'));
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) hints.push(__('signup.validation-email-invalid'));
     if (!form.username) hints.push(__('signup.validation-username-required'));
     if (form.username && !isUsernameCharsValid()) hints.push(__('signup.validation-username-chars'));
     if (form.username && !isUsernameLengthValid()) hints.push(__('signup.validation-username-length'));
@@ -165,6 +168,8 @@ const canSubmit = computed(() => {
     return !!(
         form.registration_type &&
         form.name &&
+        form.email &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) &&
         form.username &&
         isUsernameCharsValid() &&
         isUsernameLengthValid() &&
@@ -277,6 +282,20 @@ function switchLang(lang: string) {
                         />
                         <p v-if="form.errors.name" class="field__error">{{ form.errors.name }}</p>
                         <p class="field__hint">{{ __('signup.name-public-hint') }}</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field">
+                        <label class="field__label">{{ __('signup.email-label') }}</label>
+                        <input
+                            type="email"
+                            class="field__input"
+                            v-model="form.email"
+                            autocomplete="email"
+                            inputmode="email"
+                        />
+                        <p v-if="form.errors.email" class="field__error">{{ form.errors.email }}</p>
+                        <p class="field__hint">{{ __('signup.email-hint') }}</p>
                     </div>
 
                     <!-- Username + Age row -->
