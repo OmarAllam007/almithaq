@@ -19,7 +19,7 @@ class LogUserLogin
      */
     public function handle(Login $event): void
     {
-        $ip = '37.242.69.0';
+        $ip = request()->ip();
         $userAgent = request()->userAgent();
 
         if ($ip === '127.0.0.1') {
