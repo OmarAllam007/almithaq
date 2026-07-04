@@ -105,6 +105,10 @@ class ConversationController extends Controller
             return response()->json(['error' => 'Cannot start conversation with yourself'], 422);
         }
 
+        if (! $user->is_verified) {
+            return response()->json(['error' => 'Only verified members can send messages.'], 403);
+        }
+
         // Check if conversation already exists
         $existingConversation = $user->getConversationWith($recipientId);
 

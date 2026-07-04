@@ -458,6 +458,23 @@ watch(
                 </div>
             </template>
 
+            <!-- Unverified sender -->
+            <template v-else-if="!currentUser.is_verified">
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-6 py-10 text-center" style="background-color: #f9f9f9; gap: 16px;">
+                    <div class="cd-blocked-icon cd-blocked-icon--unverified">
+                        <i class="ki-outline ki-shield-cross"></i>
+                    </div>
+                    <div>
+                        <p class="fw-bold text-gray-800 fs-5 mb-1">{{ trans('chat.unverified_title') }}</p>
+                        <p class="text-muted fs-7 mb-0">{{ trans('chat.unverified_body') }}</p>
+                    </div>
+                    <a :href="route('verification.show')" class="cd-unblock-btn cd-unblock-btn--verify">
+                        <i class="ki-outline ki-shield-tick fs-6"></i>
+                        {{ trans('chat.get_verified') }}
+                    </a>
+                </div>
+            </template>
+
             <!-- Normal chat when not ignored -->
             <template v-else>
             <!-- Pinned safety notice -->
@@ -715,6 +732,31 @@ watch(
     border-color: rgba(255, 64, 64, 0.45);
     box-shadow: 0 4px 14px rgba(200, 30, 30, 0.18);
     color: #aa1010;
+}
+
+.cd-blocked-icon--unverified {
+    background: rgba(245, 158, 11, 0.09);
+    border-color: rgba(245, 158, 11, 0.28);
+    color: #b45309;
+    animation-name: cd-pulse-ring-amber;
+}
+
+@keyframes cd-pulse-ring-amber {
+    0%, 100% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.05); }
+    50%       { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0.0); }
+}
+
+.cd-unblock-btn--verify {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.28);
+    color: #92400e;
+}
+
+.cd-unblock-btn--verify:hover {
+    background: rgba(245, 158, 11, 0.16);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 4px 14px rgba(180, 83, 9, 0.18);
+    color: #78350f;
 }
 
 /* ─── Emoji button & wrapper ─────────────────────────────── */

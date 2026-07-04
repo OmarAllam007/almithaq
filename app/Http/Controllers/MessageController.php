@@ -24,7 +24,11 @@ class MessageController extends Controller
         if (! $conversation->hasUser($user->id)) {
             abort(403, 'Unauthorized');
         }
-        //        dd('asdasd');
+
+        if (! $user->is_verified) {
+            abort(403, 'Only verified members can send messages.');
+        }
+
         $request->validate([
             'message' => ['required', 'string', 'max:5000'],
         ]);

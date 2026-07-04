@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import { useLang } from '@/composables/useLang';
 
 const { trans } = useLang();
@@ -89,6 +90,7 @@ const isLoadingLocation = ref(false);
 const showLoginLocation = ref(false);
 
 // Gender-aware marriage status label (matches user's own gender)
+const currentUserIsVerified = computed(() => (page.props.auth as any)?.user?.is_verified ?? false);
 const isFemale = computed(() => user.value?.registration_type === 2);
 const genderLabel = computed(() => isFemale.value ? trans('home.female') : trans('home.male'));
 const showMarriageTypeBadge = computed(() => isFemale.value && !!user.value?.marriage_type_label);
@@ -628,10 +630,14 @@ watch(
                                 <i class="ki-outline ki-information fs-3"></i>
                             </button>
                         </div>
-                        <button class="btn btn-primary" @click="handleMessage">
+                        <button v-if="currentUserIsVerified" class="btn btn-primary" @click="handleMessage">
                             <i class="ki-outline ki-message-text fs-3"></i>
                             <span class="ms-2">{{ trans('profile.send_message') }}</span>
                         </button>
+                        <a v-else :href="route('verification.show')" class="btn btn-warning">
+                            <i class="ki-outline ki-shield-tick fs-3"></i>
+                            <span class="ms-2">{{ trans('chat.get_verified') }}</span>
+                        </a>
                     </div>
                 </div>
             </div>

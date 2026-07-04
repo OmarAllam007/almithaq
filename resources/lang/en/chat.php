@@ -16,4 +16,7 @@ return [
     'unblock_to_message' => 'Remove them from your ignored list to send and receive messages.',
     'go_to_ignored_list' => 'Go to Ignored List',
     'safety_notice' => 'This conversation is monitored by admins and AI. Never share phone numbers, money, or personal contact details.',
+    'unverified_title' => 'Messaging requires verification',
+    'unverified_body' => 'Only trusted & verified members can send messages. This helps us eliminate fake accounts and protect everyone in our community.',
+    'get_verified' => 'Get Verified',
 ];
