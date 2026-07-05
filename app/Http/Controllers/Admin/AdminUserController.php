@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAdminUserRequest;
 use App\Http\Requests\Admin\UpdateAdminUserRequest;
+use App\Mail\VerificationReminderMail;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\BodyShape;
@@ -21,6 +22,7 @@ use App\Models\Enums\SkinColor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class AdminUserController extends Controller
@@ -33,6 +35,7 @@ class AdminUserController extends Controller
                 'name',
                 'username',
                 'email',
+                'email_verified_at',
                 'phone_number',
                 'nationality',
                 'registration_type',
@@ -80,6 +83,7 @@ class AdminUserController extends Controller
                 'registration_type' => $user->registration_type,
                 'is_active' => (bool) $user->is_active,
                 'is_verified' => (bool) $user->is_verified,
+                'is_email_verified' => ! is_null($user->email_verified_at),
                 'is_online' => $user->isOnline(),
                 'created_at' => $user->created_at?->format('Y-m-d H:i'),
             ];
@@ -193,6 +197,18 @@ class AdminUserController extends Controller
         $user->update(['is_verified' => false]);
 
         return redirect()->back()->with('success', 'User unverified successfully.');
+    }
+
+    public function sendVerificationReminder(Request $request, User $user)
+    {
+        $request->validate(['lang' => ['required', 'in:en,ar']]);
+
+        abort_if(empty($user->email), 422, 'User has no email address.');
+        abort_if(! is_null($user->email_verified_at), 422, 'User email is already verified.');
+
+        Mail::to($user->email)->send(new VerificationReminderMail($user, $request->lang));
+
+        return redirect()->back()->with('success', "Verification reminder sent to {$user->email}.");
     }
 
     /**

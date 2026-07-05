@@ -14,6 +14,7 @@ interface User {
     registration_type: number | null;
     is_active: boolean;
     is_verified: boolean;
+    is_email_verified: boolean;
     is_online: boolean;
     created_at: string;
 }
@@ -62,6 +63,7 @@ const selectedIsVerified = ref<string | undefined>(props.filters.is_verified);
 const searchQuery = ref<string>(props.filters.search || '');
 
 const confirmingDelete = ref<number | null>(null);
+const confirmingReminder = ref<number | null>(null);
 const processing = ref(false);
 
 const getCountryName = (nationalityId: number | null): string => {
@@ -146,6 +148,19 @@ const unverifyUser = (userId: number) => {
     processing.value = true;
     router.post(route('admin.users.unverify', userId), {}, {
         preserveScroll: true,
+        onFinish: () => {
+            processing.value = false;
+        },
+    });
+};
+
+const sendReminder = (userId: number, lang: 'en' | 'ar') => {
+    processing.value = true;
+    router.post(route('admin.users.send-verification-reminder', userId), { lang }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            confirmingReminder.value = null;
+        },
         onFinish: () => {
             processing.value = false;
         },
@@ -334,14 +349,56 @@ watch([selectedNationality, selectedRegistrationType, selectedIsActive, selected
 
                                         <!-- Actions -->
                                         <td class="text-end">
-                                            <div v-if="confirmingDelete !== user.id"
-                                                class="d-flex justify-content-end gap-1">
+                                            <!-- Confirm Delete -->
+                                            <div v-if="confirmingDelete === user.id" class="d-flex justify-content-end align-items-center gap-2">
+                                                <span class="text-danger fs-8 fw-semibold">Delete?</span>
+                                                <button @click="deleteUser(user.id)"
+                                                    class="btn btn-sm btn-danger py-1 px-3" :disabled="processing">
+                                                    Yes
+                                                </button>
+                                                <button @click="confirmingDelete = null"
+                                                    class="btn btn-sm btn-light py-1 px-3">
+                                                    No
+                                                </button>
+                                            </div>
+
+                                            <!-- Confirm Reminder Language -->
+                                            <div v-else-if="confirmingReminder === user.id" class="d-flex justify-content-end align-items-center gap-2">
+                                                <span class="text-gray-600 fs-8 fw-semibold">Send in:</span>
+                                                <button @click="sendReminder(user.id, 'en')"
+                                                    class="btn btn-sm btn-primary py-1 px-3" :disabled="processing"
+                                                    title="Send English reminder">
+                                                    🇬🇧 EN
+                                                </button>
+                                                <button @click="sendReminder(user.id, 'ar')"
+                                                    class="btn btn-sm btn-success py-1 px-3" :disabled="processing"
+                                                    title="Send Arabic reminder">
+                                                    🇸🇦 AR
+                                                </button>
+                                                <button @click="confirmingReminder = null"
+                                                    class="btn btn-sm btn-light py-1 px-3">
+                                                    ✕
+                                                </button>
+                                            </div>
+
+                                            <!-- Default Actions -->
+                                            <div v-else class="d-flex justify-content-end gap-1">
                                                 <!-- Edit -->
                                                 <Link :href="route('admin.users.edit', user.id)"
                                                     class="btn btn-icon btn-sm btn-light-primary"
                                                     title="Edit">
                                                     <i class="ki-outline ki-pencil fs-5"></i>
                                                 </Link>
+
+                                                <!-- Send Reminder (email not verified + has email) -->
+                                                <button
+                                                    v-if="!user.is_email_verified && user.email"
+                                                    @click="confirmingReminder = user.id"
+                                                    class="btn btn-icon btn-sm btn-light-success"
+                                                    :disabled="processing"
+                                                    title="Send verification reminder email">
+                                                    <i class="ki-outline ki-sms fs-5"></i>
+                                                </button>
 
                                                 <!-- Deactivate -->
                                                 <button v-if="user.is_active" @click="deactivateUser(user.id)"
@@ -362,19 +419,6 @@ watch([selectedNationality, selectedRegistrationType, selectedIsActive, selected
                                                     class="btn btn-icon btn-sm btn-light-danger" :disabled="processing"
                                                     title="Delete">
                                                     <i class="ki-outline ki-trash fs-5"></i>
-                                                </button>
-                                            </div>
-
-                                            <!-- Confirm Delete -->
-                                            <div v-else class="d-flex justify-content-end align-items-center gap-2">
-                                                <span class="text-danger fs-8 fw-semibold">Delete?</span>
-                                                <button @click="deleteUser(user.id)"
-                                                    class="btn btn-sm btn-danger py-1 px-3" :disabled="processing">
-                                                    Yes
-                                                </button>
-                                                <button @click="confirmingDelete = null"
-                                                    class="btn btn-sm btn-light py-1 px-3">
-                                                    No
                                                 </button>
                                             </div>
                                         </td>

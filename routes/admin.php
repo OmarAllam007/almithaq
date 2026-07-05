@@ -25,6 +25,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
         ->name('admin.users.deactivate');
     Route::post('/users/{user}/unverify', [AdminUserController::class, 'unverify'])
         ->name('admin.users.unverify');
+    Route::post('/users/{user}/send-verification-reminder', [AdminUserController::class, 'sendVerificationReminder'])
+        ->name('admin.users.send-verification-reminder');
 
     // Admin Verifications
     Route::get('/verifications', [AdminVerificationController::class, 'index'])
