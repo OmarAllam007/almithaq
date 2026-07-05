@@ -458,23 +458,6 @@ watch(
                 </div>
             </template>
 
-            <!-- Unverified sender -->
-            <template v-else-if="!currentUser.is_verified">
-                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-6 py-10 text-center" style="background-color: #f9f9f9; gap: 16px;">
-                    <div class="cd-blocked-icon cd-blocked-icon--unverified">
-                        <i class="ki-outline ki-shield-cross"></i>
-                    </div>
-                    <div>
-                        <p class="fw-bold text-gray-800 fs-5 mb-1">{{ trans('chat.unverified_title') }}</p>
-                        <p class="text-muted fs-7 mb-0">{{ trans('chat.unverified_body') }}</p>
-                    </div>
-                    <a :href="route('verification.show')" class="cd-unblock-btn cd-unblock-btn--verify">
-                        <i class="ki-outline ki-shield-tick fs-6"></i>
-                        {{ trans('chat.get_verified') }}
-                    </a>
-                </div>
-            </template>
-
             <!-- Normal chat when not ignored -->
             <template v-else>
             <!-- Pinned safety notice -->

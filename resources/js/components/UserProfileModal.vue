@@ -630,14 +630,10 @@ watch(
                                 <i class="ki-outline ki-information fs-3"></i>
                             </button>
                         </div>
-                        <button v-if="currentUserIsVerified" class="btn btn-primary" @click="handleMessage">
+                        <button class="btn btn-primary" @click="handleMessage">
                             <i class="ki-outline ki-message-text fs-3"></i>
                             <span class="ms-2">{{ trans('profile.send_message') }}</span>
                         </button>
-                        <a v-else :href="route('verification.show')" class="btn btn-warning">
-                            <i class="ki-outline ki-shield-tick fs-3"></i>
-                            <span class="ms-2">{{ trans('chat.get_verified') }}</span>
-                        </a>
                     </div>
                 </div>
             </div>
