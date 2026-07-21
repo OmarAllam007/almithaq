@@ -25,7 +25,9 @@ jobs:
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "cd '$PROJECT_PATH' && \
-             git pull origin master && \
-             npm run build && \
-             php artisan migrate --force"
+            "export NVM_DIR='/home/app/.nvm' && \
+            source '/home/app/.nvm/nvm.sh' && \
+            cd '$PROJECT_PATH' && \
+            git pull origin master && \
+            npm run build && \
+            php artisan migrate --force"
