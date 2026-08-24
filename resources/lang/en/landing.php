@@ -1,6 +1,15 @@
 <?php
 
 return [
+    // Metadata and accessibility
+    'meta-title' => 'Khotobah — A serious path to marriage',
+    'meta-description' => 'Meet sincere, verified people in a private matrimonial community built around faith, respect, and marriage.',
+    'skip-content' => 'Skip to main content',
+    'home-label' => 'Khotobah home',
+    'primary-navigation' => 'Primary navigation',
+    'menu-label' => 'Menu',
+    'close-menu' => 'Close menu',
+
     // Navigation
     'nav-features' => 'How it works',
     'nav-values' => 'Our values',
@@ -14,9 +23,20 @@ return [
     'hero-title-1' => 'Where sincere hearts',
     'hero-title-2' => 'meet with intention',
     'hero-desc' => 'Khotobah is a values-driven matrimonial community for those seeking a lifelong partner through a sincere and purposeful path to marriage. Rooted in faith, respect, and family values, we help meaningful connections grow into blessed marriages. No games, no distractions — only genuine intentions and lasting companionship.',
+    'hero-desc-short' => 'A private matrimonial community for sincere people seeking marriage with clarity, respect, and shared values.',
     'hero-cta-primary' => 'Begin your journey',
     'hero-cta-secondary' => 'I already have an account',
     'hero-trust' => 'Trusted by thousands of sincere seekers',
+    'hero-how-it-works' => 'See how it works',
+    'hero-assurances' => 'Membership assurances',
+    'hero-assurance-1' => 'Marriage-minded only',
+    'hero-assurance-2' => 'Private by design',
+    'hero-assurance-3' => 'Verified community',
+    'hero-card-eyebrow' => 'A sincere beginning',
+    'hero-card-quote' => 'Built for a covenant, not a swipe',
+    'hero-card-note' => 'Faith · clarity · respect · family',
+    'hero-private-note' => 'You control who sees your photos',
+    'proof-intro' => 'A growing community connected by one clear intention: marriage.',
 
     // Stats
     'stat-members' => 'Active members',
@@ -40,6 +60,8 @@ return [
     // Values
     'values-eyebrow' => 'Why Khotobah',
     'values-title' => 'A space built on trust, privacy, and sincerity',
+    'values-title-new' => 'Marriage deserves a better beginning',
+    'values-desc' => 'Every part of Khotobah is designed to make meeting someone feel considered, respectful, and safe — from the first profile to the first conversation.',
     'value-1-title' => 'Privacy first',
     'value-1-desc' => 'Your photos and details stay yours. Share them only with people you choose.',
     'value-2-title' => 'Real, verified people',
@@ -58,6 +80,8 @@ return [
     'members-empty' => 'New members are joining every day — be among the first today.',
     'members-cta' => 'See who else is here',
     'members-join' => 'Join them',
+    'member-verified' => 'Verified member',
+    'member-private-age' => 'Age kept private',
 
     // Mobile app
     'app-eyebrow' => 'Take it with you',
@@ -73,6 +97,7 @@ return [
 
     // Final CTA
     'cta-title' => 'Your covenant begins with a single step',
+    'cta-eyebrow' => 'Ready when you are',
     'cta-desc' => 'Create your free profile today and meet someone who shares your values.',
     'cta-button' => 'Create your free account',
 
