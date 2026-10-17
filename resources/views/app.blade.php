@@ -10,6 +10,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-2CYS5M5WD8');
+  gtag('config', 'G-M4FQ6XN6DX');
 </script>
 
 {{-- here is new line in blade to check actions --}}
