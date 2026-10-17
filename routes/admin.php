@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminApprovalController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLocationController;
+use App\Http\Controllers\Admin\AdminOnboardingController;
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVerificationController;
@@ -34,6 +35,12 @@ Route::group(['prefix' => 'control-center', 'middleware' => 'admin'], function (
         ->name('admin.users.unverify');
     Route::post('/users/{user}/send-verification-reminder', [AdminUserController::class, 'sendVerificationReminder'])
         ->name('admin.users.send-verification-reminder');
+
+    // Incomplete signups
+    Route::get('/onboarding', [AdminOnboardingController::class, 'index'])
+        ->name('admin.onboarding.index');
+    Route::post('/onboarding/{user}/remind', [AdminOnboardingController::class, 'sendReminder'])
+        ->name('admin.onboarding.remind');
 
     // Admin Verifications
     Route::get('/verifications', [AdminVerificationController::class, 'index'])

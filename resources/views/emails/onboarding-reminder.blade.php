@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ $lang === 'ar' ? 'تذكير: تحقق من بريدك الإلكتروني' : 'Reminder: Verify Your Email' }}</title>
+    <title>{{ $lang === 'ar' ? 'تذكير من خطوبة' : 'Reminder from Khotobah' }}</title>
     <style>
         * {
             box-sizing: border-box;
@@ -301,7 +301,7 @@
                         @if ($lang === 'ar')
                             <span>خطوبة</span>
                         @else
-                            <span>Khotobag</span>
+                            <span>Khotobah</span>
                         @endif
                     </div>
                 </div>
@@ -309,11 +309,15 @@
                 {{-- <div class="header-icon-wrap"><span>📧</span></div> --}}
 
                 @if ($lang === 'ar')
-                    <div class="header-title">تحقق من بريدك الإلكتروني</div>
-                    <div class="header-subtitle">خطوتان فقط تفصلانك عن العضوية الكاملة</div>
+                    <div class="header-title">{{ $stage === 'email' ? 'تحقق من بريدك الإلكتروني' : 'أكمل ملفك الشخصي' }}</div>
+                    <div class="header-subtitle">
+                        {{ $stage === 'email' ? 'خطوتان فقط تفصلانك عن العضوية الكاملة' : 'خطوة واحدة فقط تفصلك عن العضوية الكاملة' }}
+                    </div>
                 @else
-                    <div class="header-title">Verify Your Email Address</div>
-                    <div class="header-subtitle">Just two steps away from full membership</div>
+                    <div class="header-title">{{ $stage === 'email' ? 'Verify Your Email Address' : 'Complete Your Profile' }}</div>
+                    <div class="header-subtitle">
+                        {{ $stage === 'email' ? 'Just two steps away from full membership' : 'Just one step away from full membership' }}
+                    </div>
                 @endif
             </div>
 
@@ -323,86 +327,118 @@
                 @if ($lang === 'ar')
                     <div class="greeting">السلام عليكم، {{ $userName }} 👋</div>
 
-                    <p class="text">
-                        شكراً لتسجيلك في منصة <strong>خطوبة</strong>. لاحظنا أن بريدك الإلكتروني لم يُفعَّل بعد.
-                        تفعيل البريد الإلكتروني هو أول خطوة لفتح ملفك الشخصي أمام الأعضاء الآخرين.
-                    </p>
+                    @if ($stage === 'email')
+                        <p class="text">
+                            شكراً لتسجيلك في منصة <strong>خطوبة</strong>. لاحظنا أن بريدك الإلكتروني لم يُفعَّل بعد.
+                            تفعيل البريد الإلكتروني هو أول خطوة لفتح ملفك الشخصي أمام الأعضاء الآخرين.
+                        </p>
+                    @else
+                        <p class="text">
+                            شكراً لتفعيل بريدك الإلكتروني في منصة <strong>خطوبة</strong>. لاحظنا أن ملفك الشخصي لم يكتمل بعد،
+                            ولن يظهر ملفك للأعضاء الآخرين حتى تُكمل بياناتك.
+                        </p>
+                    @endif
 
                     {{-- Steps --}}
                     <div class="steps-label">خارطة طريقك للعضوية الكاملة</div>
                     <div class="steps">
                         <div class="step">
-                            <div class="step-num step-num--next">١</div>
+                            <div class="step-num {{ $stage === 'email' ? 'step-num--next' : 'step-num--done' }}">١</div>
                             <div class="step-body">
-                                <div class="step-title">تفعيل البريد الإلكتروني ← أنت هنا</div>
-                                <div class="step-desc">اضغط على الزر أدناه وسيتم توجيهك لإعادة إرسال رابط التفعيل إلى بريدك.
+                                <div class="step-title {{ $stage === 'email' ? '' : 'step-title--muted' }}">
+                                    تفعيل البريد الإلكتروني @if ($stage === 'email') ← أنت هنا @else ✓ تم @endif
                                 </div>
+                                <div class="step-desc">تأكيد ملكيتك للبريد الإلكتروني المسجَّل في حسابك.</div>
                             </div>
                         </div>
                         <div class="step">
-                            <div class="step-num step-num--done">٢</div>
+                            <div class="step-num {{ $stage === 'profile' ? 'step-num--next' : 'step-num--done' }}">٢</div>
                             <div class="step-body">
-                                <div class="step-title step-title--muted">التحقق من الهوية بالفيديو</div>
-                                <div class="step-desc">بعد تفعيل بريدك، ستُطلب منك رفع مقطع فيديو قصير (١٠ ثوانٍ) للتحقق من
-                                    هويتك وحماية مجتمعنا من الحسابات المزيفة.</div>
+                                <div class="step-title {{ $stage === 'profile' ? '' : 'step-title--muted' }}">
+                                    إكمال الملف الشخصي @if ($stage === 'profile') ← أنت هنا @endif
+                                </div>
+                                <div class="step-desc">بياناتك الأساسية ومواصفات شريك الحياة الذي تبحث عنه.</div>
                             </div>
                         </div>
                     </div>
 
                     {{-- CTA --}}
                     <div class="cta-wrap">
-                        <a href="{{ $verificationUrl }}" class="cta-btn">تفعيل البريد الإلكتروني الآن</a>
-                        <div class="cta-note">أو انسخ هذا الرابط في متصفحك:<br>{{ $verificationUrl }}</div>
+                        <a href="{{ $actionUrl }}" class="cta-btn">
+                            {{ $stage === 'email' ? 'تفعيل البريد الإلكتروني الآن' : 'إكمال ملفي الشخصي الآن' }}
+                        </a>
+                        <div class="cta-note">أو انسخ هذا الرابط في متصفحك:<br>{{ $actionUrl }}</div>
                     </div>
 
                     {{-- Info --}}
                     <div class="info-card">
-                        💡 <strong>لم يصلك رابط التفعيل؟</strong>
-                        بعد الضغط على الزر أعلاه، يمكنك طلب إعادة إرسال رابط التفعيل من الصفحة التي ستظهر لك.
-                        تحقق أيضاً من مجلد الرسائل غير المرغوب فيها (Spam).
+                        @if ($stage === 'email')
+                            💡 <strong>لم يصلك رابط التفعيل؟</strong>
+                            بعد الضغط على الزر أعلاه، يمكنك طلب إعادة إرسال رابط التفعيل من الصفحة التي ستظهر لك.
+                            تحقق أيضاً من مجلد الرسائل غير المرغوب فيها (Spam).
+                        @else
+                            💡 <strong>لن يستغرق الأمر سوى دقائق.</strong>
+                            كلما اكتمل ملفك الشخصي، زادت فرص ظهورك للأعضاء المناسبين.
+                        @endif
                     </div>
 
                 @else
                     <div class="greeting">Hello, {{ $userName }} 👋</div>
 
-                    <p class="text">
-                        Thank you for registering on <strong>Khotobah</strong>. We noticed your email address hasn't been
-                        verified yet.
-                        Verifying your email is the very first step to making your profile visible to other members.
-                    </p>
+                    @if ($stage === 'email')
+                        <p class="text">
+                            Thank you for registering on <strong>Khotobah</strong>. We noticed your email address hasn't been
+                            verified yet. Verifying your email is the very first step to making your profile visible to
+                            other members.
+                        </p>
+                    @else
+                        <p class="text">
+                            Thank you for verifying your email on <strong>Khotobah</strong>. We noticed your profile isn't
+                            complete yet — until it is, other members won't be able to find you.
+                        </p>
+                    @endif
 
                     {{-- Steps --}}
                     <div class="steps-label">Your path to full membership</div>
                     <div class="steps">
                         <div class="step">
-                            <div class="step-num step-num--next">1</div>
+                            <div class="step-num {{ $stage === 'email' ? 'step-num--next' : 'step-num--done' }}">1</div>
                             <div class="step-body">
-                                <div class="step-title">Verify your email address ← You are here</div>
-                                <div class="step-desc">Click the button below and you'll be directed to resend the
-                                    verification link to your inbox.</div>
+                                <div class="step-title {{ $stage === 'email' ? '' : 'step-title--muted' }}">
+                                    Verify your email address @if ($stage === 'email') ← You are here @else ✓ Done @endif
+                                </div>
+                                <div class="step-desc">Confirm the email address registered to your account.</div>
                             </div>
                         </div>
                         <div class="step">
-                            <div class="step-num step-num--done">2</div>
+                            <div class="step-num {{ $stage === 'profile' ? 'step-num--next' : 'step-num--done' }}">2</div>
                             <div class="step-body">
-                                <div class="step-title step-title--muted">Identity verification via video</div>
-                                <div class="step-desc">After your email is confirmed, you'll upload a short 10-second video
-                                    to verify your identity — this keeps our community free from fake accounts.</div>
+                                <div class="step-title {{ $stage === 'profile' ? '' : 'step-title--muted' }}">
+                                    Complete your profile @if ($stage === 'profile') ← You are here @endif
+                                </div>
+                                <div class="step-desc">Your essential details and what you're looking for in a partner.</div>
                             </div>
                         </div>
                     </div>
 
                     {{-- CTA --}}
                     <div class="cta-wrap">
-                        <a href="{{ $verificationUrl }}" class="cta-btn">Verify My Email Now</a>
-                        <div class="cta-note">Or copy this link into your browser:<br>{{ $verificationUrl }}</div>
+                        <a href="{{ $actionUrl }}" class="cta-btn">
+                            {{ $stage === 'email' ? 'Verify My Email Now' : 'Complete My Profile Now' }}
+                        </a>
+                        <div class="cta-note">Or copy this link into your browser:<br>{{ $actionUrl }}</div>
                     </div>
 
                     {{-- Info --}}
                     <div class="info-card">
-                        💡 <strong>Didn't receive the verification email?</strong>
-                        After clicking the button above, you can request a new verification link from the page that appears.
-                        Also check your spam or junk folder.
+                        @if ($stage === 'email')
+                            💡 <strong>Didn't receive the verification email?</strong>
+                            After clicking the button above, you can request a new verification link from the page that
+                            appears. Also check your spam or junk folder.
+                        @else
+                            💡 <strong>It only takes a few minutes.</strong>
+                            The more complete your profile, the more likely the right members are to find you.
+                        @endif
                     </div>
                 @endif
 

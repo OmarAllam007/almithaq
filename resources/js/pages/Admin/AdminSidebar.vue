@@ -4,6 +4,7 @@ import { route } from 'ziggy-js';
 const links = [
     ['admin.dashboard', 'Overview', 'ki-element-11'],
     ['admin.users.index', 'Members', 'ki-profile-user'],
+    ['admin.onboarding.index', 'Incomplete signups', 'ki-user-edit'],
     ['admin.verifications.index', 'Verifications', 'ki-shield-tick'],
     ['admin.approvals.index', 'Image approvals', 'ki-picture'],
     ['admin.payments.index', 'Payments', 'ki-credit-cart'],

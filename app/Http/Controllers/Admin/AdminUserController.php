@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAdminUserRequest;
 use App\Http\Requests\Admin\UpdateAdminUserRequest;
-use App\Mail\VerificationReminderMail;
+use App\Mail\OnboardingReminderMail;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\BodyShape;
@@ -228,7 +228,9 @@ class AdminUserController extends Controller
         abort_if(empty($user->email), 422, 'User has no email address.');
         abort_if(! is_null($user->email_verified_at), 422, 'User email is already verified.');
 
-        Mail::to($user->email)->send(new VerificationReminderMail($user, $request->lang));
+        Mail::to($user->email)->send(new OnboardingReminderMail($user, $request->lang));
+
+        $user->forceFill(['onboarding_reminder_sent_at' => now()])->save();
 
         return redirect()->back()->with('success', "Verification reminder sent to {$user->email}.");
     }
