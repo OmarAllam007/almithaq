@@ -33,6 +33,8 @@ return [
     'Search' => 'بحث',
     'Profile' => 'حسابي',
 
+    'Pagination' => 'ترقيم الصفحات',
+    'pagination_page' => 'صفحة',
     'pagination_showing' => 'عرض {from} إلى {to} من أصل {total}',
     'Previous' => 'السابق',
     'Next' => 'التالي',

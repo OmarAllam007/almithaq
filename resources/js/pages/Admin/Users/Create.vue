@@ -55,6 +55,7 @@ const form = useForm({
     marriage_status: '',
     child_count: '',
     religion: '1',
+    ethnicity: '',
     nationality: '',
     residence: '',
     city: '',

@@ -2,10 +2,11 @@
 import { check } from '@/actions/App/Http/Controllers/Api/UsernameCheckController';
 import { store } from '@/actions/App/Http/Controllers/Auth/RegisterController';
 import { switchLanguage } from '@/actions/App/Http/Controllers/LanguageController';
-import { showAlertError } from '@/lib/utils';
 import PasswordInput from '@/components/Inputs/PasswordInput.vue';
+import { showAlertError } from '@/lib/utils';
+import AuthStory from '@/pages/Auth/AuthStory.vue';
 import { vueLang } from '@erag/lang-sync-inertia';
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, ref, watch } from 'vue';
 import { route } from 'ziggy-js';
@@ -15,6 +16,7 @@ const page = usePage();
 const currentLocale = computed(() => page.props.locale as string);
 const isRtl = computed(() => currentLocale.value === 'ar');
 const showLangDropdown = ref(false);
+const showValidationHints = ref(false);
 
 const usernameAvailable = ref<boolean | null>(null);
 const checkingUsername = ref(false);
@@ -58,7 +60,7 @@ const form = useForm({
     username: '',
     password: '',
     confirm_password: '',
-    age: null,
+    age: null as string | null,
     country_code: '+966',
     phone_number: '',
 });
@@ -138,7 +140,6 @@ watch(
     },
 );
 
-
 const validationHints = computed<string[]>(() => {
     const hints: string[] = [];
     if (!form.registration_type) hints.push(__('signup.validation-account-type'));
@@ -188,6 +189,7 @@ function handleSubmit() {
     if (canSubmit.value) {
         form.submit(store());
     } else {
+        showValidationHints.value = true;
         if (validationHints.value.length > 0) {
             showAlertError(validationHints.value, __('signup.title'));
         }
@@ -201,252 +203,309 @@ function switchLang(lang: string) {
 </script>
 
 <template>
-    <div class="auth-root" :dir="isRtl ? 'rtl' : 'ltr'">
+    <Head :title="__('signup.title')" />
+    <div class="auth-root auth-scene auth-scene--signup" :dir="isRtl ? 'rtl' : 'ltr'">
         <!-- Glows -->
         <div class="auth-glow auth-glow--1"></div>
         <div class="auth-glow auth-glow--2"></div>
 
-        <div class="auth-wrap">
-            <div class="auth-card">
+        <div class="auth-shell">
+            <AuthStory mode="signup" :is-rtl="isRtl" />
+            <div class="auth-wrap">
+                <div class="auth-card">
+                    <!-- Brand -->
+                    <a href="/" class="auth-brand">
+                        <span class="auth-brand__mark">
+                            <svg viewBox="0 0 40 28" fill="none">
+                                <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
+                                <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
+                            </svg>
+                        </span>
+                        <span class="auth-brand__text">
+                            <span class="auth-brand__name">Khotobah</span>
+                            <span class="auth-brand__sub">خطوبة</span>
+                        </span>
+                    </a>
 
-                <!-- Brand -->
-                <a href="/" class="auth-brand">
-                    <span class="auth-brand__mark">
-                        <svg viewBox="0 0 40 28" fill="none">
-                            <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
-                            <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
-                        </svg>
-                    </span>
-                    <span class="auth-brand__text">
-                        <span class="auth-brand__name">Khotobah</span>
-                        <span class="auth-brand__sub">خطوبة</span>
-                    </span>
-                </a>
-
-                <!-- Heading -->
-                <div class="auth-head">
-                    <h1 class="auth-head__title">{{ __('signup.title') }}</h1>
-                    <p class="auth-head__desc">{{ __('signup.subtitle') }}</p>
-                    <div class="auth-head__sub">
-                        <span>{{ __('signup.head-desc') }}</span>
-                        <Link :href="route('login')" class="auth-link">{{ __('signup.head-link') }}</Link>
-                    </div>
-                </div>
-
-                <form @submit.prevent="handleSubmit">
-
-                    <!-- Account type -->
-                    <div class="field">
-                        <label class="field__label">{{ __('signup.account-type') }}</label>
-                        <div class="reg-type-group">
-                            <button
-                                type="button"
-                                class="reg-type-card"
-                                :class="{ active: form.registration_type === 'husband' }"
-                                @click="form.registration_type = 'husband'"
-                            >
-                                <span class="reg-type-card__icon">
-                                    <svg viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/>
-                                        <path d="M4.5 20c0-3.866 3.358-7 7.5-7s7.5 3.134 7.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                                    </svg>
-                                </span>
-                                <span>{{ __('signup.husband-label') }}</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="reg-type-card reg-type-card--rose"
-                                :class="{ active: form.registration_type === 'wife' }"
-                                @click="form.registration_type = 'wife'"
-                            >
-                                <span class="reg-type-card__icon">
-                                    <svg viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/>
-                                        <path d="M4.5 20c0-3.866 3.358-7 7.5-7s7.5 3.134 7.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                                    </svg>
-                                </span>
-                                <span>{{ __('signup.wife-label') }}</span>
-                            </button>
+                    <!-- Heading -->
+                    <div class="auth-head">
+                        <h1 class="auth-head__title">{{ __('signup.title') }}</h1>
+                        <p class="auth-head__desc">{{ __('signup.subtitle') }}</p>
+                        <div class="auth-head__sub">
+                            <span>{{ __('signup.head-desc') }}</span>
+                            <Link :href="route('login')" class="auth-link">{{ __('signup.head-link') }}</Link>
                         </div>
-                        <p v-if="form.errors.registration_type" class="field__error">{{ form.errors.registration_type }}</p>
                     </div>
 
-                    <!-- Display name -->
-                    <div class="field">
-                        <label class="field__label">{{ __('signup.name-label') }}</label>
-                        <input
-                            type="text"
-                            class="field__input"
-                            v-model="form.name"
-                            maxlength="50"
-                        />
-                        <p v-if="form.errors.name" class="field__error">{{ form.errors.name }}</p>
-                        <p class="field__hint">{{ __('signup.name-public-hint') }}</p>
-                    </div>
+                    <form @submit.prevent="handleSubmit">
+                        <!-- Account type -->
+                        <div class="field">
+                            <label class="field__label">{{ __('signup.account-type') }}</label>
+                            <div class="reg-type-group">
+                                <button
+                                    type="button"
+                                    class="reg-type-card"
+                                    :class="{ active: form.registration_type === 'husband' }"
+                                    @click="form.registration_type = 'husband'"
+                                >
+                                    <span class="reg-type-card__icon">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6" />
+                                            <path
+                                                d="M4.5 20c0-3.866 3.358-7 7.5-7s7.5 3.134 7.5 7"
+                                                stroke="currentColor"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <span>{{ __('signup.husband-label') }}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="reg-type-card reg-type-card--rose"
+                                    :class="{ active: form.registration_type === 'wife' }"
+                                    @click="form.registration_type = 'wife'"
+                                >
+                                    <span class="reg-type-card__icon">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6" />
+                                            <path
+                                                d="M4.5 20c0-3.866 3.358-7 7.5-7s7.5 3.134 7.5 7"
+                                                stroke="currentColor"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <span>{{ __('signup.wife-label') }}</span>
+                                </button>
+                            </div>
+                            <p v-if="form.errors.registration_type" class="field__error">{{ form.errors.registration_type }}</p>
+                        </div>
 
-                    <!-- Email -->
-                    <div class="field">
-                        <label class="field__label">{{ __('signup.email-label') }}</label>
-                        <input
-                            type="email"
-                            class="field__input"
-                            v-model="form.email"
-                            autocomplete="email"
-                            inputmode="email"
-                        />
-                        <p v-if="form.errors.email" class="field__error">{{ form.errors.email }}</p>
-                        <p class="field__hint">{{ __('signup.email-hint') }}</p>
-                    </div>
+                        <!-- Display name -->
+                        <div class="field">
+                            <label class="field__label">{{ __('signup.name-label') }}</label>
+                            <input type="text" class="field__input" v-model="form.name" maxlength="50" autocomplete="name" />
+                            <p v-if="form.errors.name" class="field__error">{{ form.errors.name }}</p>
+                            <p class="field__hint">{{ __('signup.name-public-hint') }}</p>
+                        </div>
 
-                    <!-- Username + Age row -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-8">
-                            <label class="field__label">{{ __('signup.username-label') }}</label>
-                            <div class="username-wrap">
+                        <!-- Email -->
+                        <div class="field">
+                            <label class="field__label">{{ __('signup.email-label') }}</label>
+                            <input type="email" class="field__input" v-model="form.email" autocomplete="email" inputmode="email" />
+                            <p v-if="form.errors.email" class="field__error">{{ form.errors.email }}</p>
+                            <p class="field__hint">{{ __('signup.email-hint') }}</p>
+                        </div>
+
+                        <!-- Username + Age row -->
+                        <div class="row g-3 mb-3 auth-field-row auth-field-row--identity">
+                            <div class="col-8">
+                                <label class="field__label">{{ __('signup.username-label') }}</label>
+                                <div class="username-wrap">
+                                    <input
+                                        type="text"
+                                        class="field__input"
+                                        v-model="form.username"
+                                        maxlength="20"
+                                        autocomplete="username"
+                                        @blur="checkUsernameAvailability"
+                                    />
+                                    <span class="username-status">
+                                        <span v-if="checkingUsername" class="auth-spinner auth-spinner--plum"></span>
+                                        <svg
+                                            v-else-if="usernameAvailable === true"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            class="status-icon status-icon--ok"
+                                        >
+                                            <path
+                                                d="m5 13 4 4L19 7"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                        </svg>
+                                        <svg
+                                            v-else-if="usernameAvailable === false"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            class="status-icon status-icon--err"
+                                        >
+                                            <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <p v-if="form.errors.username" class="field__error">{{ form.errors.username }}</p>
+                                <p class="field__hint">{{ __('signup.username-private-hint') }}</p>
+                            </div>
+                            <div class="col-4">
+                                <label class="field__label">{{ __('signup.age-label') }}</label>
+                                <select class="field__input" :value="form.age" @input="form.age = ($event.target as HTMLSelectElement).value">
+                                    <option value="">—</option>
+                                    <option v-for="a in ageRange" :key="a" :value="a">{{ a }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Password + Confirm row -->
+                        <div class="row g-3 mb-2 auth-field-row auth-field-row--password">
+                            <div class="col-6">
+                                <PasswordInput v-model="form.password" :label="__('signup.password-label')" />
+                            </div>
+                            <div class="col-6">
+                                <PasswordInput v-model="form.confirm_password" :label="__('signup.confirm-password-label')" />
+                            </div>
+                        </div>
+
+                        <!-- Password strength chips -->
+                        <div v-if="form.password || form.confirm_password" class="pw-hints">
+                            <template v-if="form.password">
+                                <span class="pw-chip" :class="isPasswordLengthValid() ? 'pw-chip--ok' : 'pw-chip--err'">
+                                    <svg viewBox="0 0 16 16" fill="none">
+                                        <path
+                                            v-if="isPasswordLengthValid()"
+                                            d="m3 8 3 3 7-7"
+                                            stroke="currentColor"
+                                            stroke-width="1.8"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
+                                    8+
+                                </span>
+                                <span class="pw-chip" :class="isPasswordHasUppercase() ? 'pw-chip--ok' : 'pw-chip--err'">
+                                    <svg viewBox="0 0 16 16" fill="none">
+                                        <path
+                                            v-if="isPasswordHasUppercase()"
+                                            d="m3 8 3 3 7-7"
+                                            stroke="currentColor"
+                                            stroke-width="1.8"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
+                                    A–Z
+                                </span>
+                                <span class="pw-chip" :class="isPasswordHasNumber() ? 'pw-chip--ok' : 'pw-chip--err'">
+                                    <svg viewBox="0 0 16 16" fill="none">
+                                        <path
+                                            v-if="isPasswordHasNumber()"
+                                            d="m3 8 3 3 7-7"
+                                            stroke="currentColor"
+                                            stroke-width="1.8"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                    </svg>
+                                    0–9
+                                </span>
+                            </template>
+                            <span
+                                v-if="form.confirm_password"
+                                class="pw-chip"
+                                :class="form.password === form.confirm_password ? 'pw-chip--ok' : 'pw-chip--err'"
+                            >
+                                <svg viewBox="0 0 16 16" fill="none">
+                                    <path
+                                        v-if="form.password === form.confirm_password"
+                                        d="m3 8 3 3 7-7"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                </svg>
+                                {{ __('signup.validation-passwords-match') }}
+                            </span>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="field">
+                            <label class="field__label">{{ __('signup.phone-label') }}</label>
+                            <div class="phone-row">
+                                <div class="phone-code-wrap">
+                                    <select class="field__input phone-code" v-model="form.country_code" :aria-label="__('signup.phone-label')">
+                                        <option v-for="c in phoneCountryCodes" :key="c.dial" :value="c.dial">
+                                            {{ c.dial }} {{ isRtl ? c.ar : c.en }}
+                                        </option>
+                                    </select>
+                                </div>
                                 <input
-                                    type="text"
-                                    class="field__input"
-                                    v-model="form.username"
-                                    maxlength="20"
-                                    @blur="checkUsernameAvailability"
+                                    type="tel"
+                                    class="field__input phone-number"
+                                    v-model="form.phone_number"
+                                    :placeholder="__('signup.phone-label')"
+                                    autocomplete="tel-national"
                                 />
-                                <span class="username-status">
-                                    <span v-if="checkingUsername" class="auth-spinner auth-spinner--plum"></span>
-                                    <svg v-else-if="usernameAvailable === true" viewBox="0 0 24 24" fill="none" class="status-icon status-icon--ok">
-                                        <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    <svg v-else-if="usernameAvailable === false" viewBox="0 0 24 24" fill="none" class="status-icon status-icon--err">
-                                        <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    </svg>
-                                </span>
                             </div>
-                            <p v-if="form.errors.username" class="field__error">{{ form.errors.username }}</p>
-                            <p class="field__hint">{{ __('signup.username-private-hint') }}</p>
+                            <p v-if="form.errors.phone_number || form.errors.country_code" class="field__error">
+                                {{ form.errors.country_code || form.errors.phone_number }}
+                            </p>
                         </div>
-                        <div class="col-4">
-                            <label class="field__label">{{ __('signup.age-label') }}</label>
-                            <select
-                                class="field__input"
-                                :value="form.age"
-                                @input="form.age = ($event.target as HTMLSelectElement).value"
-                            >
-                                <option value="">—</option>
-                                <option v-for="a in ageRange" :key="a" :value="a">{{ a }}</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <!-- Password + Confirm row -->
-                    <div class="row g-3 mb-2">
-                        <div class="col-6">
-                            <PasswordInput v-model="form.password" :label="__('signup.password-label')" />
-                        </div>
-                        <div class="col-6">
-                            <PasswordInput v-model="form.confirm_password" :label="__('signup.confirm-password-label')" />
-                        </div>
-                    </div>
-
-                    <!-- Password strength chips -->
-                    <div v-if="form.password || form.confirm_password" class="pw-hints">
-                        <template v-if="form.password">
-                            <span class="pw-chip" :class="isPasswordLengthValid() ? 'pw-chip--ok' : 'pw-chip--err'">
-                                <svg viewBox="0 0 16 16" fill="none">
-                                    <path v-if="isPasswordLengthValid()" d="m3 8 3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                </svg>
-                                8+
-                            </span>
-                            <span class="pw-chip" :class="isPasswordHasUppercase() ? 'pw-chip--ok' : 'pw-chip--err'">
-                                <svg viewBox="0 0 16 16" fill="none">
-                                    <path v-if="isPasswordHasUppercase()" d="m3 8 3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                </svg>
-                                A–Z
-                            </span>
-                            <span class="pw-chip" :class="isPasswordHasNumber() ? 'pw-chip--ok' : 'pw-chip--err'">
-                                <svg viewBox="0 0 16 16" fill="none">
-                                    <path v-if="isPasswordHasNumber()" d="m3 8 3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                </svg>
-                                0–9
-                            </span>
-                        </template>
-                        <span v-if="form.confirm_password" class="pw-chip" :class="form.password === form.confirm_password ? 'pw-chip--ok' : 'pw-chip--err'">
-                            <svg viewBox="0 0 16 16" fill="none">
-                                <path v-if="form.password === form.confirm_password" d="m3 8 3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path v-else d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <!-- Validation hints -->
+                        <div v-if="showValidationHints && !canSubmit && validationHints.length > 0" class="validation-hints" role="alert">
+                            <svg class="validation-hints__icon" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" />
+                                <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                             </svg>
-                            {{ __('signup.validation-passwords-match') }}
-                        </span>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="field">
-                        <label class="field__label">{{ __('signup.phone-label') }}</label>
-                        <div class="phone-row">
-                            <select class="field__input phone-code" v-model="form.country_code">
-                                <option v-for="c in phoneCountryCodes" :key="c.dial" :value="c.dial">
-                                    {{ c.dial }} {{ isRtl ? c.ar : c.en }}
-                                </option>
-                            </select>
-                            <input
-                                type="tel"
-                                class="field__input phone-number"
-                                v-model="form.phone_number"
-                                :placeholder="__('signup.phone-label')"
-                            />
+                            <ul>
+                                <li v-for="hint in validationHints" :key="hint">{{ hint }}</li>
+                            </ul>
                         </div>
-                        <p v-if="form.errors.phone_number || form.errors.country_code" class="field__error">
-                            {{ form.errors.country_code || form.errors.phone_number }}
-                        </p>
-                    </div>
 
-                    <!-- Validation hints -->
-                    <div v-if="!canSubmit && validationHints.length > 0" class="validation-hints">
-                        <svg class="validation-hints__icon" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
-                            <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        </svg>
-                        <ul>
-                            <li v-for="hint in validationHints" :key="hint">{{ hint }}</li>
-                        </ul>
-                    </div>
-
-                    <!-- Submit -->
-                    <button type="submit" class="auth-submit" :disabled="form.processing">
-                        <span v-if="!form.processing" style="display:inline-flex;align-items:center;gap:0.5rem;white-space:nowrap">
-                            {{ __('signup.submit') }}
-                            <svg viewBox="0 0 20 20" fill="none" style="width:16px;height:16px" :style="isRtl ? 'transform:scaleX(-1)' : ''">
-                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
-                        <span v-else class="auth-submit__loading">
-                            {{ __('signup.processing') }}
-                            <span class="auth-spinner"></span>
-                        </span>
-                    </button>
-                </form>
-
-                <!-- Language switcher -->
-                <div class="auth-lang">
-                    <div class="lang">
-                        <button type="button" class="lang__toggle" @click="showLangDropdown = !showLangDropdown">
-                            <img :src="currentLocale === 'ar' ? 'assets/media/flags/saudi-arabia.svg' : 'assets/media/flags/united-states.svg'" alt="" />
-                            <span>{{ currentLocale === 'ar' ? 'العربية' : 'English' }}</span>
+                        <!-- Submit -->
+                        <button type="submit" class="auth-submit" :disabled="form.processing">
+                            <span v-if="!form.processing" style="display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap">
+                                {{ __('signup.submit') }}
+                                <svg viewBox="0 0 20 20" fill="none" style="width: 16px; height: 16px" :style="isRtl ? 'transform:scaleX(-1)' : ''">
+                                    <path
+                                        d="M4 10h12M11 5l5 5-5 5"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                            </span>
+                            <span v-else class="auth-submit__loading">
+                                {{ __('signup.processing') }}
+                                <span class="auth-spinner"></span>
+                            </span>
                         </button>
-                        <transition name="fade">
-                            <div v-if="showLangDropdown" class="lang__menu">
-                                <button type="button" :class="{ active: currentLocale === 'en' }" @click="switchLang('en')">
-                                    <img src="assets/media/flags/united-states.svg" alt="" /> English
-                                </button>
-                                <button type="button" :class="{ active: currentLocale === 'ar' }" @click="switchLang('ar')">
-                                    <img src="assets/media/flags/saudi-arabia.svg" alt="" /> العربية
-                                </button>
-                            </div>
-                        </transition>
+                    </form>
+
+                    <!-- Language switcher -->
+                    <div class="auth-lang">
+                        <div class="lang">
+                            <button type="button" class="lang__toggle" @click="showLangDropdown = !showLangDropdown">
+                                <img
+                                    :src="currentLocale === 'ar' ? '/assets/media/flags/saudi-arabia.svg' : '/assets/media/flags/united-states.svg'"
+                                    alt=""
+                                />
+                                <span>{{ currentLocale === 'ar' ? 'العربية' : 'English' }}</span>
+                            </button>
+                            <transition name="fade">
+                                <div v-if="showLangDropdown" class="lang__menu">
+                                    <button type="button" :class="{ active: currentLocale === 'en' }" @click="switchLang('en')">
+                                        <img src="/assets/media/flags/united-states.svg" alt="" /> English
+                                    </button>
+                                    <button type="button" :class="{ active: currentLocale === 'ar' }" @click="switchLang('ar')">
+                                        <img src="/assets/media/flags/saudi-arabia.svg" alt="" /> العربية
+                                    </button>
+                                </div>
+                            </transition>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -494,8 +553,20 @@ function switchLang(lang: string) {
     pointer-events: none;
     z-index: 0;
 }
-.auth-glow--1 { width: 500px; height: 500px; background: rgba(208, 46, 121, 0.15); top: -160px; inset-inline-end: -120px; }
-.auth-glow--2 { width: 400px; height: 400px; background: rgba(199, 154, 63, 0.13); bottom: -120px; inset-inline-start: -100px; }
+.auth-glow--1 {
+    width: 500px;
+    height: 500px;
+    background: rgba(208, 46, 121, 0.15);
+    top: -160px;
+    inset-inline-end: -120px;
+}
+.auth-glow--2 {
+    width: 400px;
+    height: 400px;
+    background: rgba(199, 154, 63, 0.13);
+    bottom: -120px;
+    inset-inline-start: -100px;
+}
 
 /* Layout */
 .auth-wrap {
@@ -528,19 +599,36 @@ function switchLang(lang: string) {
     text-decoration: none;
     margin-bottom: 2rem;
 }
-.auth-brand__mark { color: var(--rose); display: inline-flex; }
-.auth-brand__mark svg { width: 36px; height: 25px; }
-.auth-brand__text { display: flex; flex-direction: column; line-height: 1; }
+.auth-brand__mark {
+    color: var(--rose);
+    display: inline-flex;
+}
+.auth-brand__mark svg {
+    width: 36px;
+    height: 25px;
+}
+.auth-brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
 .auth-brand__name {
     font-family: 'Cormorant Garamond', 'Cairo', serif;
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--plum);
 }
-.auth-brand__sub { font-size: 0.68rem; color: var(--rose); font-weight: 600; margin-top: 2px; }
+.auth-brand__sub {
+    font-size: 0.68rem;
+    color: var(--rose);
+    font-weight: 600;
+    margin-top: 2px;
+}
 
 /* Heading */
-.auth-head { margin-bottom: 1.8rem; }
+.auth-head {
+    margin-bottom: 1.8rem;
+}
 .auth-head__title {
     font-family: 'Cormorant Garamond', 'Cairo', serif;
     font-size: 2rem;
@@ -549,12 +637,27 @@ function switchLang(lang: string) {
     margin: 0 0 0.35rem;
     line-height: 1.15;
 }
-.auth-head__desc { font-size: 0.9rem; color: rgba(44, 10, 24, 0.62); margin: 0 0 0.4rem; }
-.auth-head__sub { font-size: 0.88rem; color: rgba(44, 10, 24, 0.6); }
+.auth-head__desc {
+    font-size: 0.9rem;
+    color: rgba(44, 10, 24, 0.62);
+    margin: 0 0 0.4rem;
+}
+.auth-head__sub {
+    font-size: 0.88rem;
+    color: rgba(44, 10, 24, 0.6);
+}
 
 /* Fields */
-.field { margin-bottom: 1rem; }
-.field__label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--plum); margin-bottom: 0.4rem; }
+.field {
+    margin-bottom: 1rem;
+}
+.field__label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--plum);
+    margin-bottom: 0.4rem;
+}
 .field__input {
     width: 100%;
     box-sizing: border-box;
@@ -566,15 +669,31 @@ function switchLang(lang: string) {
     font-family: 'Cairo', sans-serif;
     font-size: 0.92rem;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
     appearance: auto;
 }
-.field__input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(208, 46, 121, 0.1); }
-.field__error { font-size: 0.8rem; color: #dc2626; margin: 0.3rem 0 0; }
-.field__hint { font-size: 0.76rem; color: rgba(44, 10, 24, 0.5); margin: 0.25rem 0 0; }
+.field__input:focus {
+    border-color: var(--rose);
+    box-shadow: 0 0 0 3px rgba(208, 46, 121, 0.1);
+}
+.field__error {
+    font-size: 0.8rem;
+    color: #dc2626;
+    margin: 0.3rem 0 0;
+}
+.field__hint {
+    font-size: 0.76rem;
+    color: rgba(44, 10, 24, 0.5);
+    margin: 0.25rem 0 0;
+}
 
 /* Account type */
-.reg-type-group { display: flex; gap: 0.75rem; }
+.reg-type-group {
+    display: flex;
+    gap: 0.75rem;
+}
 .reg-type-card {
     flex: 1;
     display: flex;
@@ -590,35 +709,80 @@ function switchLang(lang: string) {
     font-weight: 600;
     color: var(--plum);
     cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
 }
-.reg-type-card__icon { display: flex; }
-.reg-type-card__icon svg { width: 24px; height: 24px; }
-.reg-type-card:hover { background: var(--cream-2); }
-.reg-type-card.active { border-color: var(--gold); background: rgba(199, 154, 63, 0.08); color: var(--gold); }
-.reg-type-card--rose.active { border-color: var(--rose); background: var(--blush); color: var(--rose); }
+.reg-type-card__icon {
+    display: flex;
+}
+.reg-type-card__icon svg {
+    width: 24px;
+    height: 24px;
+}
+.reg-type-card:hover {
+    background: var(--cream-2);
+}
+.reg-type-card.active {
+    border-color: var(--gold);
+    background: rgba(199, 154, 63, 0.08);
+    color: var(--gold);
+}
+.reg-type-card--rose.active {
+    border-color: var(--rose);
+    background: var(--blush);
+    color: var(--rose);
+}
 
 /* Username with status */
-.username-wrap { position: relative; }
-.username-wrap .field__input { padding-inline-end: 2.5rem; }
+.username-wrap {
+    position: relative;
+}
+.username-wrap .field__input {
+    padding-inline-end: 2.5rem;
+}
 .username-status {
     position: absolute;
-    top: 50%; inset-inline-end: 0.75rem;
+    top: 50%;
+    inset-inline-end: 0.75rem;
     transform: translateY(-50%);
-    display: flex; align-items: center;
+    display: flex;
+    align-items: center;
     pointer-events: none;
 }
-.status-icon { width: 18px; height: 18px; }
-.status-icon--ok { color: #16a34a; }
-.status-icon--err { color: #dc2626; }
+.status-icon {
+    width: 18px;
+    height: 18px;
+}
+.status-icon--ok {
+    color: #16a34a;
+}
+.status-icon--err {
+    color: #dc2626;
+}
 
 /* Phone */
-.phone-row { display: flex; gap: 0.5rem; }
-.phone-code { width: auto; min-width: 155px; flex-shrink: 0; }
-.phone-number { flex: 1; }
+.phone-row {
+    display: flex;
+    gap: 0.5rem;
+}
+.phone-code {
+    width: auto;
+    min-width: 155px;
+    flex-shrink: 0;
+}
+.phone-number {
+    flex: 1;
+}
 
 /* Password chips */
-.pw-hints { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.pw-hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
 .pw-chip {
     display: inline-flex;
     align-items: center;
@@ -628,9 +792,18 @@ function switchLang(lang: string) {
     padding: 0.25rem 0.6rem;
     border-radius: 999px;
 }
-.pw-chip svg { width: 12px; height: 12px; }
-.pw-chip--ok { color: #166534; background: #dcfce7; }
-.pw-chip--err { color: #991b1b; background: #fee2e2; }
+.pw-chip svg {
+    width: 12px;
+    height: 12px;
+}
+.pw-chip--ok {
+    color: #166534;
+    background: #dcfce7;
+}
+.pw-chip--err {
+    color: #991b1b;
+    background: #fee2e2;
+}
 
 /* Validation hints */
 .validation-hints {
@@ -644,8 +817,19 @@ function switchLang(lang: string) {
     margin-bottom: 1rem;
     color: var(--ink);
 }
-.validation-hints__icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--gold); margin-top: 1px; }
-.validation-hints ul { margin: 0; padding: 0 1rem; font-size: 0.82rem; line-height: 1.7; }
+.validation-hints__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--gold);
+    margin-top: 1px;
+}
+.validation-hints ul {
+    margin: 0;
+    padding: 0 1rem;
+    font-size: 0.82rem;
+    line-height: 1.7;
+}
 
 /* Submit */
 .auth-submit {
@@ -660,19 +844,32 @@ function switchLang(lang: string) {
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
     box-shadow: 0 8px 24px -8px rgba(208, 46, 121, 0.8);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
 }
-.auth-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 32px -8px rgba(208, 46, 121, 0.9); }
-.auth-submit:disabled { opacity: 0.55; cursor: not-allowed; }
-.auth-submit__loading { display: inline-flex; align-items: center; gap: 0.5rem; }
+.auth-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px -8px rgba(208, 46, 121, 0.9);
+}
+.auth-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+.auth-submit__loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 .auth-spinner {
     display: inline-block;
-    width: 14px; height: 14px;
+    width: 14px;
+    height: 14px;
     border: 2px solid rgba(255, 255, 255, 0.35);
     border-top-color: #fff;
     border-radius: 50%;
@@ -682,7 +879,11 @@ function switchLang(lang: string) {
     border-color: rgba(69, 17, 42, 0.2);
     border-top-color: var(--plum);
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 /* Links */
 .auth-link {
@@ -698,26 +899,45 @@ function switchLang(lang: string) {
     transition: color 0.2s ease;
     margin-inline-start: 0.25rem;
 }
-.auth-link:hover { color: var(--plum); }
+.auth-link:hover {
+    color: var(--plum);
+}
 
 /* Lang */
-.auth-lang { display: flex; justify-content: center; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
-.lang { position: relative; }
+.auth-lang {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.6rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+}
+.lang {
+    position: relative;
+}
 .lang__toggle {
-    display: inline-flex; align-items: center; gap: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     background: rgba(255, 255, 255, 0.6);
     border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0.4rem 0.75rem;
-    font-size: 0.82rem; font-weight: 700; color: var(--plum);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--plum);
     cursor: pointer;
     font-family: 'Cairo', sans-serif;
 }
-.lang__toggle img { width: 16px; height: 16px; border-radius: 3px; }
+.lang__toggle img {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
 .lang__menu {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 50%; transform: translateX(-50%);
+    left: 50%;
+    transform: translateX(-50%);
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 0.75rem;
@@ -728,26 +948,58 @@ function switchLang(lang: string) {
     white-space: nowrap;
 }
 .lang__menu button {
-    display: flex; align-items: center; gap: 0.55rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
     width: 100%;
     padding: 0.55rem 0.7rem;
-    border: none; background: none; cursor: pointer;
+    border: none;
+    background: none;
+    cursor: pointer;
     border-radius: 0.5rem;
-    font-size: 0.88rem; font-weight: 600; color: var(--plum);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--plum);
     text-align: start;
     font-family: 'Cairo', sans-serif;
 }
-.lang__menu button img { width: 18px; height: 18px; border-radius: 3px; }
-.lang__menu button:hover { background: var(--cream-2); }
-.lang__menu button.active { color: var(--rose); background: var(--blush); }
+.lang__menu button img {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+}
+.lang__menu button:hover {
+    background: var(--cream-2);
+}
+.lang__menu button.active {
+    color: var(--rose);
+    background: var(--blush);
+}
 
 /* Transitions */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(6px); }
+.fade-enter-active,
+.fade-leave-active {
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(6px);
+}
 
 /* PasswordInput override */
-:deep(.fv-row) { margin-bottom: 0; }
-:deep(.form-label) { display: block; font-size: 0.82rem; font-weight: 700; color: var(--plum); margin-bottom: 0.4rem; }
+:deep(.fv-row) {
+    margin-bottom: 0;
+}
+:deep(.form-label) {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--plum);
+    margin-bottom: 0.4rem;
+}
 :deep(.form-control) {
     width: 100%;
     box-sizing: border-box;
@@ -764,7 +1016,10 @@ function switchLang(lang: string) {
     border-color: var(--rose) !important;
     box-shadow: 0 0 0 3px rgba(208, 46, 121, 0.1) !important;
 }
-:deep(.input-group) { border-radius: 0.65rem; overflow: hidden; }
+:deep(.input-group) {
+    border-radius: 0.65rem;
+    overflow: hidden;
+}
 :deep(.input-group-text) {
     background: #fff !important;
     border: 1.5px solid var(--line) !important;

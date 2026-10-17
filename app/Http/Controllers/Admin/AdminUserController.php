@@ -40,6 +40,7 @@ class AdminUserController extends Controller
                 'nationality',
                 'registration_type',
                 'is_active',
+                'is_locked',
                 'is_verified',
                 'last_seen_at',
                 'created_at',
@@ -54,8 +55,8 @@ class AdminUserController extends Controller
             $query->where('registration_type', $request->registration_type);
         }
 
-        if ($request->filled('is_active')) {
-            $query->where('is_active', $request->is_active);
+        if ($request->filled('is_locked')) {
+            $query->where('is_locked', $request->is_locked);
         }
 
         if ($request->filled('is_verified')) {
@@ -82,6 +83,7 @@ class AdminUserController extends Controller
                 'nationality' => $user->nationality,
                 'registration_type' => $user->registration_type,
                 'is_active' => (bool) $user->is_active,
+                'is_locked' => (bool) $user->is_locked,
                 'is_verified' => (bool) $user->is_verified,
                 'is_email_verified' => ! is_null($user->email_verified_at),
                 'is_online' => $user->isOnline(),
@@ -97,7 +99,7 @@ class AdminUserController extends Controller
             'filters' => [
                 'nationality' => $request->nationality,
                 'registration_type' => $request->registration_type,
-                'is_active' => $request->is_active,
+                'is_locked' => $request->is_locked,
                 'is_verified' => $request->is_verified,
                 'search' => $request->search,
             ],
@@ -132,6 +134,7 @@ class AdminUserController extends Controller
                 'phone_number' => $user->phone_number,
                 'registration_type' => $user->registration_type,
                 'is_active' => (bool) $user->is_active,
+                'is_locked' => (bool) $user->is_locked,
                 'is_verified' => (bool) $user->is_verified,
                 'is_admin' => (bool) $user->is_admin,
                 'age' => $user->age,
@@ -167,6 +170,9 @@ class AdminUserController extends Controller
     {
         $data = $request->validated();
 
+        abort_if($user->id === auth()->id() && array_key_exists('is_admin', $data) && ! $data['is_admin'], 422, 'You cannot remove your own admin access.');
+        unset($data['is_active'], $data['is_verified']);
+
         if (empty($data['password'])) {
             unset($data['password']);
         } else {
@@ -180,6 +186,7 @@ class AdminUserController extends Controller
 
     public function destroy(User $user)
     {
+        abort_if($user->id === auth()->id(), 422, 'You cannot delete your own account here.');
         $user->delete();
 
         return redirect()->back()->with('success', 'User deleted successfully.');
@@ -187,9 +194,24 @@ class AdminUserController extends Controller
 
     public function deactivate(User $user)
     {
-        $user->update(['is_active' => false]);
+        abort_if($user->id === auth()->id(), 422, 'You cannot lock your own account.');
+        $user->update(['is_locked' => true]);
 
         return redirect()->back()->with('success', 'User deactivated successfully.');
+    }
+
+    public function activate(User $user)
+    {
+        $user->update(['is_locked' => false]);
+
+        return redirect()->back()->with('success', 'User unlocked successfully.');
+    }
+
+    public function verify(User $user)
+    {
+        $user->update(['is_verified' => true]);
+
+        return redirect()->back()->with('success', 'User verified successfully.');
     }
 
     public function unverify(User $user)

@@ -24,10 +24,12 @@ onMounted(() => {
     // @ts-ignore
     $(selectEl.value).select2({
         theme: 'bootstrap5',
-        placeholder: props.placeholder ?? '',
-        allowClear: !!props.placeholder,
+        placeholder: props.placeholder ?? ' ',
+        allowClear: true,
         width: '100%',
         multiple: true,
+        minimumResultsForSearch: 0,
+        dropdownParent: $(selectEl.value.closest('.modal') ?? document.body),
     });
 
     // @ts-ignore
@@ -51,9 +53,7 @@ watch(
         const current = $(selectEl.value).val() as string[];
         const currentNums = current ? current.map(Number) : [];
         const newNums = newVal ?? [];
-        const same =
-            currentNums.length === newNums.length &&
-            currentNums.every((v, i) => v === newNums[i]);
+        const same = currentNums.length === newNums.length && currentNums.every((v, i) => v === newNums[i]);
         if (!same) {
             // @ts-ignore
             $(selectEl.value).val(newVal).trigger('change.select2');

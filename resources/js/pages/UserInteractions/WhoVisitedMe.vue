@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import UserCard from '@/components/UserCard.vue';
-import UserProfileModal from '@/components/UserProfileModal.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import GoogleAd from '@/components/GoogleAd.vue';
-import { ref } from 'vue';
-import axios from 'axios';
 import Pagination from '@/components/Pagination.vue';
-import { PaginationData } from '@/types/pagination';
+import UserCard from '@/components/UserCard.vue';
+import UserProfileModal from '@/components/UserProfileModal.vue';
 import { useLang } from '@/composables/useLang';
+import { PaginationData } from '@/types/pagination';
+import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, ref } from 'vue';
 
 const { trans } = useLang();
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
 
 const props = defineProps<Props>();
 interface Props {
@@ -59,77 +62,48 @@ const mapUser = (user: any) => ({
 </script>
 
 <template>
-    <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
-        <div class="d-flex flex-column flex-column-fluid">
-            <!--begin::Toolbar-->
-            <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
-                <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
-                    <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
-                            {{ trans('user_interactions.who_visited_me') }}
-                        </h1>
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                            <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary">{{ trans('user_interactions.home') }}</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <span class="bullet w-5px h-2px bg-gray-500"></span>
-                            </li>
-                            <li class="breadcrumb-item text-muted">{{ trans('user_interactions.who_visited_me') }}</li>
-                        </ul>
-                    </div>
+    <div id="kt_app_content" class="app-content flex-column-fluid member-page">
+        <div id="kt_app_content_container" class="app-container container-xxl member-container">
+            <section class="member-hero member-reveal">
+                <div class="member-hero-art"></div>
+                <div class="member-hero-copy">
+                    <div class="member-eyebrow">{{ isRtl ? 'من مرّ بملفك' : 'PROFILE ACTIVITY' }}</div>
+                    <h1>{{ trans('user_interactions.who_visited_me') }}<span>.</span></h1>
+                    <p>
+                        {{
+                            isRtl
+                                ? 'تعرّف على الأشخاص الذين زاروا ملفك مؤخراً، فقد تبدأ قصة من هنا.'
+                                : 'See who has taken a closer look at your profile. A new connection may start here.'
+                        }}
+                    </p>
+                </div>
+                <div class="member-hero-stat">
+                    <strong>{{ users.total }}</strong
+                    ><span>{{ trans('user_interactions.total_visits') }}</span>
+                </div>
+            </section>
+            <div class="member-section-head member-reveal">
+                <div>
+                    <small>{{ isRtl ? 'آخر النشاطات' : 'RECENT ACTIVITY' }}</small>
+                    <h2>{{ trans('user_interactions.who_visited_me') }}</h2>
+                </div>
+                <span class="member-count">{{ users.total }} {{ trans('user_interactions.total_visits') }}</span>
+            </div>
+            <div v-if="users.data.length" class="member-grid">
+                <div v-for="user in users.data" :key="user.id" class="member-grid-item">
+                    <UserCard :user="mapUser(user)" @view-profile="openProfileModal" @message="handleMessage" />
+                    <div class="member-liked-date"><i class="ki-outline ki-eye"></i>{{ user.visited_at }}</div>
                 </div>
             </div>
-            <!--end::Toolbar-->
-
-            <!--begin::Content-->
-            <div id="kt_app_content" class="app-content flex-column-fluid">
-                <div id="kt_app_content_container" class="app-container container-xxl">
-                    <!-- Total count -->
-                    <div class="d-flex align-items-center mb-5">
-                        <span class="fw-semibold text-gray-700 fs-6">
-                            {{ trans('user_interactions.total_visits') }}: {{ users.total }}
-                        </span>
-                    </div>
-
-                    <!-- Cards grid -->
-                    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3 mb-6">
-                        <div
-                            v-for="user in users.data"
-                            :key="user.id"
-                            class="col d-flex flex-column gap-2"
-                        >
-                            <UserCard
-                                :user="mapUser(user)"
-                                @view-profile="openProfileModal"
-                                @message="handleMessage"
-                            />
-                            <div class="text-center text-muted fs-8">
-                                <i class="ki-outline ki-eye fs-8 text-primary me-1"></i>
-                                {{ user.visited_at }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Ad -->
-                    <div class="mb-6">
-                        <GoogleAd slot-id="WHO_VISITED_ME" format="auto" />
-                    </div>
-
-                    <!-- Pagination -->
-                    <Pagination :data="users" />
-                </div>
+            <div v-else class="member-empty">
+                <div class="member-empty-icon"><i class="ki-outline ki-eye"></i></div>
+                <h3>{{ trans('user_interactions.no_users_found') }}</h3>
+                <p>{{ isRtl ? 'عندما يزور أحد ملفك، سيظهر هنا.' : 'When someone visits your profile, you’ll see them here.' }}</p>
             </div>
-            <!--end::Content-->
+            <!-- <div class="member-ad"><GoogleAd slot-id="WHO_VISITED_ME" format="auto" /></div> -->
+            <Pagination :data="users" />
         </div>
-
         <ChatDrawer :is-open="isChatDrawerOpen" :conversation-id="selectedConversationId" @close="closeChatDrawer" />
-
-        <UserProfileModal
-            :is-open="isProfileModalOpen"
-            :user-id="selectedUserId"
-            @close="closeProfileModal"
-            @message="handleMessage"
-        />
+        <UserProfileModal :is-open="isProfileModalOpen" :user-id="selectedUserId" @close="closeProfileModal" @message="handleMessage" />
     </div>
 </template>

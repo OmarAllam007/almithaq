@@ -26,8 +26,10 @@ onMounted(() => {
     $(selectEl.value).select2({
         theme: 'bootstrap5',
         placeholder: props.placeholder ?? '',
-        allowClear: !!props.placeholder,
+        allowClear: true,
         width: '100%',
+        minimumResultsForSearch: 0,
+        dropdownParent: $(selectEl.value.closest('.modal') ?? document.body),
     });
 
     // @ts-ignore
@@ -65,7 +67,9 @@ watch(
         await nextTick();
         if (!selectEl.value) return;
         // @ts-ignore
-        $(selectEl.value).val(props.modelValue ?? '').trigger('change.select2');
+        $(selectEl.value)
+            .val(props.modelValue ?? '')
+            .trigger('change.select2');
     },
     { deep: true },
 );
@@ -88,7 +92,7 @@ onBeforeUnmount(() => {
 
 <template>
     <select ref="selectEl" class="form-select form-select-lg">
-        <option v-if="placeholder" value=""></option>
+        <option value=""></option>
         <option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
     </select>
 </template>

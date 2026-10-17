@@ -13,6 +13,13 @@ class TrackLastActive
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
+            if (Auth::user()->is_locked) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors(['username' => 'This account is locked. Please contact support.']);
+            }
             Redis::zadd('online_users', now()->timestamp, Auth::id());
         }
 

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 @import './landing.css';
+@import './member-pages.css';
+@import './admin.css';
+@import './auth-pages.css';
+@import './complete-profile.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -74,7 +78,7 @@
 
 /* Primary color override: #d02e79 (romantic pink) */
 :root,
-[data-bs-theme=light] {
+[data-bs-theme='light'] {
     --bs-primary: #d02e79;
     --bs-primary-rgb: 208, 46, 121;
     --bs-primary-active: #b8266a;
@@ -88,7 +92,7 @@
     --bs-component-active-bg: rgb(208, 46, 121);
 }
 
-[data-bs-theme=dark] {
+[data-bs-theme='dark'] {
     --bs-primary: #e03d85;
     --bs-primary-rgb: 224, 61, 133;
     --bs-primary-active: #c02870;
@@ -112,51 +116,51 @@ body {
 }
 
 /* RTL Support for Sidebar */
-[dir="rtl"] .app-sidebar {
+[dir='rtl'] .app-sidebar {
     left: auto !important;
     right: 0 !important;
 }
 
 @media (min-width: 992px) {
-    [dir="rtl"] .app-sidebar {
+    [dir='rtl'] .app-sidebar {
         margin-right: 1rem !important;
         margin-left: 1rem !important;
     }
 }
 
-[dir="rtl"] .app-wrapper {
+[dir='rtl'] .app-wrapper {
     padding-left: 0 !important;
     margin-left: 0 !important;
 }
 
 @media (min-width: 992px) {
-    [dir="rtl"] .app-wrapper {
+    [dir='rtl'] .app-wrapper {
         padding-right: calc(var(--bs-app-sidebar-width) + 2rem) !important;
         margin-right: 0 !important;
     }
 
     /* Prevent header from sitting behind the sidebar in RTL */
-    [dir="rtl"] .app-page:has(.app-wrapper) .app-header {
+    [dir='rtl'] .app-page:has(.app-wrapper) .app-header {
         margin-right: calc(var(--bs-app-sidebar-width) + 2rem) !important;
         margin-left: 0 !important;
     }
 }
 
 @media (max-width: 991.98px) {
-    [dir="rtl"] .app-wrapper {
+    [dir='rtl'] .app-wrapper {
         padding-right: 0 !important;
     }
 }
 
 /* RTL border radius fixes */
-[dir="rtl"] .rounded-start {
+[dir='rtl'] .rounded-start {
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
     border-top-right-radius: var(--bs-border-radius) !important;
     border-bottom-right-radius: var(--bs-border-radius) !important;
 }
 
-[dir="rtl"] .rounded-end {
+[dir='rtl'] .rounded-end {
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
     border-top-left-radius: var(--bs-border-radius) !important;
@@ -164,12 +168,12 @@ body {
 }
 
 /* RTL fixes for margins and spacing */
-[dir="rtl"] .ms-auto {
+[dir='rtl'] .ms-auto {
     margin-left: unset !important;
     margin-right: auto !important;
 }
 
-[dir="rtl"] .me-auto {
+[dir='rtl'] .me-auto {
     margin-right: unset !important;
     margin-left: auto !important;
 }
@@ -182,16 +186,16 @@ body {
 }
 
 /* RTL text alignment */
-[dir="rtl"] .text-start {
+[dir='rtl'] .text-start {
     text-align: right !important;
 }
 
-[dir="rtl"] .text-end {
+[dir='rtl'] .text-end {
     text-align: left !important;
 }
 
 /* RTL select arrow: move to left side so it doesn't overlap right-aligned text */
-[dir="rtl"] .form-select {
+[dir='rtl'] .form-select {
     background-position: left 0.75rem center;
     padding-right: 0.75rem;
     padding-left: 2.25rem;

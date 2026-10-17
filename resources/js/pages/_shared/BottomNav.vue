@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
-import { ref, computed } from 'vue';
 import { useLang } from '@/composables/useLang';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { route } from 'ziggy-js';
 
 const { trans } = useLang();
 const page = usePage();
 const isRtl = computed(() => page.props.locale === 'ar');
+const isActive = (name: string) => {
+    try {
+        return route().current(name) ?? false;
+    } catch {
+        return false;
+    }
+};
 const membersOpen = ref(false);
 const pendingImageRequests = computed(() => (page.props as any).pending_image_requests ?? 0);
 
@@ -36,38 +43,38 @@ const closeMembers = () => {
                         <div class="members-popup-icon bg-light-primary">
                             <i class="ki-outline ki-people fs-2 text-primary"></i>
                         </div>
-                        <span class="fs-8 fw-semibold text-gray-700 mt-2">{{ trans('sidebar.All Members') }}</span>
+                        <span class="fs-8 fw-semibold mt-2 text-gray-700">{{ trans('sidebar.All Members') }}</span>
                     </Link>
                     <Link :href="route('members-online')" class="members-popup-item" @click="closeMembers">
                         <div class="members-popup-icon bg-light-success">
                             <i class="ki-outline ki-wifi fs-2 text-success"></i>
                         </div>
-                        <span class="fs-8 fw-semibold text-gray-700 mt-2">{{ trans('sidebar.Online') }}</span>
+                        <span class="fs-8 fw-semibold mt-2 text-gray-700">{{ trans('sidebar.Online') }}</span>
                     </Link>
                     <Link :href="route('new-members')" class="members-popup-item" @click="closeMembers">
                         <div class="members-popup-icon bg-light-info">
                             <i class="ki-outline ki-user-tick fs-2 text-info"></i>
                         </div>
-                        <span class="fs-8 fw-semibold text-gray-700 mt-2">{{ trans('sidebar.New Members') }}</span>
+                        <span class="fs-8 fw-semibold mt-2 text-gray-700">{{ trans('sidebar.New Members') }}</span>
                     </Link>
                     <Link :href="route('smart-search.index')" class="members-popup-item" @click="closeMembers">
-                        <div class="members-popup-icon" style="background: rgba(246,211,101,0.15);">
-                            <i class="ki-outline ki-crown fs-2" style="color: #f6a623;"></i>
+                        <div class="members-popup-icon" style="background: rgba(246, 211, 101, 0.15)">
+                            <i class="ki-outline ki-crown fs-2" style="color: #f6a623"></i>
                         </div>
-                        <span class="fs-8 fw-semibold text-gray-700 mt-2">{{ trans('sidebar.VIP Search') }}</span>
+                        <span class="fs-8 fw-semibold mt-2 text-gray-700">{{ trans('sidebar.VIP Search') }}</span>
                     </Link>
                     <Link :href="route('image-requests.index')" class="members-popup-item position-relative" @click="closeMembers">
-                        <div class="members-popup-icon bg-light-danger" style="position: relative;">
+                        <div class="members-popup-icon bg-light-danger" style="position: relative">
                             <i class="ki-outline ki-picture fs-2 text-danger"></i>
                             <span
                                 v-if="pendingImageRequests > 0"
-                                class="position-absolute top-0 end-0 translate-middle badge badge-circle badge-danger"
-                                style="font-size: 8px; min-width: 16px; height: 16px; padding: 0 3px;"
+                                class="position-absolute translate-middle badge badge-circle badge-danger end-0 top-0"
+                                style="font-size: 8px; min-width: 16px; height: 16px; padding: 0 3px"
                             >
                                 {{ pendingImageRequests > 99 ? '99+' : pendingImageRequests }}
                             </span>
                         </div>
-                        <span class="fs-8 fw-semibold text-gray-700 mt-2">{{ trans('sidebar.Image Requests') }}</span>
+                        <span class="fs-8 fw-semibold mt-2 text-gray-700">{{ trans('sidebar.Image Requests') }}</span>
                     </Link>
                 </div>
             </div>
@@ -75,12 +82,12 @@ const closeMembers = () => {
 
         <!--begin::Nav Items-->
         <nav class="bottom-nav-bar">
-            <Link :href="route('home')" class="bottom-nav-item">
+            <Link :href="route('home')" class="bottom-nav-item" :class="{ active: isActive('home') }">
                 <i class="ki-outline ki-home-2 fs-2"></i>
                 <span>{{ trans('sidebar.Home') }}</span>
             </Link>
 
-            <Link :href="route('inbox.index')" class="bottom-nav-item">
+            <Link :href="route('inbox.index')" class="bottom-nav-item" :class="{ active: isActive('inbox.index') }">
                 <i class="ki-outline ki-messages fs-2"></i>
                 <span>{{ trans('sidebar.inbox') }}</span>
             </Link>
@@ -92,12 +99,12 @@ const closeMembers = () => {
                 <span>{{ trans('sidebar.Members') }}</span>
             </button>
 
-            <Link :href="route('smart-search.index')" class="bottom-nav-item">
+            <Link :href="route('smart-search.index')" class="bottom-nav-item" :class="{ active: isActive('smart-search.index') }">
                 <i class="ki-outline ki-filter-search fs-2"></i>
                 <span>{{ trans('sidebar.Search') }}</span>
             </Link>
 
-            <Link :href="route('profile')" class="bottom-nav-item">
+            <Link :href="route('profile')" class="bottom-nav-item" :class="{ active: isActive('profile') }">
                 <i class="ki-outline ki-user fs-2"></i>
                 <span>{{ trans('sidebar.Profile') }}</span>
             </Link>
@@ -170,7 +177,9 @@ const closeMembers = () => {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 16px rgba(208, 46, 121, 0.4);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .bottom-nav-center-btn .ki-outline {
@@ -226,7 +235,9 @@ const closeMembers = () => {
 /* Slide-up transition */
 .slide-up-enter-active,
 .slide-up-leave-active {
-    transition: transform 0.25s ease, opacity 0.25s ease;
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease;
 }
 
 .slide-up-enter-from,
@@ -236,17 +247,48 @@ const closeMembers = () => {
 }
 
 /* Dark mode */
-[data-bs-theme="dark"] .bottom-nav-bar,
-[data-bs-theme="dark"] .members-popup {
+[data-bs-theme='dark'] .bottom-nav-bar,
+[data-bs-theme='dark'] .members-popup {
     background: #1e1e2d;
     border-color: #2d2d3f;
 }
 
-[data-bs-theme="dark"] .bottom-nav-item {
+[data-bs-theme='dark'] .bottom-nav-item {
     color: #5e6278;
 }
 
-[data-bs-theme="dark"] .members-popup-header .fw-bold {
+[data-bs-theme='dark'] .members-popup-header .fw-bold {
     color: #cdcfda;
+}
+</style>
+
+<style scoped>
+.bottom-nav-bar {
+    background: #fffaf8;
+    border-top-color: #eadde1;
+    box-shadow: 0 -9px 28px #4c23351b;
+}
+.bottom-nav-item {
+    color: #a08a95;
+}
+.bottom-nav-item.active,
+.bottom-nav-item:hover {
+    color: #953d60;
+}
+.bottom-nav-item.active:not(.bottom-nav-center-btn) i {
+    background: #f6e8ed;
+    border-radius: 9px;
+}
+.center-icon-wrap {
+    background: #913d60;
+    box-shadow: 0 5px 15px #913d6060;
+}
+.members-popup {
+    background: #fffaf8;
+    border-color: #eadde1;
+    box-shadow: 0 -15px 35px #4c23352b;
+}
+.members-popup-icon {
+    background: #f7e9ed;
 }
 </style>

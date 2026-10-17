@@ -22,8 +22,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'height', 'skin_color', 'body_shape', 'devotion', 'prayer', 'smoking',
         'beard', 'education_level', 'financial_status', 'field_of_work', 'job',
         'monthly_income', 'health_status', 'about_partner', 'about_self',
-        'full_name', 'country_code', 'phone_number', 'last_seen_at', 'is_active',
-        'profile_completed', 'is_admin', 'is_verified', 'verification_video_path',
+        'full_name', 'country_code', 'phone_number', 'last_seen_at', 'is_active', 'is_locked',
+        'profile_completed', 'is_admin', 'is_verified', 'verification_video_path', 'verification_review_note',
         'smart_search_filters', ];
 
     /**
@@ -55,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'registration_type' => 'integer',
             'profile_completed' => 'boolean',
             'is_admin' => 'boolean',
+            'is_locked' => 'boolean',
             'is_verified' => 'boolean',
             'smart_search_filters' => 'array',
         ];
@@ -164,7 +165,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function mainProfileImage(): HasMany
     {
-        return $this->hasMany(ProfileImage::class)->where('is_main', true);
+        return $this->hasMany(ProfileImage::class)->where('is_main', true)->where('is_approved', true);
     }
 
     public function isOnline(): bool

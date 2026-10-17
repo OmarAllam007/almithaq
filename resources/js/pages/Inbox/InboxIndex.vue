@@ -1,13 +1,12 @@
 <script setup lang="ts">
+import { bulkDestroy, destroy } from '@/actions/App/Http/Controllers/ConversationController';
+import { markAllAsRead } from '@/actions/App/Http/Controllers/MessageController';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import Pagination from '@/components/Pagination.vue';
 import UserProfileModal from '@/components/UserProfileModal.vue';
-import { router, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import { usePresenceStore } from '@/stores/useUserStore';
-import { markAllAsRead } from '@/actions/App/Http/Controllers/MessageController';
-import { bulkDestroy, destroy } from '@/actions/App/Http/Controllers/ConversationController';
 import { useLang } from '@/composables/useLang';
+import { router, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
 const { trans } = useLang();
 
@@ -15,6 +14,7 @@ interface Message {
     id: number;
     message: string;
     created_at: string;
+    isRead: boolean;
 }
 
 interface User {
@@ -22,9 +22,13 @@ interface User {
     name: string;
     username: string;
     age: number;
-    nationality: string | number;
     marriage_status: string;
     mainProfileImage?: string;
+    marriage_status_label?: string;
+    is_favorited?: boolean;
+    is_ignored?: boolean;
+    is_online?: boolean;
+    registration_type?: number;
 }
 
 interface Conversation {
@@ -36,8 +40,18 @@ interface Conversation {
 interface Props {
     conversations: {
         data: Conversation[];
-        links: any;
-        meta: any;
+        links: any[];
+        total: number;
+        current_page: number;
+        last_page: number;
+        from: number | null;
+        to: number | null;
+        first_page_url: string;
+        last_page_url: string;
+        next_page_url: string | null;
+        prev_page_url: string | null;
+        path: string;
+        per_page: number;
     };
 }
 
@@ -47,7 +61,8 @@ const isChatDrawerOpen = ref(false);
 const isProfileModalOpen = ref(false);
 const selectedConversationId = ref<number | undefined>(undefined);
 const selectedUserId = ref<number | undefined>(undefined);
-const currentUser = usePage().props.auth.user;
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
 const openChatDrawer = (conversationId: number) => {
     selectedConversationId.value = conversationId;
     isChatDrawerOpen.value = true;
@@ -128,6 +143,13 @@ const toggleConversationSelection = (conversationId: number) => {
 };
 
 const hasSelectedConversations = computed(() => selectedConversations.value.length > 0);
+watch(
+    () => props.conversations.current_page,
+    () => {
+        selectedConversations.value = [];
+        selectAll.value = false;
+    },
+);
 
 // Delete modal state
 const showDeleteModal = ref(false);
@@ -188,12 +210,16 @@ const isMarkingAllAsRead = ref(false);
 
 const handleMarkAllAsRead = async () => {
     isMarkingAllAsRead.value = true;
-    router.post(markAllAsRead().url, {}, {
-        preserveScroll: true,
-        onFinish: () => {
-            isMarkingAllAsRead.value = false;
+    router.post(
+        markAllAsRead().url,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isMarkingAllAsRead.value = false;
+            },
         },
-    });
+    );
 };
 
 const deleteModalTitle = computed(() => {
@@ -212,337 +238,165 @@ const deleteModalMessage = computed(() => {
 </script>
 
 <template>
-    <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
-        <!--begin::Content wrapper-->
-        <div class="d-flex flex-column flex-column-fluid">
-            <!--begin::Toolbar-->
-            <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
-                <!--begin::Toolbar container-->
-                <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
-                    <!--begin::Page title-->
-                    <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <!--begin::Title-->
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">{{ trans('inbox.inbox') }}</h1>
-                        <!--end::Title-->
-
-                        <!--begin::Breadcrumb-->
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-muted">
-                                <a href="/metronic8/demo23/?page=index" class="text-muted text-hover-primary">{{ trans('inbox.home') }}</a>
-                            </li>
-                            <!--end::Item-->
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item">
-                                <span class="bullet w-5px h-2px bg-gray-500"></span>
-                            </li>
-                            <!--end::Item-->
-
-                            <!--begin::Item-->
-                            <li class="breadcrumb-item text-muted">{{ trans('inbox.inbox') }}</li>
-                            <!--end::Item-->
-                        </ul>
-                        <!--end::Breadcrumb-->
-                    </div>
-                    <!--end::Page title-->
+    <div id="kt_app_content" class="app-content flex-column-fluid member-page inbox-page">
+        <div id="kt_app_content_container" class="app-container container-xxl member-container">
+            <section class="member-hero member-reveal">
+                <div class="member-hero-art"></div>
+                <div class="member-hero-copy">
+                    <div class="member-eyebrow">{{ isRtl ? 'ابقَ على تواصل' : 'STAY CONNECTED' }}</div>
+                    <h1>{{ trans('inbox.inbox') }}<span>.</span></h1>
+                    <p>
+                        {{
+                            isRtl
+                                ? 'كل محادثة فرصة للتعرّف أكثر. تابع رسائلك وابدأ من حيث توقفت.'
+                                : 'Every conversation is a chance to connect. Pick up where you left off.'
+                        }}
+                    </p>
                 </div>
-                <!--end::Toolbar container-->
+                <div class="member-hero-stat">
+                    <strong>{{ conversations.total }}</strong
+                    ><span>{{ trans('inbox.conversations') }}</span>
+                </div>
+            </section>
+            <div class="member-section-head member-reveal">
+                <div>
+                    <small>{{ isRtl ? 'رسائلك' : 'YOUR MESSAGES' }}</small>
+                    <h2>{{ trans('inbox.conversations') }}</h2>
+                </div>
+                <span class="member-count">{{ conversations.total }} {{ trans('inbox.conversations') }}</span>
             </div>
-            <!--end::Toolbar-->
-
-            <!--begin::Content-->
-            <div id="kt_app_content" class="app-content flex-column-fluid">
-                <!--begin::Content container-->
-                <div id="kt_app_content_container" class="app-container container-xxl">
-                    <!--begin::Inbox App - Messages -->
-                    <div class="d-flex flex-column flex-lg-row">
-                        <!--begin::Content-->
-                        <div class="flex-lg-row-fluid">
-                            <!--begin::Card-->
-                            <div class="card">
-                                <div class="card-header align-items-center gap-md-5 gap-2 py-5">
-                                    <!--begin::Actions-->
-                                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                                        <!--begin::Checkbox-->
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid me-lg-4 me-2">
-                                            <input
-                                                class="form-check-input"
-                                                type="checkbox"
-                                                v-model="selectAll"
-                                                @change="toggleSelectAll"
-                                            />
-                                        </div>
-                                        <!--end::Checkbox-->
-
-                                        <!--begin::Delete Selected-->
-                                        <button
-                                            @click="openBulkDeleteModal"
-                                            class="btn btn-sm btn-icon btn-light btn-active-light-danger"
-                                            :class="{ 'opacity-50': !hasSelectedConversations }"
-                                            :disabled="!hasSelectedConversations"
-                                            :title="trans('inbox.delete_selected')"
-                                        >
-                                            <i class="ki-outline ki-trash fs-2"></i>
-                                        </button>
-                                        <!--end::Delete Selected-->
-
-                                        <!--begin::Mark All Read-->
-                                        <button
-                                            @click="handleMarkAllAsRead"
-                                            class="btn btn-sm btn-light btn-active-light-primary"
-                                            :disabled="isMarkingAllAsRead"
-                                            :title="trans('inbox.mark_all_read')"
-                                        >
-                                            <span v-if="isMarkingAllAsRead" class="spinner-border spinner-border-sm me-1"></span>
-                                            <i v-else class="ki-outline ki-double-check fs-2 me-1"></i>
-                                            {{ trans('inbox.mark_all_read') }}
-                                        </button>
-                                        <!--end::Mark All Read-->
-
-                                        <span v-if="hasSelectedConversations" class="text-muted fs-7 ms-2">
-                                            {{ selectedConversations.length }} {{ trans('inbox.selected') }}
-                                        </span>
-                                    </div>
-
-                                    <p class="mb-0">{{ trans('inbox.conversations') }}: {{ conversations.data.length }}</p>
-                                    <!--end::Actions-->
-                                </div>
-
-                                <div class="card-body p-0">
-                                    <!--begin::Table-->
-                                    <div id="kt_inbox_listing_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
-                                        <div id="" class="table-responsive">
-                                            <table
-                                                class="table-hover table-row-dashed fs-6 gy-5 dataTable my-0 table"
-                                                id="kt_inbox_listing"
-                                                style="width: 100%"
-                                            >
-                                                <colgroup>
-                                                    <col data-dt-column="0" style="width: 9.75px" />
-                                                    <col data-dt-column="1" style="width: 19.5px" />
-                                                    <col data-dt-column="2" style="width: 114.227px" />
-                                                    <col data-dt-column="3" style="width: 714.805px" />
-                                                    <col data-dt-column="4" style="width: 72.2188px" />
-                                                </colgroup>
-                                                <thead class="d-none">
-                                                    <tr>
-                                                        <th data-dt-column="0" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
-                                                            <div class="dt-column-header">
-                                                                <span class="dt-column-title">{{ trans('inbox.checkbox') }}</span
-                                                                ><span
-                                                                    class="dt-column-order"
-                                                                    role="button"
-                                                                    :aria-label="trans('inbox.checkbox_sort_label')"
-                                                                    tabindex="0"
-                                                                ></span>
-                                                            </div>
-                                                        </th>
-                                                        <th data-dt-column="1" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
-                                                            <div class="dt-column-header">
-                                                                <span class="dt-column-title">{{ trans('inbox.actions') }}</span
-                                                                ><span
-                                                                    class="dt-column-order"
-                                                                    role="button"
-                                                                    :aria-label="trans('inbox.actions_sort_label')"
-                                                                    tabindex="0"
-                                                                ></span>
-                                                            </div>
-                                                        </th>
-                                                        <th data-dt-column="2" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
-                                                            <div class="dt-column-header">
-                                                                <span class="dt-column-title">{{ trans('inbox.author') }}</span
-                                                                ><span
-                                                                    class="dt-column-order"
-                                                                    role="button"
-                                                                    :aria-label="trans('inbox.author_sort_label')"
-                                                                    tabindex="0"
-                                                                ></span>
-                                                            </div>
-                                                        </th>
-                                                        <th data-dt-column="3" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
-                                                            <div class="dt-column-header">
-                                                                <span class="dt-column-title">{{ trans('inbox.title') }}</span
-                                                                ><span
-                                                                    class="dt-column-order"
-                                                                    role="button"
-                                                                    :aria-label="trans('inbox.title_sort_label')"
-                                                                    tabindex="0"
-                                                                ></span>
-                                                            </div>
-                                                        </th>
-                                                        <th data-dt-column="4" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc">
-                                                            <div class="dt-column-header">
-                                                                <span class="dt-column-title">{{ trans('inbox.date') }}</span
-                                                                ><span
-                                                                    class="dt-column-order"
-                                                                    role="button"
-                                                                    :aria-label="trans('inbox.date_sort_label')"
-                                                                    tabindex="0"
-                                                                ></span>
-                                                            </div>
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr v-for="conversation in conversations.data" :key="conversation.id" class="cursor-pointer">
-                                                        <td class="ps-9">
-                                                            <div class="form-check form-check-sm form-check-custom form-check-solid mt-3">
-                                                                <input
-                                                                    class="form-check-input"
-                                                                    type="checkbox"
-                                                                    :checked="selectedConversations.includes(conversation.id)"
-                                                                    @click.stop="toggleConversationSelection(conversation.id)"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td class="min-w-80px">
-                                                            <!--begin::Delete-->
-                                                            <button
-                                                                @click.stop="openDeleteModal(conversation.id)"
-                                                                class="btn btn-icon btn-color-gray-500 btn-active-color-danger w-35px h-35px"
-                                                                :title="trans('inbox.delete_conversation')"
-                                                            >
-                                                                <i class="ki-outline ki-trash fs-3"></i>
-                                                            </button>
-                                                            <!--end::Delete-->
-                                                        </td>
-                                                        <td class="w-400px w-md-400px">
-                                                            <div
-                                                                @click.stop="openProfileModal(conversation.otherUser.id)"
-                                                                class="d-flex align-items-center cursor-pointer text-gray-900"
-                                                            >
-                                                                <!--begin::Avatar-->
-                                                                <div class="symbol symbol-45px position-relative me-3">
-                                                                    <!-- Favorite Badge -->
-                                                                    <div
-                                                                        v-if="conversation.otherUser.isFavourite"
-                                                                        class="position-absolute translate-middle d-flex align-items-center justify-content-center rounded-circle bg-danger start-0 top-0 border border-2 border-white"
-                                                                        style="width: 20px; height: 20px; z-index: 1"
-                                                                        :title="trans('inbox.favorited')"
-                                                                    >
-                                                                        <i class="fa fa-heart text-white" style="font-size: 10px"></i>
-                                                                    </div>
-
-                                                                    <!-- Ignore Badge -->
-                                                                    <div
-                                                                        v-if="conversation.otherUser.isIgnored"
-                                                                        class="position-absolute translate-middle d-flex align-items-center justify-content-center rounded-circle bg-warning start-0 top-0 border border-2 border-white"
-                                                                        style="width: 20px; height: 20px; z-index: 1"
-                                                                        :title="trans('inbox.ignored')"
-                                                                    >
-                                                                        <i class="fa fa-ban text-white" style="font-size: 10px"></i>
-                                                                    </div>
-
-                                                                    <img
-                                                                        :src="
-                                                                            conversation.otherUser.mainProfileImage || '/assets/media/avatars/300-1.jpg'
-                                                                        "
-                                                                        :alt="conversation.otherUser.username"
-                                                                        class="rounded-circle"
-                                                                    />
-                                                                    <div
-                                                                        data-v-94a0a411=""
-                                                                        class="position-absolute rounded-circle h-10px w-10px translate-middle bg-success start-100 top-75 border border-2 border-white"
-                                                                        v-if="conversation.otherUser.isOnline"
-                                                                    ></div>
-                                                                </div>
-                                                                <!--end::Avatar-->
-
-                                                                <!--begin::User Info-->
-                                                                <div class="d-flex flex-column">
-                                                                    <span class="fw-bold mb-1 text-gray-900 me-10">{{
-                                                                        conversation.otherUser.username
-                                                                    }}</span>
-                                                                    <div class="d-flex align-items-center gap-2">
-                                                                        <span class="badge badge-light-primary fs-8">{{
-                                                                            conversation.otherUser.marriage_status_label
-                                                                        }}</span>
-                                                                        <span class="text-muted fs-6" :title="conversation.otherUser.nationality?.name">{{ conversation.otherUser.nationality?.flag }}</span>
-                                                                        <span class="text-muted fs-7">{{ conversation.otherUser?.age }} {{ trans('inbox.yrs') }}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <!--end::User Info-->
-                                                            </div>
-                                                        </td>
-                                                        <td @click="openChatDrawer(conversation.id)">
-                                                            <div v-if="conversation.lastMessage" class="gap-1 pt-2 text-gray-900">
-
-                                                                <div class="fs-6  badge overflow-ellipsis" :class="conversation.lastMessage.isRead ? 'text-gray-700' : 'badge-primary text-white'">
-                                                                    {{ truncateMessage(conversation.lastMessage.message) }}
-                                                                </div>
-                                                            </div>
-                                                            <div v-else class="text-muted gap-1 pt-2">
-                                                                <span class="fst-italic">{{ trans('inbox.no_messages_yet') }}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td @click="openChatDrawer(conversation.id)" class="w-100px fs-7 pe-9 text-end">
-                                                            <span v-if="conversation.lastMessage" class="fw-semibold text-gray-600">
-                                                                {{ formatMessageDate(conversation.lastMessage.created_at) }}
-                                                            </span>
-                                                            <span v-else class="text-muted">-</span>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                                <tfoot></tfoot>
-                                            </table>
-                                        </div>
-                                        <div id="" class="row px-9 pt-3 pb-5">
-                                            <Pagination :data="conversations" />
-                                        </div>
-                                        <div class="dt-autosize" style="width: 100%; height: 0px"></div>
-                                    </div>
-                                    <!--end::Table-->
-                                </div>
-                            </div>
-                            <!--end::Card-->
+            <section class="inbox-panel member-reveal" :aria-label="trans('inbox.conversations')">
+                <div class="inbox-toolbar">
+                    <div class="inbox-toolbar-left">
+                        <label class="inbox-select-all"
+                            ><input
+                                v-model="selectAll"
+                                type="checkbox"
+                                @change="toggleSelectAll"
+                                :aria-label="isRtl ? 'تحديد الكل' : 'Select all conversations'"
+                            /><span>{{
+                                hasSelectedConversations
+                                    ? `${selectedConversations.length} ${trans('inbox.selected')}`
+                                    : isRtl
+                                      ? 'تحديد الكل'
+                                      : 'Select all'
+                            }}</span></label
+                        ><span class="toolbar-divider"></span
+                        ><button type="button" class="inbox-tool-button" :disabled="!hasSelectedConversations" @click="openBulkDeleteModal">
+                            <i class="ki-outline ki-trash"></i>{{ trans('inbox.delete_selected') }}
+                        </button>
+                    </div>
+                    <button type="button" class="inbox-tool-button mark-read" :disabled="isMarkingAllAsRead" @click="handleMarkAllAsRead">
+                        <span v-if="isMarkingAllAsRead" class="spinner-border spinner-border-sm"></span
+                        ><i v-else class="ki-outline ki-double-check"></i>{{ trans('inbox.mark_all_read') }}
+                    </button>
+                </div>
+                <div v-if="conversations.data.length" class="conversation-list">
+                    <article
+                        v-for="conversation in conversations.data"
+                        :key="conversation.id"
+                        class="conversation-row"
+                        :class="{
+                            unread: conversation.lastMessage && !conversation.lastMessage.isRead,
+                            selected: selectedConversations.includes(conversation.id),
+                        }"
+                        tabindex="0"
+                        @click="openChatDrawer(conversation.id)"
+                        @keydown.enter.self="openChatDrawer(conversation.id)"
+                    >
+                        <div class="conversation-select" @click.stop>
+                            <input
+                                type="checkbox"
+                                :checked="selectedConversations.includes(conversation.id)"
+                                :aria-label="isRtl ? 'تحديد المحادثة' : 'Select conversation'"
+                                @change="toggleConversationSelection(conversation.id)"
+                            />
                         </div>
-                        <!--end::Content-->
-                    </div>
-                    <!--end::Inbox App - Messages -->
+                        <button
+                            type="button"
+                            class="conversation-avatar"
+                            :aria-label="conversation.otherUser.username"
+                            @click.stop="openProfileModal(conversation.otherUser.id)"
+                        >
+                            <img
+                                :src="
+                                    conversation.otherUser.mainProfileImage ||
+                                    (conversation.otherUser.registration_type === 2
+                                        ? '/assets/media/auth/female_bgd.png'
+                                        : '/assets/media/auth/male_bgd.png')
+                                "
+                                :alt="conversation.otherUser.username"
+                            /><span v-if="conversation.otherUser.is_online" class="avatar-online"></span>
+                        </button>
+                        <div class="conversation-main">
+                            <div class="conversation-name-line">
+                                <strong>{{ conversation.otherUser.name || conversation.otherUser.username }}</strong
+                                ><span v-if="conversation.otherUser.is_favorited" class="conversation-mini-icon" :title="trans('inbox.favorited')"
+                                    ><i class="ki-solid ki-heart"></i></span
+                                ><span v-if="conversation.otherUser.is_ignored" class="conversation-mini-icon" :title="trans('inbox.ignored')"
+                                    ><i class="ki-outline ki-eye-slash"></i
+                                ></span>
+                            </div>
+                            <div class="conversation-subline">
+                                <span>@{{ conversation.otherUser.username }}</span
+                                ><span v-if="conversation.otherUser.age">· {{ conversation.otherUser.age }} {{ trans('inbox.yrs') }}</span
+                                ><span v-if="conversation.otherUser.marriage_status_label">· {{ conversation.otherUser.marriage_status_label }}</span>
+                            </div>
+                            <p class="conversation-preview">
+                                {{
+                                    conversation.lastMessage ? truncateMessage(conversation.lastMessage.message, 100) : trans('inbox.no_messages_yet')
+                                }}
+                            </p>
+                        </div>
+                        <div class="conversation-end">
+                            <time v-if="conversation.lastMessage" :datetime="conversation.lastMessage.created_at">{{
+                                formatMessageDate(conversation.lastMessage.created_at)
+                            }}</time
+                            ><span v-if="conversation.lastMessage && !conversation.lastMessage.isRead" class="message-unread-dot"></span
+                            ><button
+                                type="button"
+                                class="conversation-delete"
+                                :title="trans('inbox.delete_conversation')"
+                                :aria-label="trans('inbox.delete_conversation')"
+                                @click.stop="openDeleteModal(conversation.id)"
+                            >
+                                <i class="ki-outline ki-trash"></i>
+                            </button>
+                        </div>
+                    </article>
                 </div>
-                <!--end::Content container-->
-            </div>
-            <!--end::Content-->
+                <div v-else class="member-empty inbox-empty">
+                    <div class="member-empty-icon"><i class="ki-outline ki-messages"></i></div>
+                    <h3>{{ trans('inbox.no_messages_yet') }}</h3>
+                    <p>{{ isRtl ? 'تصفح الأعضاء وابدأ محادثة جديدة.' : 'Explore members and start a new conversation.' }}</p>
+                </div>
+            </section>
+            <Pagination :data="conversations" />
         </div>
-        <!--end::Content wrapper-->
-
-        <!-- Chat Drawer -->
         <ChatDrawer :is-open="isChatDrawerOpen" :conversation-id="selectedConversationId" @close="closeChatDrawer" />
-
-        <!-- User Profile Modal -->
         <UserProfileModal :is-open="isProfileModalOpen" :user-id="selectedUserId" @close="closeProfileModal" @message="handleMessageFromModal" />
-
-        <!-- Delete Confirmation Modal -->
         <div
             v-if="showDeleteModal"
-            class="modal fade show d-block"
+            class="modal fade show d-block inbox-modal"
             tabindex="-1"
-            style="background-color: rgba(0, 0, 0, 0.5)"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="deleteModalTitle"
         >
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title text-danger">
-                            <i class="ki-outline ki-trash fs-2 text-danger me-2"></i>
-                            {{ deleteModalTitle }}
-                        </h5>
-                        <button type="button" class="btn-close" @click="closeDeleteModal" :disabled="isDeleting"></button>
+                        <h5 class="modal-title"><i class="ki-outline ki-trash"></i>{{ deleteModalTitle }}</h5>
+                        <button type="button" class="btn-close" :disabled="isDeleting" @click="closeDeleteModal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="alert alert-danger d-flex align-items-center p-5">
-                            <i class="ki-outline ki-information-5 fs-2hx text-danger me-4"></i>
-                            <div class="d-flex flex-column">
-                                <span>{{ deleteModalMessage }}</span>
-                            </div>
-                        </div>
+                        <p>{{ deleteModalMessage }}</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-light" @click="closeDeleteModal" :disabled="isDeleting">
-                            {{ trans('inbox.cancel') }}
-                        </button>
-                        <button type="button" class="btn btn-danger" @click="confirmDelete" :disabled="isDeleting">
-                            <span v-if="isDeleting" class="spinner-border spinner-border-sm me-2"></span>
-                            {{ trans('inbox.delete') }}
+                        <button type="button" class="inbox-modal-cancel" :disabled="isDeleting" @click="closeDeleteModal">
+                            {{ trans('inbox.cancel') }}</button
+                        ><button type="button" class="inbox-modal-delete" :disabled="isDeleting" @click="confirmDelete">
+                            <span v-if="isDeleting" class="spinner-border spinner-border-sm"></span>{{ trans('inbox.delete') }}
                         </button>
                     </div>
                 </div>
@@ -550,9 +404,3 @@ const deleteModalMessage = computed(() => {
         </div>
     </div>
 </template>
-
-<style scoped>
-.cursor-pointer {
-    cursor: pointer;
-}
-</style>

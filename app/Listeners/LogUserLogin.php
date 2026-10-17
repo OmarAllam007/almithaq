@@ -3,26 +3,15 @@
 namespace App\Listeners;
 
 use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Http;
 
 class LogUserLogin
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
-     */
     public function handle(Login $event): void
     {
         $ip = request()->ip();
-        $userAgent = request()->userAgent();
 
-        if ($ip === '127.0.0.1') {
+        if (! $this->isPublicIp($ip)) {
             return;
         }
 
@@ -34,18 +23,25 @@ class LogUserLogin
             'country_code' => $geo['country_code'] ?? null,
             'city' => $geo['city'] ?? null,
             'isp' => $geo['isp'] ?? null,
-            'is_vpn' => $geo['is_vpn'] ?? false,
-            'user_agent' => $userAgent,
+            'is_vpn' => false,
+            'user_agent' => request()->userAgent(),
             'logged_at' => now(),
         ]);
-
     }
 
+    protected function isPublicIp(?string $ip): bool
+    {
+        return $ip !== null && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+    }
+
+    /**
+     * @return array{country?: ?string, country_code?: ?string, city?: ?string, isp?: ?string}
+     */
     protected function lookupIp(string $ip): array
     {
-        $response = \Http::get("http://ip-api.com/json/{$ip}");
+        $response = rescue(fn () => Http::timeout(3)->get("http://ip-api.com/json/{$ip}"), report: true);
 
-        if (! $response->successful()) {
+        if (! $response?->successful() || ($response['status'] ?? null) !== 'success') {
             return [];
         }
 
@@ -53,8 +49,7 @@ class LogUserLogin
             'country' => $response['country'] ?? null,
             'country_code' => $response['countryCode'] ?? null,
             'city' => $response['city'] ?? null,
-            'isp' => $response['org'] ?? null,
-            'is_vpn' => false,
+            'isp' => $response['isp'] ?? $response['org'] ?? null,
         ];
     }
 }

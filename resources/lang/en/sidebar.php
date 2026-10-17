@@ -33,6 +33,8 @@ return [
     'Search' => 'Search',
     'Profile' => 'Profile',
 
+    'Pagination' => 'Pagination',
+    'pagination_page' => 'Page',
     'pagination_showing' => 'Showing {from} to {to} of {total} entries',
     'Previous' => 'Previous',
     'Next' => 'Next',

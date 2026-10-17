@@ -1,136 +1,112 @@
 <script setup lang="ts">
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { useLang } from '@/composables/useLang';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { route } from 'ziggy-js';
-import { useLang } from '@/composables/useLang';
+import AuthStory from './AuthStory.vue';
 
-interface Props {
-    email: string;
-}
+defineProps<{ email: string }>();
 
-const props = defineProps<Props>();
 const page = usePage();
 const { trans } = useLang();
 const isRtl = computed(() => (page.props as any).locale === 'ar');
 const flash = computed(() => (page.props as any).flash);
-
 const resendForm = useForm({});
 
 const resend = () => {
-    resendForm.post(route('verification.resend'));
+    resendForm.post(route('verification.resend'), { preserveScroll: true });
 };
 </script>
 
 <template>
-    <div class="verification-page d-flex flex-column flex-root" id="kt_app_root" :dir="isRtl ? 'rtl' : 'ltr'">
-        <div class="d-flex flex-column flex-column-fluid">
-            <div class="d-flex flex-column flex-lg-row-fluid p-lg-10 w-100 p-5">
-                <div class="d-flex flex-center flex-column w-100">
-                    <div class="mw-600px w-100">
+    <Head :title="trans('email_verification.title')" />
+    <div class="auth-root auth-scene auth-scene--verify" :dir="isRtl ? 'rtl' : 'ltr'">
+        <div class="auth-shell">
+            <AuthStory mode="verify" :is-rtl="isRtl" />
+            <main class="auth-wrap">
+                <div class="auth-card">
+                    <Link href="/" class="auth-brand">
+                        <span class="auth-brand__mark">
+                            <svg viewBox="0 0 40 28" fill="none" aria-hidden="true">
+                                <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
+                                <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
+                            </svg>
+                        </span>
+                        <span class="auth-brand__text"><span class="auth-brand__name">Khotobah</span><span class="auth-brand__sub">خطوبة</span></span>
+                    </Link>
 
-                        <!-- Icon -->
-                        <div class="text-center mb-10">
-                            <div class="email-icon-wrapper mb-5">
-                                <i class="ki-outline ki-sms fs-3x text-primary"></i>
-                            </div>
-                            <h1 class="fw-bold fs-2x text-gray-900 mb-2">{{ trans('email_verification.title') }}</h1>
-                            <p class="text-muted fw-semibold fs-5">{{ trans('email_verification.subtitle') }}</p>
+                    <div class="verify-emblem mt-5" aria-hidden="true">
+                        <span class="verify-emblem__orbit"></span>
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="6" y="12" width="36" height="25" rx="6" stroke="currentColor" stroke-width="2" />
+                            <path d="m8 16 16 12 16-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M33 7v8M29 11h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+
+                    <header class="auth-head verify-head">
+                        <span class="verify-eyebrow">{{ isRtl ? 'خطوة التأكيد' : 'CONFIRM YOUR ADDRESS' }}</span>
+                        <h1 class="auth-head__title">{{ trans('email_verification.title') }}</h1>
+                        <p class="auth-head__desc">{{ trans('email_verification.subtitle') }}</p>
+                    </header>
+
+                    <div v-if="flash?.success" class="verify-success" role="status">
+                        <span class="verify-success__icon" aria-hidden="true">✓</span>
+                        <span>{{ flash.success }}</span>
+                    </div>
+
+                    <section class="verify-delivery" aria-labelledby="verify-delivery-title">
+                        <div class="verify-delivery__top">
+                            <span class="verify-delivery__number">01</span>
+                            <span id="verify-delivery-title">{{ trans('email_verification.sent_to') }}</span>
                         </div>
+                        <div class="verify-delivery__address" dir="ltr">{{ email }}</div>
+                        <p>{{ trans('email_verification.click_link') }}</p>
+                    </section>
 
-                        <!-- Success flash -->
-                        <div v-if="flash?.success" class="alert alert-success d-flex align-items-center p-5 mb-8">
-                            <i class="ki-outline ki-shield-tick fs-2hx text-success me-4"></i>
-                            <span class="fw-semibold">{{ flash.success }}</span>
+                    <div class="verify-help">
+                        <span class="verify-help__spark" aria-hidden="true">✦</span>
+                        <p>{{ trans('email_verification.spam_note') }}</p>
+                    </div>
+
+                    <button type="button" class="auth-submit verify-resend" :disabled="resendForm.processing" @click="resend">
+                        <span v-if="resendForm.processing" class="auth-submit__loading">
+                            {{ trans('email_verification.resending') }} <span class="auth-spinner"></span>
+                        </span>
+                        <span v-else class="verify-resend__label">
+                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                <path
+                                    d="M17 3 3 9l6 2 2 6 6-14ZM9 11l4-4"
+                                    stroke="currentColor"
+                                    stroke-width="1.6"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                            {{ trans('email_verification.resend_btn') }}
+                        </span>
+                    </button>
+
+                    <div class="verify-footer">
+                        <div>
+                            <strong>{{ trans('email_verification.wrong_email') }}</strong>
+                            <p>{{ trans('email_verification.wrong_email_note') }}</p>
                         </div>
-
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body text-center py-15 px-lg-10 px-6">
-
-                                <!-- Email display -->
-                                <div class="mb-8">
-                                    <p class="text-gray-600 fs-5 mb-2">{{ trans('email_verification.sent_to') }}</p>
-                                    <span class="badge badge-light-primary fs-5 py-3 px-5 fw-bold">
-                                        {{ props.email }}
-                                    </span>
-                                </div>
-
-                                <p class="text-gray-600 fs-6 mb-3">
-                                    {{ trans('email_verification.click_link') }}
-                                </p>
-                                <p class="text-gray-500 fs-7 mb-10">
-                                    {{ trans('email_verification.spam_note') }}
-                                </p>
-
-                                <div class="separator my-8"></div>
-
-                                <!-- Resend button -->
-                                <button
-                                    type="button"
-                                    class="btn btn-primary mb-5"
-                                    :disabled="resendForm.processing"
-                                    @click="resend"
-                                >
-                                    <span v-if="!resendForm.processing">
-                                        <i class="ki-outline ki-send fs-4 me-1"></i>
-                                        {{ trans('email_verification.resend_btn') }}
-                                    </span>
-                                    <span v-else class="d-flex align-items-center gap-2">
-                                        <span class="spinner-border spinner-border-sm"></span>
-                                        {{ trans('email_verification.resending') }}
-                                    </span>
-                                </button>
-
-                                <div class="separator my-8"></div>
-
-                                <div class="d-flex flex-center gap-4 flex-wrap">
-                                    <div class="text-center">
-                                        <p class="text-gray-500 fs-7 mb-2">{{ trans('email_verification.wrong_email') }}</p>
-                                        <p class="text-gray-400 fs-8 mb-3">{{ trans('email_verification.wrong_email_note') }}</p>
-                                    </div>
-                                </div>
-
-                                <Link
-                                    :href="route('logout')"
-                                    method="post"
-                                    class="btn btn-sm btn-light-danger"
-                                >
-                                    <i class="ki-outline ki-exit-right fs-4 me-1"></i>
-                                    {{ trans('email_verification.logout') }}
-                                </Link>
-
-                            </div>
-                        </div>
-
+                        <Link :href="route('logout')" method="post" as="button" type="button" class="verify-logout">
+                            {{ trans('email_verification.logout') }}
+                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                <path
+                                    d="M8 4H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3m4-3 3-3-3-3m3 3H7"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </Link>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 </template>
-
-<style scoped>
-.verification-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f8fa 0%, #eef2f7 100%);
-}
-
-.email-icon-wrapper {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(0, 158, 247, 0.1) 0%, rgba(0, 158, 247, 0.05) 100%);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-}
-
-[data-bs-theme="dark"] .verification-page {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-</style>

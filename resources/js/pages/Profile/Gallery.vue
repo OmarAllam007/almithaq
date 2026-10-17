@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
-import { useForm, router } from '@inertiajs/vue3';
-import { store, destroy, setMain } from '@/actions/App/Http/Controllers/ProfileImageController';
+import { destroy, setMain, store } from '@/actions/App/Http/Controllers/ProfileImageController';
 import { useLang } from '@/composables/useLang';
+import { router, useForm, usePage } from '@inertiajs/vue3';
+import { computed, onUnmounted, ref } from 'vue';
 const { trans } = useLang();
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
 
 interface Image {
     id: number;
@@ -93,7 +95,7 @@ const confirmDelete = (imageId: number) => {
 
 const deleteImage = () => {
     if (imageToDelete.value) {
-        router.delete(route('profile.gallery.destroy', imageToDelete.value), {
+        router.delete(destroy(imageToDelete.value).url, {
             onSuccess: () => {
                 showDeleteModal.value = false;
                 imageToDelete.value = null;
@@ -103,7 +105,7 @@ const deleteImage = () => {
 };
 
 const setAsMainImage = (imageId: number) => {
-    router.patch(route('profile.gallery.set-main', imageId));
+    router.patch(setMain(imageId).url);
 };
 
 const getPreviewUrl = (file: File): string => {
@@ -130,190 +132,138 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="app-main flex-column flex-row-fluid overflow-y-auto" id="kt_app_main" scroll-region>
-        <div class="d-flex flex-column flex-column-fluid">
-            <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
-                <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
-                    <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">{{ trans('profile.my_gallery') }}</h1>
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                            <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary">{{ trans('home.home') }}</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <span class="bullet w-5px h-2px bg-gray-500"></span>
-                            </li>
-                            <li class="breadcrumb-item text-muted">{{ trans('profile.gallery') }}</li>
-                        </ul>
+    <div id="kt_app_content" class="app-content flex-column-fluid member-page gallery-page">
+        <div id="kt_app_content_container" class="app-container container-xxl member-container">
+            <section class="member-hero member-reveal">
+                <div class="member-hero-art"></div>
+                <div class="member-hero-copy">
+                    <div class="member-eyebrow">{{ isRtl ? 'صورتك، قصتك' : 'YOUR STORY IN PHOTOS' }}</div>
+                    <h1>{{ trans('profile.my_gallery') }}<span>.</span></h1>
+                    <p>
+                        {{
+                            isRtl
+                                ? 'أضف صوراً تعكس شخصيتك واختر الصورة التي تمثلك.'
+                                : 'Share photos that feel like you and choose the one that represents you best.'
+                        }}
+                    </p>
+                </div>
+                <div class="member-hero-stat">
+                    <strong>{{ images.length }}<small>/ 5</small></strong
+                    ><span>{{ trans('profile.your_images') }}</span>
+                </div>
+            </section>
+            <div class="member-section-head member-reveal">
+                <div>
+                    <small>{{ isRtl ? 'مساحتك الخاصة' : 'YOUR PHOTO SPACE' }}</small>
+                    <h2>{{ trans('profile.your_images') }}</h2>
+                </div>
+                <span class="member-count">{{ images.length }} / 5</span>
+            </div>
+            <div class="gallery-guidance member-reveal">
+                <span class="guidance-icon"><i class="ki-outline ki-shield-tick"></i></span>
+                <div>
+                    <h3>{{ trans('profile.profile_image_verification') }}</h3>
+                    <p>{{ trans('profile.upload_your_profile_images_for_verification_please_note') }}</p>
+                    <div class="guidance-points">
+                        <span>{{ trans('profile.you_can_upload_up_to_5_images') }}</span
+                        ><span>{{ trans('profile.only_jpeg_png_and_jpg_formats_are_supported') }}</span
+                        ><span>{{ trans('profile.maximum_file_size_is_5mb_per_image') }}</span
+                        ><span>{{ trans('profile.all_images_require_admin_approval_before_being_visible_to_others') }}</span>
                     </div>
                 </div>
             </div>
-
-            <div id="kt_app_content" class="app-content flex-column-fluid">
-                <div id="kt_app_content_container" class="app-container container-xxl">
-                    <!-- Instructions Card -->
-                    <div class="card mb-5">
-                        <div class="card-body">
-                            <h3 class="card-title mb-4">{{ trans('profile.profile_image_verification') }}</h3>
-                            <div class="text-gray-700">
-                                <p class="mb-2">{{ trans('profile.upload_your_profile_images_for_verification_please_note') }}</p>
-                                <ul class="mb-0">
-                                    <li>{{ trans('profile.you_can_upload_up_to_5_images') }}</li>
-                                    <li>{{ trans('profile.only_jpeg_png_and_jpg_formats_are_supported') }}</li>
-                                    <li>{{ trans('profile.maximum_file_size_is_5mb_per_image') }}</li>
-                                    <li>{{ trans('profile.select_one_image_as_your_main_profile_picture') }}</li>
-                                    <li>{{ trans('profile.all_images_require_admin_approval_before_being_visible_to_others') }}</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Upload Section -->
-                    <div v-if="canUploadMore && totalImages < 5" class="card mb-5">
-                        <div class="card-body">
-                            <h3 class="card-title mb-4">{{ trans('profile.upload_images') }} ({{ totalImages }}/5)</h3>
-
-                            <!-- Drag & Drop Zone -->
-                            <div
-                                @dragover.prevent="isDragging = true"
-                                @dragleave.prevent="isDragging = false"
-                                @drop.prevent="handleDrop"
-                                :class="[
-                                    'cursor-pointer rounded border-dashed p-10 text-center',
-                                    isDragging ? 'border-primary bg-light-primary' : 'border-gray-300',
-                                ]"
-                            >
-                                <input
-                                    type="file"
-                                    id="imageUpload"
-                                    multiple
-                                    accept="image/jpeg,image/png,image/jpg"
-                                    @change="handleFileSelect"
-                                    class="d-none"
-                                />
-                                <label for="imageUpload" class="cursor-pointer">
-                                    <i class="ki-outline ki-file-up fs-3x text-primary mb-3"></i>
-                                    <p class="fs-5 fw-semibold mb-2 text-gray-700">{{ trans('profile.drop_images_here_or_click_to_upload') }}</p>
-                                    <p class="fs-7 text-muted">{{ trans('profile.you_can_upload') }} {{ 5 - totalImages }} {{ trans('profile.more_image_s') }}</p>
-                                </label>
-                            </div>
-
-                            <!-- Selected Files Preview -->
-                            <div v-if="selectedFiles.length > 0" class="mt-5">
-                                <h4 class="mb-3">{{ trans('profile.selected_images') }}</h4>
-                                <div class="d-flex flex-wrap gap-3">
-                                    <div v-for="(file, index) in selectedFiles" :key="index" class="position-relative">
-                                        <img
-                                            :src="getPreviewUrl(file)"
-                                            class="rounded border"
-                                            style="width: 120px; height: 120px; object-fit: cover"
-                                        />
-                                        <button
-                                            @click="removeSelectedFile(index)"
-                                            class="btn btn-sm btn-icon btn-danger position-absolute end-0 top-0 m-1"
-                                        >
-                                            <i class="ki-outline ki-cross fs-3"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Upload Button -->
-                                <button @click="uploadImages" :disabled="form.processing" class="btn btn-primary mt-4">
-                                    <i class="ki-outline ki-cloud-upload fs-3"></i>
-                                        {{ form.processing ? trans('profile.uploading') : trans('profile.upload_images') }}
-                                </button>
-                            </div>
-
-                            <!-- Validation Errors -->
-                            <div v-if="form.errors.images" class="alert alert-danger mt-4">
-                                {{ form.errors.images }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Current Images Grid -->
-                    <div class="card">
-                        <div class="card-body">
-                            <h3 class="card-title mb-4">{{ trans('profile.your_images') }}</h3>
-
-                            <!-- Empty State -->
-                            <div v-if="images.length === 0" class="py-10 text-center">
-                                <i class="ki-outline ki-picture fs-5x text-muted mb-3"></i>
-                                <p class="fs-5 text-muted">{{ trans('profile.no_images_uploaded_yet') }}</p>
-                                <p class="fs-7 text-gray-600">{{ trans('profile.upload_your_first_image_to_get_started') }}</p>
-                            </div>
-
-                            <!-- Images Grid -->
-                            <div v-else class="row g-5">
-                                <div v-for="image in images" :key="image.id" class="col-sm-6 col-md-4 col-lg-3 col-12">
-                                    <div class="card position-relative h-100">
-                                        <!-- add them in -->
-                                        <!-- Main Badge -->
-                                        <div v-if="image.is_main" class="badge badge-primary position-absolute">
-                                            <i class="ki-outline ki-star fs-5"></i> {{ trans('profile.main') }}
-                                        </div>
-
-                                        <!-- Approval Badge -->
-                                        <div
-                                            :class="[
-                                                'badge position-absolute',
-                                                image.is_approved ? 'badge-success' : 'badge-warning',
-                                            ]"
-                                            v-if="!image.is_main"
-                                        >
-                                            {{ image.is_approved ? trans('profile.approved') : trans('profile.pending') }}
-                                        </div>
-
-                                        <!-- Image -->
-                                        <img
-                                            :src="image.original_url"
-                                            :alt="`Profile image ${image.id}`"
-                                            class="card-img-top"
-                                            style="height: 200px; object-fit: cover"
-                                        />
-
-                                        <!-- Actions -->
-                                        <div class="card-body d-flex flex-column gap-2">
-                                            <Link
-                                                preserve-state
-                                                :href="route('profile.gallery.set-main', image.id)"
-                                                v-if="!image.is_main"
-                                                @click="setAsMainImage(image.id)"
-                                                class="btn btn-sm btn-light-primary w-100"
-                                                preserve-scroll
-                                            >
-                                                <i class="ki-outline ki-star fs-4"></i>
-                                                {{ trans('profile.set_as_main') }}
-                                        </Link>
-                                            <button preserve-scroll @click="confirmDelete(image.id)" class="btn btn-sm btn-light-danger w-100">
-                                                <i class="ki-outline ki-trash fs-4"></i>
-                                                {{ trans('profile.delete') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <section v-if="canUploadMore && (totalImages < 5 || selectedFiles.length)" class="gallery-upload-panel member-reveal">
+                <div class="gallery-panel-head">
+                    <h3>{{ trans('profile.upload_images') }}</h3>
+                    <span>{{ totalImages }}/5</span>
                 </div>
+                <div
+                    v-if="totalImages < 5"
+                    class="gallery-drop-zone"
+                    :class="{ dragging: isDragging }"
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="handleDrop"
+                >
+                    <input
+                        id="imageUpload"
+                        class="visually-hidden"
+                        type="file"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg"
+                        @change="handleFileSelect"
+                    /><label for="imageUpload"
+                        ><span class="drop-icon"><i class="ki-outline ki-file-up"></i></span
+                        ><strong>{{ trans('profile.drop_images_here_or_click_to_upload') }}</strong
+                        ><small>{{ trans('profile.you_can_upload') }} {{ 5 - totalImages }} {{ trans('profile.more_image_s') }}</small></label
+                    >
+                </div>
+                <div v-if="selectedFiles.length" class="gallery-previews">
+                    <h4>{{ trans('profile.selected_images') }}</h4>
+                    <div class="gallery-preview-grid">
+                        <div v-for="(file, index) in selectedFiles" :key="`${file.name}-${index}`" class="gallery-preview">
+                            <img :src="getPreviewUrl(file)" :alt="file.name" /><button
+                                type="button"
+                                :aria-label="trans('profile.delete')"
+                                @click="removeSelectedFile(index)"
+                            >
+                                <i class="ki-outline ki-cross"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="gallery-primary" :disabled="form.processing" @click="uploadImages">
+                        <i class="ki-outline ki-cloud-upload"></i>{{ form.processing ? trans('profile.uploading') : trans('profile.upload_images') }}
+                    </button>
+                </div>
+                <div v-if="form.errors.images" class="gallery-error">{{ form.errors.images }}</div>
+            </section>
+            <div v-if="!images.length" class="member-empty gallery-empty">
+                <div class="member-empty-icon"><i class="ki-outline ki-picture"></i></div>
+                <h3>{{ trans('profile.no_images_uploaded_yet') }}</h3>
+                <p>{{ trans('profile.upload_your_first_image_to_get_started') }}</p>
+            </div>
+            <div v-else class="gallery-grid">
+                <article v-for="image in images" :key="image.id" class="gallery-item">
+                    <div class="gallery-image">
+                        <img :src="image.original_url" :alt="`${trans('profile.gallery')} ${image.id}`" /><span
+                            v-if="image.is_main"
+                            class="gallery-badge main"
+                            ><i class="ki-outline ki-star"></i>{{ trans('profile.main') }}</span
+                        ><span v-else class="gallery-badge" :class="image.is_approved ? 'approved' : 'pending'">{{
+                            image.is_approved ? trans('profile.approved') : trans('profile.pending')
+                        }}</span>
+                    </div>
+                    <div class="gallery-item-actions">
+                        <button v-if="!image.is_main" type="button" class="gallery-set-main" @click="setAsMainImage(image.id)">
+                            <i class="ki-outline ki-star"></i>{{ trans('profile.set_as_main') }}</button
+                        ><button type="button" class="gallery-delete" :aria-label="trans('profile.delete')" @click="confirmDelete(image.id)">
+                            <i class="ki-outline ki-trash"></i>
+                        </button>
+                    </div>
+                </article>
             </div>
         </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5)">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ trans('profile.confirm_delete') }}</h5>
-                    <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-                </div>
-                <div class="modal-body">
-                    <p>{{ trans('profile.are_you_sure_you_want_to_delete_this_image_this_action_cannot_be_undone') }}</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" @click="showDeleteModal = false">{{ trans('profile.cancel') }}</button>
-                    <button type="button" class="btn btn-danger" @click="deleteImage">{{ trans('profile.delete') }}</button>
+        <div
+            v-if="showDeleteModal"
+            class="modal fade show d-block gallery-modal"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="trans('profile.confirm_delete')"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ trans('profile.confirm_delete') }}</h5>
+                        <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ trans('profile.are_you_sure_you_want_to_delete_this_image_this_action_cannot_be_undone') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="gallery-secondary" @click="showDeleteModal = false">{{ trans('profile.cancel') }}</button
+                        ><button type="button" class="gallery-danger" @click="deleteImage">{{ trans('profile.delete') }}</button>
+                    </div>
                 </div>
             </div>
         </div>

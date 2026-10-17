@@ -1,43 +1,46 @@
 <script setup lang="ts">
-import { Link, usePage, router } from '@inertiajs/vue3';
-
-declare const Swal: any;
-import { route } from 'ziggy-js';
-import { computed } from 'vue';
 import GoogleAd from '@/components/GoogleAd.vue';
-
 import { useLang } from '@/composables/useLang';
 import { useUnreadConversations } from '@/composables/useUnreadConversations';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { route } from 'ziggy-js';
+
+declare const Swal: any;
 const { trans } = useLang();
 const { unreadConversations } = useUnreadConversations();
-
-const pendingImageRequests = computed(() => (page.props as any).pending_image_requests ?? 0);
-
 const page = usePage();
-const currentLocale = computed(() => String(page.props.locale ?? 'en'));
-const isRtl = computed(() => currentLocale.value === 'ar');
-const drawerDirection = computed(() => isRtl.value ? 'end' : 'start');
-const menuPlacement = computed(() => isRtl.value ? 'left-end' : 'left-start');
-const subMenuPlacement = computed(() => isRtl.value ? 'right-start' : 'left-start');
-
-const currentPath = computed(() => {
-    const url = page.url;
+const isRtl = computed(() => page.props.locale === 'ar');
+const drawerDirection = computed(() => (isRtl.value ? 'end' : 'start'));
+const pendingImageRequests = computed(() => Number((page.props as any).pending_image_requests ?? 0));
+const user = computed(() => (page.props.auth as any)?.user);
+const profileImage = computed(
+    () =>
+        (page.props.auth as any)?.profile_image ||
+        (user.value?.registration_type === 2 ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png'),
+);
+const currentPath = computed(() => page.url.split('?')[0]);
+const isRouteActive = (name: string) => {
     try {
-        return new URL(url).pathname;
-    } catch {
-        return url.split('?')[0];
-    }
-});
-
-const isRouteActive = (routeName: string): boolean => {
-    try {
-        const targetPath = new URL(route(routeName)).pathname;
-        return currentPath.value === targetPath || currentPath.value.startsWith(targetPath + '/');
+        const path = new URL(route(name)).pathname;
+        return currentPath.value === path || currentPath.value.startsWith(path + '/');
     } catch {
         return false;
     }
 };
-
+const navigation = computed(() => [
+    { label: trans('sidebar.Home'), route: 'home', icon: 'ki-home-2' },
+    { label: trans('sidebar.New Members'), route: 'new-members', icon: 'ki-user-tick' },
+    { label: trans('sidebar.Online'), route: 'members-online', icon: 'ki-wifi' },
+    { label: trans('sidebar.Smart Search'), route: 'smart-search.index', icon: 'ki-filter-search' },
+]);
+const activity = computed(() => [
+    { label: trans('sidebar.inbox'), route: 'inbox.index', icon: 'ki-messages', badge: unreadConversations.value },
+    { label: trans('sidebar.Who Liked Me'), route: 'who-liked-me', icon: 'ki-heart' },
+    { label: trans('sidebar.Who Visit Me?'), route: 'who-visited-me', icon: 'ki-eye' },
+    { label: trans('sidebar.Like and Ignore List'), route: 'my-interactions', icon: 'ki-like-2' },
+    { label: trans('sidebar.Image Requests'), route: 'image-requests.index', icon: 'ki-picture', badge: pendingImageRequests.value },
+]);
 const confirmLogout = async () => {
     const result = await Swal.fire({
         text: trans('sidebar.Logout Confirm'),
@@ -46,491 +49,368 @@ const confirmLogout = async () => {
         buttonsStyling: false,
         confirmButtonText: trans('sidebar.Logout'),
         denyButtonText: trans('sidebar.Cancel'),
-        customClass: {
-            confirmButton: 'btn btn-danger',
-            denyButton: 'btn btn-secondary',
-        },
+        customClass: { confirmButton: 'btn btn-danger', denyButton: 'btn btn-secondary' },
     });
-
-    if (result.isConfirmed) {
-        router.post(route('logout'));
-    }
+    if (result.isConfirmed) router.post(route('logout'));
 };
-
-const currentLanguageBadge = computed(() => {
-    if (currentLocale.value === 'ar') {
-        return {
-            label: trans('sidebar.Arabic'),
-            flagSrc: '/assets/media/flags/saudi-arabia.svg',
-        };
-    }
-
-    return {
-        label: trans('sidebar.English'),
-        flagSrc: '/assets/media/flags/united-states.svg',
-    };
-});
 </script>
 
 <template>
-    <!--begin::Sidebar-->
-    <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar"
-        data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="275px"
-        :data-kt-drawer-direction="drawerDirection" data-kt-drawer-toggle="#kt_app_sidebar_toggle">
-        <!--begin::Logo-->
-        <div class="d-flex flex-stack px-lg-6 py-lg-8 px-4 py-3" id="kt_app_sidebar_logo">
-            <!--begin::Logo image-->
-            <Link href="/" class="brand">
-                <span class="brand__mark" aria-hidden="true">
-                    <svg viewBox="0 0 40 28" fill="none">
-                        <circle cx="14" cy="14" r="9" stroke="currentColor" stroke-width="2.2" />
-                        <circle cx="26" cy="14" r="9" stroke="currentColor" stroke-width="2.2" opacity="0.55" />
-                    </svg>
-                </span>
-                <span class="brand__text">
-                    <span class="brand__name">{{ isRtl ? 'خطوبة' : 'Khotobah' }}</span>
-                    <span class="brand__sub">{{ isRtl ? 'Khotobah' : 'خطوبة' }}</span>
-                </span>
+    <aside
+        id="kt_app_sidebar"
+        class="app-sidebar flex-column refined-sidebar"
+        data-kt-drawer="true"
+        data-kt-drawer-name="app-sidebar"
+        data-kt-drawer-activate="{default: true, lg: false}"
+        data-kt-drawer-overlay="true"
+        data-kt-drawer-width="275px"
+        :data-kt-drawer-direction="drawerDirection"
+        data-kt-drawer-toggle="#kt_app_sidebar_toggle"
+    >
+        <div id="kt_app_sidebar_logo" class="sidebar-top">
+            <Link :href="route('home')" class="brand" aria-label="Khotobah home">
+                <span class="brand-mark" aria-hidden="true"
+                    ><svg viewBox="0 0 44 36" fill="none">
+                        <circle cx="16" cy="18" r="11" stroke="currentColor" stroke-width="2.6" />
+                        <circle cx="28" cy="18" r="11" stroke="currentColor" stroke-width="2.6" opacity=".58" /></svg
+                ></span>
+                <span class="brand-type"
+                    ><strong>{{ isRtl ? 'خطوبة' : 'Khotobah' }}</strong
+                    ><small>{{ isRtl ? 'Khotobah' : 'خطوبة' }}</small></span
+                >
             </Link>
-            <!--end::Logo image-->
-            <!--begin::User menu-->
-            <div class="ms-3">
-                <!--begin::Menu wrapper-->
-                <div class="position-relative symbol symbol-circle symbol-40px cursor-pointer"
-                    :class="{ 'sidebar-subscriber-avatar': $page.props.auth?.user?.has_active_subscription }"
-                    data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
-                    :data-kt-menu-placement="isRtl ? 'bottom-start' : 'bottom-end'">
-                    <img :src="$page.props.auth?.profile_image || ($page.props.auth?.user?.registration_type === 2 ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')" alt="user" style="width: 40px; height: 40px; object-fit: cover;" />
-                    <div v-if="$page.props.auth?.user?.has_active_subscription"
-                        :class="[
-                            'position-absolute rounded-circle h-8px w-8px mt-n3 top-100',
-                            isRtl ? 'end-100 me-n3' : 'start-100 ms-n3',
-                        ]"
-                        style="background: linear-gradient(135deg, #f6d365, #fda085);"></div>
-                    <div v-else
-                        :class="[
-                            'position-absolute rounded-circle bg-success h-8px w-8px mt-n3 top-100',
-                            isRtl ? 'end-100 me-n3' : 'start-100 ms-n3',
-                        ]">
-                    </div>
-                </div>
-                <!--begin::User account menu-->
-                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-color fw-semibold fs-6 w-275px py-4"
-                    data-kt-menu="true">
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-3">
-                        <div class="menu-content d-flex align-items-center px-3">
-                            <!--begin::Avatar-->
-                            <div class="symbol symbol-50px me-5">
-                                <img alt="Logo" :src="$page.props.auth?.profile_image || ($page.props.auth?.user?.registration_type === 2 ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')" style="width: 50px; height: 50px; object-fit: cover;" />
-                            </div>
-                            <!--end::Avatar-->
-                            <!--begin::Username-->
-                            <div class="d-flex flex-column">
-                                <div class="fw-bold d-flex align-items-center fs-5">
-                                    {{ $page.props.auth?.user?.name
-                                    }}
-                                    <!-- <span class="fw-bold fs-8 ms-2 px-2 py-1 badge"
-                                        :class="$page.props.auth?.user.has_active_subscription ? 'subscriber-type-badge' : 'badge-light-success'">
-                                        <i v-if="$page.props.auth?.user.has_active_subscription"
-                                            class="ki-outline ki-crown fs-9 me-1" style="color: inherit;"></i>
-                                        {{ $page.props.auth?.user.subcription_type
-                                        }}</span> -->
-                                </div>
-                                <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">{{
-                                    $page.props.auth?.user?.email }}</a>
-                            </div>
-                            <!--end::Username-->
-                        </div>
-                    </div>
-                    <!--end::Menu item-->
-                    <!--begin::Menu separator-->
-                    <div class="separator my-2"></div>
-                    <!--end::Menu separator-->
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5">
-                        <Link :href="route('profile')" class="menu-link px-5"> {{ trans('sidebar.My Profile') }}</Link>
-                    </div>
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5">
-                        <Link :href="route('profile.gallery')" class="menu-link px-5">{{ trans('sidebar.My Gallery') }}</Link>
-                    </div>
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-<!--                    <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"-->
-<!--                        :data-kt-menu-placement="subMenuPlacement" data-kt-menu-offset="-15px, 0">-->
-<!--                        <a href="#" class="menu-link px-5">-->
-<!--                            <span class="menu-title">{{ trans('sidebar.My Subscription') }}</span>-->
-<!--                            <span class="menu-arrow" :class="isRtl ? 'rotate-180' : 'rotate-0'"></span>-->
-<!--                        </a>-->
-<!--                        &lt;!&ndash;begin::Menu sub&ndash;&gt;-->
-<!--                        <div class="menu-sub menu-sub-dropdown w-175px py-4">-->
-<!--                            &lt;!&ndash;begin::Menu item&ndash;&gt;-->
-<!--                            <div class="menu-item px-3">-->
-<!--                                <Link :href="route('subscription.index')" class="menu-link px-5">{{ trans('sidebar.My Subscription') }}</Link>-->
-<!--                            </div>-->
-<!--                            &lt;!&ndash;end::Menu item&ndash;&gt;-->
-<!--                            &lt;!&ndash;begin::Menu item&ndash;&gt;-->
-<!--                            <div class="menu-item px-3">-->
-<!--                                <a href="account/statements.html" class="menu-link px-5">{{ trans('sidebar.Payments') }}</a>-->
-<!--                            </div>-->
-<!--                            &lt;!&ndash;end::Menu item&ndash;&gt;-->
-<!--                        </div>-->
-<!--                        &lt;!&ndash;end::Menu sub&ndash;&gt;-->
-<!--                    </div>-->
-                    <!--end::Menu item-->
-
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                        :data-kt-menu-placement="subMenuPlacement" data-kt-menu-offset="-15px, 0">
-                        <a href="#" class="menu-link px-5">
-                            <span class="menu-title">{{ trans('sidebar.Mode') }}</span>
-                            <span class="d-flex align-items-center flex-shrink-0">
-                                <i class="ki-outline ki-night-day theme-light-show fs-2"></i>
-                                <i class="ki-outline ki-moon theme-dark-show fs-2"></i>
-                            </span>
-                        </a>
-                        <!--begin::Menu-->
-                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-title-gray-700 menu-icon-gray-500 menu-active-bg menu-state-color fw-semibold fs-base w-150px py-4"
-                            data-kt-menu="true" data-kt-element="theme-mode-menu">
-                            <!--begin::Menu item-->
-                            <div class="menu-item my-0 px-3">
-                                <a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="light">
-                                    <span class="menu-icon" data-kt-element="icon">
-                                        <i class="ki-outline ki-night-day fs-2"></i>
-                                    </span>
-                                    <span class="menu-title">{{ trans('sidebar.Light') }}</span>
-                                </a>
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item my-0 px-3">
-                                <a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="dark">
-                                    <span class="menu-icon" data-kt-element="icon" >
-                                        <i class="ki-outline ki-moon fs-2"></i>
-                                    </span>
-                                    <span class="menu-title">{{ trans('sidebar.Dark') }}</span>
-                                </a>
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item my-0 px-3">
-                                <a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="system">
-                                    <span class="menu-icon" data-kt-element="icon">
-                                        <i class="ki-outline ki-screen fs-2"></i>
-                                    </span>
-                                    <span class="menu-title">{{ trans('sidebar.System') }}</span>
-                                </a>
-                            </div>
-                            <!--end::Menu item-->
-                        </div>
-                        <!--end::Menu-->
-                    </div>
-                    <!--end::Menu item-->
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                        :data-kt-menu-placement="subMenuPlacement" data-kt-menu-offset="-15px, 0">
-                        <a href="#" class="menu-link px-5">
-                            <span class="menu-title">{{ trans('sidebar.Language') }}</span>
-                            <span
-                                class="fs-8 bg-light rounded px-3 py-2 d-inline-flex align-items-center gap-2 flex-shrink-0">
-                                {{ currentLanguageBadge.label }}
-                                <img class="w-15px h-15px rounded-1" :src="currentLanguageBadge.flagSrc"
-                                    :alt="currentLanguageBadge.label" />
-                            </span>
-                        </a>
-                        <!--begin::Menu sub-->
-                        <div class="menu-sub menu-sub-dropdown w-175px py-4">
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <Link :href="`/language/ar`" class="menu-link d-flex px-5"
-                                    :class="{ active: currentLocale === 'ar' }">
-                                    <span class="symbol symbol-20px me-4">
-                                        <img class="rounded-1" src="/assets/media/flags/saudi-arabia.svg" alt="" />
-                                    </span>{{ trans('sidebar.Arabic') }}
-                                </Link>
-                            </div>
-                            <!--end::Menu item-->
-
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <Link :href="`/language/en`" class="menu-link d-flex px-5"
-                                    :class="{ active: currentLocale === 'en' }">
-                                    <span class="symbol symbol-20px me-4">
-                                        <img class="rounded-1" src="/assets/media/flags/united-states.svg" alt="" />
-                                    </span>{{ trans('sidebar.English') }}
-                                </Link>
-                            </div>
-                            <!--end::Menu item-->
-
-                        </div>
-                        <!--end::Menu sub-->
-                    </div>
-                    <!--end::Menu item-->
-                    <!--begin::Menu item-->
-<!--                    <div class="menu-item my-1 px-5">-->
-<!--                        <a href="account/settings.html" class="menu-link px-5">{{ trans('sidebar.Account Settings') }}</a>-->
-<!--                    </div>-->
-                    <!--end::Menu item-->
-                    <!--begin::Menu item-->
-                    <div class="menu-item px-5">
-                        <a @click.prevent="confirmLogout" href="#" class="menu-link text-danger w-100 px-5">{{
-                            trans('sidebar.Logout') }}</a>
-                    </div>
-                    <!--end::Menu item-->
-                </div>
-                <!--end::User account menu-->
-                <!--end::Menu wrapper-->
-            </div>
-            <!--end::User menu-->
+            <button type="button" class="sidebar-close d-lg-none" data-kt-drawer-dismiss="true" :aria-label="isRtl ? 'إغلاق القائمة' : 'Close menu'">
+                <i class="ki-outline ki-cross"></i>
+            </button>
         </div>
-        <!--end::Logo-->
-        <!--begin::Sidebar nav-->
-        <div class="flex-column-fluid px-lg-8 px-4 py-4" id="kt_app_sidebar_nav">
-            <!--begin::Nav wrapper-->
-            <div id="kt_app_sidebar_nav_wrapper" class="d-flex flex-column hover-scroll-y me-n4 pe-4"
-                data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto"
+
+        <div id="kt_app_sidebar_nav" class="sidebar-scroll flex-column-fluid">
+            <div
+                id="kt_app_sidebar_nav_wrapper"
+                class="sidebar-inner hover-scroll-y"
+                data-kt-scroll="true"
+                data-kt-scroll-activate="true"
+                data-kt-scroll-height="auto"
                 data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer"
-                data-kt-scroll-wrappers="#kt_app_sidebar, #kt_app_sidebar_nav" data-kt-scroll-offset="5px">
-
-
-                <!--begin::Links-->
-                <div class="mb-6">
-                    <!--begin::Title-->
-                    <h3 class="fw-bold mb-8 text-gray-800"></h3>
-                    <!--end::Title-->
-                    <!--begin::Row-->
-                    <div class="row row-cols-3" data-kt-buttons="true" data-kt-buttons-target="[data-kt-button]">
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <Link :href="route('inbox.index')"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200 position-relative"
-                                :class="{ active: isRouteActive('inbox.index') }"
-                                data-kt-button="true">
-                                <!--begin::Icon-->
-                                <span class="mb-2 position-relative">
-                                    <i class="ki-outline ki-messages fs-1"></i>
-                                    
-                                    <span
-                                        v-if="unreadConversations > 0"
-                                        class="position-absolute  top-50 start-2 translate-middle badge badge-circle badge-danger"
-                                        style="font-size: 9px; min-width: 16px; height: 16px; padding: 0 3px;"
-                                    >
-                                        {{ unreadConversations > 99 ? '99+' : unreadConversations }}
-                                    </span>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">{{ trans('sidebar.inbox') }}</span>
-                                <!--end::Label-->
-                            </Link>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <Link :href="route('who-liked-me')"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                :class="{ active: isRouteActive('who-liked-me') }"
-                                data-kt-button="true">
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-heart fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">{{ trans('sidebar.Who Liked Me') }}</span>
-                                <!--end::Label-->
-                            </Link>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <Link :href="route('who-visited-me')"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                :class="{ active: isRouteActive('who-visited-me') }"
-                                data-kt-button="true">
-                                <!--begin::Icon-->
-                                <i class="ki-outline ki-eye fs-1"></i>
-                                <span class="mb-2"> </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">{{ trans('sidebar.Who Visit Me?') }}</span>
-                                <!--end::Label-->
-                            </Link>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <Link :href="route('my-interactions')"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                :class="{ active: isRouteActive('my-interactions') }"
-                                data-kt-button="true">
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-like-2 fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">{{ trans('sidebar.Like and Ignore List') }}</span>
-                                <!--end::Label-->
-                            </Link>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <Link :href="route('smart-search.index')"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200"
-                                :class="{ active: isRouteActive('smart-search.index') }"
-                                data-kt-button="true">
-                                <!--begin::Icon-->
-                                <span class="mb-2">
-                                    <i class="ki-outline ki-filter-search fs-1"></i>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">{{ trans('sidebar.Smart Search') }}</span>
-                                <!--end::Label-->
-                            </Link>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                        <!--begin::Col-->
-                        <div class="col mb-4">
-                            <!--begin::Link-->
-                            <Link :href="route('image-requests.index')"
-                                class="btn btn-icon btn-outline btn-bg-light btn-active-light-primary btn-flex flex-column flex-center w-lg-90px h-lg-90px w-70px h-70px border-gray-200 position-relative"
-                                :class="{ active: isRouteActive('image-requests.index') }"
-                                data-kt-button="true">
-                                <!--begin::Icon-->
-                                <span class="mb-2 position-relative">
-                                    <i class="ki-outline ki-picture fs-1"></i>
-                                    <span
-                                        v-if="pendingImageRequests > 0"
-                                        class="position-absolute top-50 start-2 translate-middle badge badge-circle badge-danger"
-                                        style="font-size: 9px; min-width: 16px; height: 16px; padding: 0 3px;"
-                                    >
-                                        {{ pendingImageRequests > 99 ? '99+' : pendingImageRequests }}
-                                    </span>
-                                </span>
-                                <!--end::Icon-->
-                                <!--begin::Label-->
-                                <span class="fs-7 fw-bold">{{ trans('sidebar.Image Requests') }}</span>
-                                <!--end::Label-->
-                            </Link>
-                            <!--end::Link-->
-                        </div>
-                        <!--end::Col-->
-                    </div>
-                    <!--end::Row-->
-                </div>
-                <!--end::Links-->
-
-                <!-- Ad: bottom of sidebar nav -->
-                <div class="mt-4">
-                    <GoogleAd slot-id="SIDEBAR_BOTTOM" format="rectangle" :full-width-responsive="false" />
-                </div>
+                data-kt-scroll-wrappers="#kt_app_sidebar, #kt_app_sidebar_nav"
+                data-kt-scroll-offset="5px"
+            >
+                <div class="sidebar-intro">{{ isRtl ? 'مساحتك الخاصة' : 'YOUR SPACE' }}</div>
+                <nav class="sidebar-nav" :aria-label="isRtl ? 'التصفح' : 'Browse'">
+                    <Link
+                        v-for="item in navigation"
+                        :key="item.route"
+                        :href="route(item.route)"
+                        class="nav-link"
+                        :class="{ active: isRouteActive(item.route) }"
+                        :aria-current="isRouteActive(item.route) ? 'page' : undefined"
+                        ><i :class="['ki-outline', item.icon]"></i><span>{{ item.label }}</span
+                        ><i class="ki-outline ki-arrow-right nav-arrow"></i
+                    ></Link>
+                </nav>
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-intro">{{ isRtl ? 'نشاطك' : 'YOUR ACTIVITY' }}</div>
+                <nav class="sidebar-nav" :aria-label="isRtl ? 'نشاطك' : 'Your activity'">
+                    <Link
+                        v-for="item in activity"
+                        :key="item.route"
+                        :href="route(item.route)"
+                        class="nav-link"
+                        :class="{ active: isRouteActive(item.route) }"
+                        :aria-current="isRouteActive(item.route) ? 'page' : undefined"
+                        ><i :class="['ki-outline', item.icon]"></i><span>{{ item.label }}</span
+                        ><b v-if="item.badge" class="nav-badge">{{ item.badge > 99 ? '99+' : item.badge }}</b></Link
+                    >
+                </nav>
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-intro">{{ isRtl ? 'الحساب' : 'ACCOUNT' }}</div>
+                <nav class="sidebar-nav" :aria-label="isRtl ? 'الحساب' : 'Account'">
+                    <Link :href="route('profile')" class="nav-link" :class="{ active: isRouteActive('profile') && !isRouteActive('profile.gallery') }"
+                        ><i class="ki-outline ki-user"></i><span>{{ trans('sidebar.My Profile') }}</span></Link
+                    >
+                    <Link :href="route('profile.gallery')" class="nav-link" :class="{ active: isRouteActive('profile.gallery') }"
+                        ><i class="ki-outline ki-picture"></i><span>{{ trans('sidebar.My Gallery') }}</span></Link
+                    >
+                </nav>
+                <!-- <div class="sidebar-ad"><GoogleAd slot-id="SIDEBAR_BOTTOM" format="rectangle" :full-width-responsive="false" /></div> -->
             </div>
-            <!--end::Nav wrapper-->
         </div>
-        <!--end::Sidebar nav-->
-
-    </div>
-    <!--end::Sidebar-->
+        <div id="kt_app_sidebar_footer" class="sidebar-footer">
+            <Link :href="route('profile')" class="footer-user"
+                ><img :src="profileImage" :alt="user?.name || ''" /><span
+                    ><strong>{{ user?.name }}</strong
+                    ><small>{{
+                        user?.has_active_subscription ? (isRtl ? 'عضوية مميزة' : 'Premium member') : isRtl ? 'عضو في خطوبة' : 'Khotobah member'
+                    }}</small></span
+                ></Link
+            >
+            <button type="button" class="footer-logout" :title="trans('sidebar.Logout')" :aria-label="trans('sidebar.Logout')" @click="confirmLogout">
+                <i class="ki-outline ki-exit-right-corner"></i>
+            </button>
+        </div>
+    </aside>
 </template>
 
 <style scoped>
+.refined-sidebar {
+    background: #fffaf8;
+    border: 1px solid #f1e5e7;
+    box-shadow: 8px 10px 35px #5a284016;
+    overflow: hidden;
+    color: #44283a;
+}
+.sidebar-top {
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 25px 16px;
+}
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 9px;
     text-decoration: none;
-    color: #45112a;
 }
-.brand__mark {
-    color: #d02e79;
-    display: inline-flex;
-    flex-shrink: 0;
+.brand-mark {
+    width: 43px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    background: #f9e6eb;
+    color: #a34569;
+    border-radius: 13px;
 }
-.brand__mark svg {
-    width: 36px;
-    height: 25px;
+.brand-mark svg {
+    width: 34px;
 }
-.brand__text {
+.brand-type {
     display: flex;
     flex-direction: column;
-    line-height: 1;
+    line-height: 1.08;
 }
-.brand__name {
-    font-size: 1.15rem;
+.brand-type strong {
+    font-size: 18px;
+    font-weight: 800;
+    color: #46283a;
+    letter-spacing: -0.03em;
+}
+.brand-type small {
+    font-size: 10px;
+    color: #ad6580;
     font-weight: 700;
-    letter-spacing: 0.01em;
-    color: #45112a;
+    margin-top: 4px;
 }
-.brand__sub {
-    font-size: 0.65rem;
-    color: #d02e79;
-    font-weight: 600;
-    margin-top: 2px;
+.sidebar-close {
+    border: 0;
+    background: transparent;
+    color: #6a5260;
+    font-size: 22px;
 }
-
-.sidebar-subscriber-avatar {
-    position: relative;
+.sidebar-scroll {
+    min-height: 0;
 }
-
-.sidebar-subscriber-avatar::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
+.sidebar-inner {
+    height: 100%;
+    padding: 13px 14px 24px;
+}
+.sidebar-intro {
+    color: #b395a2;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    padding: 11px 13px 9px;
+}
+.sidebar-nav {
+    display: grid;
+    gap: 3px;
+}
+.nav-link,
+.sidebar-settings summary {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 43px;
+    padding: 9px 13px;
+    border-radius: 10px;
+    color: #705b66;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        color 0.2s,
+        background 0.2s,
+        transform 0.2s;
+}
+.nav-link > i:first-child,
+.sidebar-settings summary > i:first-child {
+    width: 19px;
+    text-align: center;
+    font-size: 19px;
+    color: #aa8797;
+}
+.nav-link > span {
+    flex: 1;
+    min-width: 0;
+}
+.nav-link:hover,
+.sidebar-settings summary:hover {
+    background: #f8eef1;
+    color: #8e3559;
+    transform: translateX(2px);
+}
+.nav-link.active {
+    background: #f2dfe6;
+    color: #863455;
+}
+.nav-link.active > i:first-child {
+    color: #a74268;
+}
+.nav-arrow {
+    font-size: 11px;
+    opacity: 0;
+}
+.nav-link.active .nav-arrow {
+    opacity: 1;
+}
+.nav-badge {
+    background: #a34268;
+    color: white;
+    font-size: 10px;
+    border-radius: 7px;
+    min-width: 19px;
+    height: 19px;
+    padding: 1px 4px;
+    text-align: center;
+}
+.sidebar-divider {
+    height: 1px;
+    background: #f0e5e7;
+    margin: 16px 12px 10px;
+}
+.sidebar-settings {
+    margin-top: 6px;
+}
+.sidebar-settings summary {
+    list-style: none;
+}
+.sidebar-settings summary::-webkit-details-marker {
+    display: none;
+}
+.sidebar-settings summary span {
+    flex: 1;
+}
+.settings-chevron {
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+.sidebar-settings[open] .settings-chevron {
+    transform: rotate(180deg);
+}
+.settings-content {
+    margin: 5px 10px 0;
+    padding: 13px;
+    border-radius: 10px;
+    background: #f7f0f1;
+    display: grid;
+    gap: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #765c69;
+}
+.settings-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+.settings-options a {
+    color: #694956;
+    text-decoration: none;
+    font-size: 10px;
+    padding: 5px 8px;
+    background: white;
+    border: 1px solid #eadde1;
+    border-radius: 6px;
+}
+.settings-options a.selected,
+.settings-options a:hover {
+    background: #a34268;
+    color: white;
+}
+.sidebar-ad {
+    margin: 20px 4px 0;
+}
+.sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid #f0e4e7;
+    padding: 13px 16px;
+    background: #fff;
+}
+.footer-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+    text-decoration: none;
+}
+.footer-user img {
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f6d365, #fda085, #f6d365);
-    z-index: 0;
-    animation: rotate-glow 4s linear infinite;
+    object-fit: cover;
+    border: 2px solid #f3dce4;
 }
-
-.sidebar-subscriber-avatar img {
-    position: relative;
-    z-index: 1;
-    border: 2px solid #fff;
+.footer-user span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
-
-@keyframes rotate-glow {
-    0% {
-        background: linear-gradient(0deg, #f6d365, #fda085, #f6d365);
-    }
-
-    25% {
-        background: linear-gradient(90deg, #f6d365, #fda085, #f6d365);
-    }
-
-    50% {
-        background: linear-gradient(180deg, #f6d365, #fda085, #f6d365);
-    }
-
-    75% {
-        background: linear-gradient(270deg, #f6d365, #fda085, #f6d365);
-    }
-
-    100% {
-        background: linear-gradient(360deg, #f6d365, #fda085, #f6d365);
+.footer-user strong {
+    color: #4b2c3d;
+    font-size: 11px;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.footer-user small {
+    color: #a18a95;
+    font-size: 10px;
+}
+.footer-logout {
+    border: 0;
+    background: #fbf2f3;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    color: #a34268;
+    font-size: 17px;
+}
+.footer-logout:hover {
+    background: #f4e1e7;
+}
+[dir='rtl'] .nav-arrow {
+    transform: rotate(180deg);
+}
+[dir='rtl'] .nav-link:hover {
+    transform: translateX(-2px);
+}
+@media (min-width: 992px) {
+    .refined-sidebar {
+        border-radius: 20px;
     }
 }
-
-.subscriber-type-badge {
-    background: linear-gradient(135deg, #f6d365, #fda085) !important;
-    color: #fff !important;
-    border: none;
+@media (max-width: 991px) {
+    .refined-sidebar {
+        border-radius: 0;
+    }
+    .sidebar-top {
+        min-height: 75px;
+    }
 }
 </style>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { useLang } from '@/composables/useLang';
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, ref, watch } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
-import { useLang } from '@/composables/useLang';
 
 const { trans } = useLang();
 const page = usePage();
@@ -92,7 +91,7 @@ const showLoginLocation = ref(false);
 // Gender-aware marriage status label (matches user's own gender)
 const currentUserIsVerified = computed(() => (page.props.auth as any)?.user?.is_verified ?? false);
 const isFemale = computed(() => user.value?.registration_type === 2);
-const genderLabel = computed(() => isFemale.value ? trans('home.female') : trans('home.male'));
+const genderLabel = computed(() => (isFemale.value ? trans('home.female') : trans('home.male')));
 const showMarriageTypeBadge = computed(() => isFemale.value && !!user.value?.marriage_type_label);
 
 const marriageStatusKeyMap: Record<number, string> = { 1: 'single', 2: 'married', 3: 'divorced', 4: 'widowed' };
@@ -102,14 +101,12 @@ const marriageStatusLabel = computed(() => {
     const status = Number(user.value.marriage_status);
     const key = marriageStatusKeyMap[status];
     const genderSuffix = isFemale.value ? 'female' : 'male';
-    return key
-        ? trans(`enums.marriage_status_${key}_${genderSuffix}`)
-        : (user.value.marriage_status_label || String(user.value.marriage_status));
+    return key ? trans(`enums.marriage_status_${key}_${genderSuffix}`) : user.value.marriage_status_label || String(user.value.marriage_status);
 });
 
 const getCountryName = (country: Country | null | undefined): string => {
     if (!country) return trans('profile.not_specified');
-    return isRtl.value ? (country.ar_name || country.name) : country.name;
+    return isRtl.value ? country.ar_name || country.name : country.name;
 };
 
 const loadUserProfile = async () => {
@@ -218,7 +215,9 @@ const handleIgnore = async () => {
     });
 };
 
-const openReportModal = () => { isReportModalOpen.value = true; };
+const openReportModal = () => {
+    isReportModalOpen.value = true;
+};
 
 const closeReportModal = () => {
     isReportModalOpen.value = false;
@@ -259,20 +258,27 @@ watch(
     <Transition name="fade">
         <div
             v-if="isOpen"
-            class="modal-backdrop fade show position-fixed start-0 top-0 h-100 w-100"
-            style="z-index: 1055; background-color: rgba(0,0,0,0.5)"
+            class="modal-backdrop fade show position-fixed profile-scrim start-0 top-0 h-100 w-100"
+            style="z-index: 1055; background-color: rgba(0, 0, 0, 0.5)"
             @click="handleClose"
         ></div>
     </Transition>
 
     <!-- Modal -->
     <Transition name="modal">
-        <div v-if="isOpen" class="modal fade show d-block" tabindex="-1" style="z-index: 1056">
-            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-
+        <div
+            v-if="isOpen"
+            class="modal fade show d-block profile-modal"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="trans('profile.user_profile')"
+            style="z-index: 1056"
+        >
+            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable profile-dialog">
+                <div class="modal-content profile-content">
                     <!-- Header -->
-                    <div class="modal-header">
+                    <div class="modal-header profile-modal-heading">
                         <h3 class="modal-title">{{ trans('profile.user_profile') }}</h3>
                         <button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary" @click="handleClose">
                             <i class="ki-outline ki-cross fs-2"></i>
@@ -280,7 +286,7 @@ watch(
                     </div>
 
                     <!-- Body -->
-                    <div class="modal-body">
+                    <div class="modal-body profile-modal-body">
                         <!-- Loading -->
                         <div v-if="isLoading" class="d-flex justify-content-center align-items-center py-10">
                             <div class="spinner-border text-primary" role="status">
@@ -290,21 +296,24 @@ watch(
 
                         <div v-else-if="user">
                             <!-- Profile Header -->
-                            <div class="d-flex flex-column align-items-center mb-7">
+                            <div class="d-flex flex-column align-items-center profile-summary mb-7">
                                 <!-- Avatar + online dot -->
                                 <div class="position-relative mb-4">
                                     <div class="symbol symbol-100px symbol-circle" :class="{ 'modal-subscriber-avatar': user.is_subscriber }">
                                         <img
-                                            :src="user.mainProfileImage || (isFemale ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')"
+                                            :src="
+                                                user.mainProfileImage ||
+                                                (isFemale ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png')
+                                            "
                                             :alt="user.username"
                                             class="rounded-circle"
-                                            style="width:100px;height:100px;object-fit:cover;"
+                                            style="width: 100px; height: 100px; object-fit: cover"
                                         />
                                     </div>
                                     <!-- Online dot — physical right so it stays bottom-right in both LTR and RTL -->
                                     <div
-                                        class="position-absolute rounded-circle border border-4 border-white h-20px w-20px"
-                                        style="bottom: 0; right: 0; transform: translate(25%, 25%);"
+                                        class="position-absolute rounded-circle h-20px w-20px border border-4 border-white"
+                                        style="bottom: 0; right: 0; transform: translate(25%, 25%)"
                                         :class="user.is_online ? 'bg-success' : 'bg-secondary'"
                                         :title="user.is_online ? trans('profile.online') : trans('profile.offline')"
                                     ></div>
@@ -314,8 +323,14 @@ watch(
                                 <h4 class="fw-bold mb-1" :class="user.is_subscriber ? 'modal-subscriber-name' : 'text-gray-900'">
                                     {{ user.name }}
                                     <span v-if="user.nationality?.flag">{{ user.nationality.flag }}</span>
-                                    <i v-if="user.is_subscriber" class="ki-outline ki-verify fs-3" style="color:#f6a723;"></i>
-                                    <i :class="user.is_verified ? 'ki-solid ki-shield-tick fs-3 modal-verified-icon' : 'ki-outline ki-shield-tick fs-3 modal-unverified-icon'"></i>
+                                    <i v-if="user.is_subscriber" class="ki-outline ki-verify fs-3" style="color: #f6a723"></i>
+                                    <i
+                                        :class="
+                                            user.is_verified
+                                                ? 'ki-solid ki-shield-tick fs-3 modal-verified-icon'
+                                                : 'ki-outline ki-shield-tick fs-3 modal-unverified-icon'
+                                        "
+                                    ></i>
                                 </h4>
                                 <p class="text-muted fs-7 mb-2">@{{ user.username }}</p>
 
@@ -339,7 +354,7 @@ watch(
                                 <p class="text-muted mb-2">{{ user.age }} {{ trans('home.years_old') }}</p>
 
                                 <!-- Gender-aware status badges -->
-                                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                                <div class="d-flex justify-content-center mb-3 flex-wrap gap-2">
                                     <span class="uc-badge" :class="isFemale ? 'uc-badge--female' : 'uc-badge--male'">
                                         <span class="uc-badge__gender">{{ isFemale ? '♀' : '♂' }}</span>
                                         {{ genderLabel }}
@@ -382,10 +397,9 @@ watch(
                             </div>
 
                             <!-- Details -->
-                            <div class="row g-5">
-
+                            <div class="profile-details">
                                 <!-- Basic Information -->
-                                <div class="col-12">
+                                <div class="profile-section">
                                     <h5 class="fw-bold mb-4 text-gray-900">{{ trans('profile.basic_information') }}</h5>
                                     <div class="row g-3">
                                         <div class="col-6">
@@ -437,7 +451,7 @@ watch(
                                 </div>
 
                                 <!-- Physical Attributes -->
-                                <div v-if="user.height || user.weight || user.skin_color || user.body_shape" class="col-12">
+                                <div v-if="user.height || user.weight || user.skin_color || user.body_shape" class="profile-section">
                                     <h5 class="fw-bold mb-4 text-gray-900">{{ trans('profile.physical_attributes') }}</h5>
                                     <div class="row g-3">
                                         <div v-if="user.height" class="col-6">
@@ -480,7 +494,7 @@ watch(
                                 </div>
 
                                 <!-- Professional Information -->
-                                <div v-if="user.education_level || user.job || user.field_of_work" class="col-12">
+                                <div v-if="user.education_level || user.job || user.field_of_work" class="profile-section">
                                     <h5 class="fw-bold mb-4 text-gray-900">{{ trans('profile.professional_details') }}</h5>
                                     <div class="row g-3">
                                         <div v-if="user.education_level" class="col-6">
@@ -514,19 +528,19 @@ watch(
                                 </div>
 
                                 <!-- About Self -->
-                                <div v-if="user.about_self" class="col-12">
+                                <div v-if="user.about_self" class="profile-section">
                                     <h5 class="fw-bold mb-3 text-gray-900">{{ trans('profile.about') }}</h5>
                                     <div class="fs-6 text-gray-700">{{ user.about_self }}</div>
                                 </div>
 
                                 <!-- About Partner -->
-                                <div v-if="user.about_partner" class="col-12">
+                                <div v-if="user.about_partner" class="profile-section">
                                     <h5 class="fw-bold mb-3 text-gray-900">{{ trans('profile.looking_for') }}</h5>
                                     <div class="fs-6 text-gray-700">{{ user.about_partner }}</div>
                                 </div>
 
                                 <!-- Gallery Section -->
-                                <div class="col-12">
+                                <div class="profile-section profile-gallery-section">
                                     <h5 class="fw-bold mb-3 text-gray-900">{{ trans('image_requests.gallery') }}</h5>
 
                                     <!-- Approved: show original images directly (right-click opens original) -->
@@ -545,8 +559,11 @@ watch(
                                     </div>
 
                                     <!-- Approved but no images -->
-                                    <div v-else-if="user.can_view_images && (!user.gallery_images || user.gallery_images.length === 0)" class="modal-gallery-locked">
-                                        <i class="ki-outline ki-picture fs-2x text-gray-400 mb-2"></i>
+                                    <div
+                                        v-else-if="user.can_view_images && (!user.gallery_images || user.gallery_images.length === 0)"
+                                        class="modal-gallery-locked"
+                                    >
+                                        <i class="ki-outline ki-picture fs-2x mb-2 text-gray-400"></i>
                                         <p class="text-muted fs-7 mb-0">{{ trans('profile.not_specified') }}</p>
                                     </div>
 
@@ -561,7 +578,11 @@ watch(
                                             <div class="modal-gallery modal-gallery--locked" aria-hidden="true">
                                                 <div v-for="img in user.gallery_images" :key="img.id" class="modal-gallery__item">
                                                     <!-- src = thumbnail so right-click reveals only the low-res thumbnail -->
-                                                    <img :src="img.thumbnail_url" :alt="user.username" class="modal-gallery__thumb modal-gallery__thumb--blurred" />
+                                                    <img
+                                                        :src="img.thumbnail_url"
+                                                        :alt="user.username"
+                                                        class="modal-gallery__thumb modal-gallery__thumb--blurred"
+                                                    />
                                                 </div>
                                             </div>
                                             <div class="modal-gallery-lock-overlay"></div>
@@ -569,15 +590,14 @@ watch(
 
                                         <!-- Lock UI content (sits above the blurred grid) -->
                                         <div class="modal-gallery-lock-content">
-                                            <i class="ki-outline ki-lock fs-2x mb-3" :class="imageRequestStatus === 'rejected' ? 'text-danger' : 'text-gray-500'"></i>
+                                            <i
+                                                class="ki-outline ki-lock fs-2x mb-3"
+                                                :class="imageRequestStatus === 'rejected' ? 'text-danger' : 'text-gray-500'"
+                                            ></i>
 
                                             <template v-if="imageRequestStatus === null && user.gallery_images?.length">
                                                 <p class="text-muted fs-7 mb-3">{{ trans('image_requests.gallery_locked_desc') }}</p>
-                                                <button
-                                                    class="btn btn-sm btn-primary"
-                                                    :disabled="isRequestingImages"
-                                                    @click="handleRequestImages"
-                                                >
+                                                <button class="btn btn-sm btn-primary" :disabled="isRequestingImages" @click="handleRequestImages">
                                                     <span v-if="isRequestingImages" class="spinner-border spinner-border-sm me-2"></span>
                                                     <i v-else class="ki-outline ki-picture fs-6 me-1"></i>
                                                     {{ trans('image_requests.request_images') }}
@@ -610,7 +630,7 @@ watch(
                     </div>
 
                     <!-- Footer -->
-                    <div v-if="user" class="modal-footer d-flex justify-content-between">
+                    <div v-if="user" class="modal-footer d-flex justify-content-between profile-action-bar">
                         <div class="d-flex gap-2">
                             <button
                                 :class="['btn', isFavorited ? 'btn-danger' : 'btn-light-danger']"
@@ -642,11 +662,7 @@ watch(
 
     <!-- Lightbox -->
     <Transition name="fade">
-        <div
-            v-if="lightboxImage"
-            class="modal-lightbox"
-            @click="lightboxImage = null"
-        >
+        <div v-if="lightboxImage" class="modal-lightbox" @click="lightboxImage = null">
             <button class="modal-lightbox__close" @click.stop="lightboxImage = null">
                 <i class="ki-outline ki-cross fs-2"></i>
             </button>
@@ -659,7 +675,7 @@ watch(
         <div
             v-if="isReportModalOpen"
             class="modal-backdrop fade show position-fixed start-0 top-0 h-100 w-100"
-            style="z-index: 1057; background-color: rgba(0,0,0,0.5)"
+            style="z-index: 1057; background-color: rgba(0, 0, 0, 0.5)"
             @click="closeReportModal"
         ></div>
     </Transition>
@@ -667,9 +683,9 @@ watch(
     <!-- Report Modal -->
     <Transition name="modal">
         <div v-if="isReportModalOpen" class="modal fade show d-block" tabindex="-1" style="z-index: 1058">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
+            <div class="modal-dialog modal-dialog-centered report-dialog">
+                <div class="modal-content report-content">
+                    <div class="modal-header report-heading">
                         <h3 class="modal-title">{{ trans('profile.report_user') }}</h3>
                         <button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary" @click="closeReportModal">
                             <i class="ki-outline ki-cross fs-2"></i>
@@ -703,14 +719,9 @@ watch(
                             </div>
                         </form>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer report-footer">
                         <button type="button" class="btn btn-light" @click="closeReportModal">{{ trans('profile.cancel') }}</button>
-                        <button
-                            type="button"
-                            class="btn btn-danger"
-                            :disabled="!reportReason || isSubmittingReport"
-                            @click="submitReport"
-                        >
+                        <button type="button" class="btn btn-danger" :disabled="!reportReason || isSubmittingReport" @click="submitReport">
                             <span v-if="isSubmittingReport">{{ trans('profile.submitting') }}</span>
                             <span v-else>{{ trans('profile.submit_report') }}</span>
                         </button>
@@ -871,7 +882,9 @@ watch(
     transition: all 0.2s ease;
 }
 
-.modal-gallery__item:hover .modal-gallery__thumb { transform: scale(1.06); }
+.modal-gallery__item:hover .modal-gallery__thumb {
+    transform: scale(1.06);
+}
 .modal-gallery__item:hover .modal-gallery__overlay {
     background: rgba(0, 0, 0, 0.35);
     opacity: 1;
@@ -963,7 +976,9 @@ watch(
     transition: background 0.2s;
 }
 
-.modal-lightbox__close:hover { background: rgba(255, 255, 255, 0.3); }
+.modal-lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
 
 .modal-lightbox__img {
     max-width: 100%;
@@ -971,5 +986,337 @@ watch(
     border-radius: 12px;
     object-fit: contain;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+/* Profile preview in the same visual language as the member pages */
+.profile-scrim {
+    background: rgba(38, 19, 29, 0.55) !important;
+    backdrop-filter: blur(5px);
+}
+.profile-dialog {
+    max-width: 820px;
+    width: calc(100% - 28px);
+}
+.profile-content,
+.report-content {
+    border: 1px solid #eee0e4;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #fcf8f6;
+    box-shadow: 0 28px 80px #2f172e36;
+}
+.profile-modal-heading {
+    position: relative;
+    z-index: 2;
+    min-height: 62px;
+    padding: 13px 22px;
+    border-bottom: 1px solid #f0e4e7;
+    background: #fffaf9;
+}
+.profile-modal-heading .modal-title,
+.report-heading .modal-title {
+    color: #563346;
+    font-size: 15px;
+    font-weight: 900;
+}
+.profile-modal-heading .btn,
+.report-heading .btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #f5e9ed;
+    color: #87536a;
+}
+.profile-modal-body {
+    padding: 0 24px 28px;
+    background: #fcf8f6;
+    scrollbar-color: #e4cbd5 transparent;
+    scrollbar-width: thin;
+}
+.profile-summary {
+    position: relative;
+    min-height: 275px;
+    margin: 0 -24px 24px !important;
+    padding: 27px 24px 23px;
+    background: linear-gradient(115deg, #472238, #85415f);
+    color: #fff;
+    overflow: hidden;
+}
+.profile-summary::before,
+.profile-summary::after {
+    content: '';
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    border: 1px solid #ffffff24;
+    border-radius: 50%;
+    top: -130px;
+    inset-inline-end: -55px;
+    pointer-events: none;
+}
+.profile-summary::after {
+    width: 190px;
+    height: 190px;
+    top: -100px;
+    inset-inline-end: -20px;
+}
+.profile-summary > div,
+.profile-summary > h4,
+.profile-summary > p {
+    position: relative;
+    z-index: 1;
+}
+.profile-summary .symbol {
+    box-shadow:
+        0 0 0 5px #ffffff2e,
+        0 12px 30px #2c132a35;
+}
+.profile-summary .symbol img {
+    border: 3px solid #fff8f2;
+}
+.profile-summary h4 {
+    color: #fff !important;
+    font-size: 23px;
+    font-weight: 900 !important;
+}
+.profile-summary h4 i {
+    font-size: 17px !important;
+}
+.profile-summary .text-muted {
+    color: #f1dce4 !important;
+}
+.profile-summary .modal-subscriber-name {
+    color: #fff !important;
+}
+.profile-summary .modal-verified-icon {
+    color: #a9e7ef;
+}
+.profile-summary .modal-unverified-icon {
+    color: #d6bdc7;
+}
+.profile-summary .uc-badge {
+    border-color: #ffffff40;
+    background: #ffffff22;
+    color: #fff;
+    font-size: 11px;
+}
+.profile-summary .btn-light-primary {
+    border: 1px solid #ffffff55;
+    background: #ffffff1d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+.profile-summary .btn-light-primary:hover {
+    background: #ffffff35;
+}
+.profile-summary .fw-semibold.text-gray-800 {
+    color: #fff !important;
+}
+.profile-summary .modal-premium-badge {
+    background: #eec18b;
+    color: #573043;
+    box-shadow: none;
+}
+.profile-summary .modal-verified-badge {
+    background: #ffffff26;
+    box-shadow: none;
+}
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+.profile-section {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 20px;
+    border: 1px solid #f0e5e8;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 7px 25px #5232440a;
+}
+.profile-details h5 {
+    position: relative;
+    margin: 0 0 16px !important;
+    padding-bottom: 11px;
+    border-bottom: 1px solid #f3e9ec;
+    color: #633c50 !important;
+    font-size: 14px;
+    font-weight: 900 !important;
+}
+.profile-section > .row {
+    gap: 11px;
+    margin: 0;
+}
+.profile-section > .row > .col-6,
+.profile-section > .row > .col-12 {
+    width: calc(50% - 6px);
+    padding: 0;
+    margin: 0;
+}
+.profile-section > .row > .col-12 {
+    width: 100%;
+}
+.profile-details .d-flex.align-items-center.gap-2 {
+    align-items: flex-start !important;
+    gap: 9px !important;
+}
+.profile-details .d-flex.align-items-center.gap-2 > i {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f8edf1;
+    color: #aa6280 !important;
+    font-size: 14px !important;
+}
+.profile-details .text-muted {
+    color: #9d8590 !important;
+    font-size: 10px !important;
+    font-weight: 800;
+}
+.profile-details .fw-semibold {
+    color: #4d3542 !important;
+    font-size: 12px !important;
+    line-height: 1.5;
+}
+.profile-details .fs-6.text-gray-700 {
+    color: #705a65 !important;
+    font-size: 12px !important;
+    line-height: 1.9;
+    white-space: pre-line;
+}
+.profile-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    gap: 12px;
+    padding: 15px 22px;
+    border-top: 1px solid #eee1e5;
+    background: #fffaf9;
+}
+.profile-action-bar > .d-flex {
+    gap: 7px !important;
+}
+.profile-action-bar .btn {
+    min-height: 39px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 800;
+}
+.profile-action-bar .btn:not(.btn-primary) {
+    border: 1px solid #f0dce3;
+    background: #f9edf1;
+    color: #a04c6d;
+}
+.profile-action-bar .btn-warning {
+    background: #fff2e8 !important;
+    color: #ae7450 !important;
+}
+.profile-action-bar .btn-primary {
+    border: 0;
+    background: #a24268;
+    color: #fff;
+    padding-inline: 19px;
+}
+.profile-action-bar .btn-primary:hover {
+    background: #843452;
+}
+.modal-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 10px;
+}
+.modal-gallery__item {
+    border-radius: 11px;
+    background: #f3e8ec;
+}
+.modal-gallery-locked {
+    border-color: #ead9df;
+    background: #fbf5f6;
+}
+.modal-gallery-lock-overlay {
+    background: #fcf6f6ad;
+}
+.modal-gallery-lock-content .btn-primary {
+    border: 0;
+    border-radius: 8px;
+    background: #a24268;
+}
+.modal-gallery-lock-content .btn-primary:hover {
+    background: #843452;
+}
+.report-dialog {
+    max-width: 500px;
+    width: calc(100% - 28px);
+}
+.report-heading,
+.report-footer {
+    padding: 17px 22px;
+    border-color: #f0e5e8;
+    background: #fffaf9;
+}
+.report-content .modal-body {
+    padding: 22px;
+    background: #fff;
+}
+.report-content .form-label {
+    color: #654657;
+    font-size: 12px;
+    font-weight: 800;
+}
+.report-content .form-select,
+.report-content .form-control {
+    border-color: #e9dce1;
+    border-radius: 9px;
+    background: #fffcfb;
+    font-size: 12px;
+}
+.report-footer .btn {
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 800;
+}
+.report-footer .btn-danger {
+    background: #a24268;
+    border-color: #a24268;
+}
+@media (max-width: 650px) {
+    .profile-dialog {
+        width: calc(100% - 14px);
+        margin: 7px auto;
+    }
+    .profile-content {
+        border-radius: 14px;
+    }
+    .profile-modal-body {
+        padding: 0 14px 18px;
+    }
+    .profile-summary {
+        margin-inline: -14px !important;
+        padding: 24px 14px;
+    }
+    .profile-section {
+        padding: 16px;
+    }
+    .profile-action-bar {
+        padding: 11px 14px;
+    }
+    .profile-action-bar .btn-primary {
+        padding-inline: 12px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .modal-enter-active,
+    .modal-leave-active,
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: none;
+    }
 }
 </style>

@@ -7,6 +7,7 @@ import { useLang } from '@/composables/useLang';
 interface Props {
     hasVideo: boolean;
     isVerified: boolean;
+    reviewNote?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -156,6 +157,7 @@ const submitForm = () => {
                         <!-- State: Upload Form -->
                         <div v-else class="card shadow-sm border-0">
                             <div class="card-body p-lg-10 p-6">
+                                <div v-if="props.reviewNote" class="alert alert-warning mb-7"><strong>{{ isRtl ? 'ملاحظة المراجعة' : 'Review note' }}</strong><p class="mb-0 mt-2">{{ props.reviewNote }}</p></div>
                                 <form @submit.prevent="submitForm">
                                     <!-- Upload Requirements -->
                                     <div class="d-flex flex-column mb-8">

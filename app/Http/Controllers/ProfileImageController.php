@@ -158,10 +158,9 @@ class ProfileImageController extends Controller
 
     public function serveThumbnail(ProfileImage $image): Response
     {
-        // Ensure user can only view their own images
-        //        if ($image->user_id !== auth()->id()) {
-        //            abort(403, 'Unauthorized action.');
-        //        }
+        if (! $image->is_approved && $image->user_id !== auth()->id() && ! auth()->user()?->isAdmin()) {
+            abort(403, 'Image is awaiting approval.');
+        }
 
         $path = Storage::disk('local')->path($image->thumbnail_path);
 

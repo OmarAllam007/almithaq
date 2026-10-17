@@ -7,76 +7,73 @@ interface Message {
     sender_id: number;
     created_at: string;
     is_read: boolean;
-    sender?: {
-        id: number;
-        name: string;
-        username: string;
-    };
+    sender?: { id: number; name: string; username: string };
 }
 
-interface Props {
-    message: Message;
-    currentUserId: number;
-}
-
-const props = defineProps<Props>();
-
+const props = defineProps<{ message: Message; currentUserId: number }>();
 const isOwnMessage = computed(() => props.message.sender_id === props.currentUserId);
-
-const formattedTime = computed(() => {
-    const date = new Date(props.message.created_at);
-    return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-});
+const formattedTime = computed(() => new Date(props.message.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }));
 </script>
 
 <template>
-    <div
-        :class="[
-            'd-flex mb-4',
-            isOwnMessage ? 'justify-content-end' : 'justify-content-start',
-        ]"
-    >
-        <div
-            :class="[
-                'd-flex flex-column',
-                'max-w-75',
-                isOwnMessage ? 'align-items-end' : 'align-items-start',
-            ]"
-        >
-            <!-- Message Bubble -->
-            <div
-                :class="[
-                    'px-4 py-3 rounded-3',
-                    isOwnMessage
-                        ? 'bg-primary text-white'
-                        : 'bg-light-primary text-gray-900',
-                ]"
-                style="word-break: break-word"
-            >
-                <div class="fw-normal fs-6">{{ message.message }}</div>
-            </div>
-
-            <!-- Time & Read Status -->
-            <div class="d-flex align-items-center gap-2 mt-1 px-2">
-                <span class="text-muted fs-8">{{ formattedTime }}</span>
-                <span v-if="isOwnMessage" class="text-muted fs-9">
-                    <i
-                        :class="[
-                            'ki-outline',
-                            message.is_read ? 'ki-double-check text-primary' : 'ki-check',
-                        ]"
-                    ></i>
-                </span>
+    <div class="message-row" :class="{ 'message-row--own': isOwnMessage }">
+        <div class="message-content">
+            <div class="message-bubble">{{ message.message }}</div>
+            <div class="message-meta">
+                <time>{{ formattedTime }}</time>
+                <i v-if="isOwnMessage" :class="['ki-outline', message.is_read ? 'ki-double-check' : 'ki-check']"></i>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.max-w-75 {
-    max-width: 75%;
+.message-row {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+}
+.message-row--own {
+    justify-content: flex-end;
+}
+.message-content {
+    max-width: min(82%, 370px);
+    min-width: 0;
+}
+.message-bubble {
+    padding: 11px 14px;
+    border: 1px solid #ebdfe3;
+    border-radius: 14px 14px 14px 4px;
+    background: #fff;
+    color: #553c49;
+    box-shadow: 0 4px 12px #4321330b;
+    font-size: 12px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.message-row--own .message-bubble {
+    border-color: #964366;
+    border-radius: 14px 14px 4px 14px;
+    background: #9b4568;
+    color: #fff;
+}
+.message-meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    margin: 4px 5px 0;
+    color: #a68e9a;
+    font-size: 9px;
+}
+.message-row--own .message-meta i {
+    color: #ac6380;
+}
+:global([dir='rtl']) .message-row:not(.message-row--own) .message-bubble {
+    border-radius: 14px 14px 4px 14px;
+}
+:global([dir='rtl']) .message-row--own .message-bubble {
+    border-radius: 14px 14px 14px 4px;
 }
 </style>

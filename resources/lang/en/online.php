@@ -6,7 +6,7 @@ return [
     'nationality' => 'Nationality',
     'all' => 'All Nationalities',
     'residence' => 'Residence',
-    'all' => 'All Countries',
+    'all_countries' => 'All Countries',
     'clear_filters' => 'Clear Filters',
     'no_members_found' => 'No Online Members Found',
     'no_members_matching_your_filters_are_currently_online' => 'No Online Members Matching Your Filters Are Currently Online',

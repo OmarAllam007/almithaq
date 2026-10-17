@@ -34,7 +34,12 @@ class LoginController extends Controller
             ]);
         }
 
+        if ($user->is_locked) {
+            return back()->withErrors(['username' => 'This account is locked. Please contact support.']);
+        }
+
         Auth::login($user);
+        $request->session()->regenerate();
 
         return redirect()->route('home');
     }

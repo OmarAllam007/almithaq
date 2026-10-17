@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
-import axios from 'axios';
+import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
+import UserProfileModal from '@/components/UserProfileModal.vue';
 import { useLang } from '@/composables/useLang';
 import { useNotificationCount } from '@/composables/useNotificationCount';
-import UserProfileModal from '@/components/UserProfileModal.vue';
-import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { route } from 'ziggy-js';
 const { trans } = useLang();
 const { unreadCount } = useNotificationCount();
 
 const page = usePage();
 const isRtl = computed(() => page.props.locale === 'ar');
-const drawerDirection = computed(() => isRtl.value ? 'start' : 'end');
+const drawerDirection = computed(() => (isRtl.value ? 'start' : 'end'));
 
 function isActive(routeName: string): boolean {
     try {
@@ -32,7 +32,6 @@ interface Notification {
     read_at: string | null;
     created_at: string;
 }
-
 
 const notifications = ref<Notification[]>([]);
 const showNotifications = ref(false);
@@ -139,233 +138,480 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div id="kt_app_header" class="app-header" data-kt-sticky="true" data-kt-sticky-activate-="true"
-        data-kt-sticky-name="app-header-sticky" data-kt-sticky-offset="{default: '200px', lg: '300px'}">
-        <!--begin::Header container-->
-        <div class="app-container container-xxl d-flex align-items-stretch justify-content-between"
-            id="kt_app_header_container">
-            <!--begin::Header wrapper-->
-            <div class="app-header-wrapper d-flex align-items-stretch justify-content-between flex-grow-1"
-                id="kt_app_header_wrapper">
-                <!--begin::Menu wrapper-->
-                <div class="app-header-menu app-header-mobile-drawer align-items-start align-items-lg-center w-100"
-                    data-kt-drawer="true" data-kt-drawer-name="app-header-menu"
-                    data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true"
-                    data-kt-drawer-width="250px" :data-kt-drawer-direction="drawerDirection"
-                    data-kt-drawer-toggle="#kt_app_header_menu_toggle" data-kt-swapper="true"
-                    data-kt-swapper-mode="{default: 'append', lg: 'prepend'}"
-                    data-kt-swapper-parent="{default: '#kt_app_body', lg: '#kt_app_header_wrapper'}">
-                    <!--begin::Menu-->
-                    <div class="menu menu-rounded menu-column menu-lg-row menu-active-bg menu-state-primary menu-title-gray-700 menu-arrow-gray-500 menu-bullet-gray-500 my-lg-0 align-items-stretch fw-semibold px-lg-0 my-5 px-2"
-                        id="#kt_header_menu" data-kt-menu="true">
-                        <!--begin:Menu item-->
-                        <Link :href="route('signup')" data-kt-menu-placement="bottom-start"
-                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
-                            :class="{ 'here show': isActive('signup') }"
-                            v-if="!$page.props.auth?.user">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-title">{{ trans('home.sign-in-head-link') }}</span>
-                                <span class="menu-arrow d-lg-none"></span>
-                            </span>
-                            <!--end:Menu link-->
-                        </Link>
-                        <!--end:Menu item-->
-
-                        <Link :href="route('login')" data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-                            data-kt-menu-placement="bottom-start"
-                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
-                            :class="{ 'here show': isActive('login') }"
-                            v-if="!$page.props.auth?.user">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-title">{{ trans('home.sign-in-title') }}</span>
-                                <span class="menu-arrow d-lg-none"></span>
-                            </span>
-                            <!--end:Menu link-->
-                        </Link>
-
-                        <!--begin:Menu item-->
-                        <Link :href="route('home')" data-kt-menu-placement="bottom-start"
-                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
-                            :class="{ 'here show': isActive('home') }"
-                            v-if="$page.props.auth?.user">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-title"> <i class="fa fa-home fs-4 me-1 text-hover-primary"></i>
-                                    {{ trans('home.home') }}</span>
-                            </span>
-                            <!--end:Menu link-->
-                        </Link>
-                        <!--end:Menu item-->
-
-                        <!--begin:Menu item-->
-                        <Link :href="route('members-online')" data-kt-menu-placement="bottom-start"
-                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
-                            :class="{ 'here show': isActive('members-online') }"
-                            v-if="$page.props.auth?.user">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-title"> <i class="fa fa-users fs-4 me-1 text-hover-primary"></i>
-                                    {{ trans('home.online-members') }}</span>
-                            </span>
-                            <!--end:Menu link-->
-                        </Link>
-                        <!--end:Menu item-->
-
-                        <!--begin:Menu item-->
-                        <Link :href="route('new-members')" data-kt-menu-placement="bottom-start"
-                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
-                            :class="{ 'here show': isActive('new-members') }"
-                            v-if="$page.props.auth?.user">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-title"> <i class="fa fa-users-rays fs-4 me-1 text-hover-primary"></i>
-                                    {{ trans('home.new-members') }}</span>
-                            </span>
-                            <!--end:Menu link-->
-                        </Link>
-                        <!--end:Menu item-->
-
-                        <!--begin:Menu item-->
-                        <Link :href="route('smart-search.index')" data-kt-menu-placement="bottom-start"
-                            class="menu-item menu-here-bg menu-lg-down-accordion me-lg-2 me-0"
-                            :class="{ 'here show': isActive('smart-search.index') }"
-                            v-if="$page.props.auth?.user">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-title"> <i class="fa fa-search fs-4 me-1 text-hover-primary"></i>
-                                    {{ trans('home.search') }}</span>
-                            </span>
-                            <!--end:Menu link-->
-                        </Link>
-                        <!--end:Menu item-->
-                    </div>
-                    <!--end::Menu-->
+    <header
+        id="kt_app_header"
+        class="app-header refined-header"
+        data-kt-sticky="true"
+        data-kt-sticky-activate="true"
+        data-kt-sticky-name="app-header-sticky"
+        data-kt-sticky-offset="{default: '200px', lg: '300px'}"
+    >
+        <div id="kt_app_header_container" class="app-container container-xxl header-container">
+            <div id="kt_app_header_wrapper" class="app-header-wrapper header-inner">
+                <div class="header-mobile-brand d-lg-none">
+                    <button
+                        v-if="$page.props.auth?.user"
+                        id="kt_app_sidebar_toggle"
+                        type="button"
+                        class="header-icon mobile-menu-button"
+                        :aria-label="isRtl ? 'فتح القائمة' : 'Open menu'"
+                    >
+                        <i class="ki-outline ki-abstract-14"></i>
+                    </button>
+                    <Link :href="$page.props.auth?.user ? route('home') : '/'" class="mobile-brand" aria-label="Khotobah home">
+                        <span class="mobile-brand-mark" aria-hidden="true">
+                            <svg viewBox="0 0 44 36" fill="none">
+                                <circle cx="16" cy="18" r="11" stroke="currentColor" stroke-width="2.6" />
+                                <circle cx="28" cy="18" r="11" stroke="currentColor" stroke-width="2.6" opacity=".58" />
+                            </svg>
+                        </span>
+                        <span class="mobile-brand-type">
+                            <strong>{{ isRtl ? 'خطوبة' : 'Khotobah' }}</strong>
+                            <small>{{ isRtl ? 'Khotobah' : 'خطوبة' }}</small>
+                        </span>
+                    </Link>
                 </div>
-                <!--end::Menu wrapper-->
-                <!--begin::Logo wrapper-->
-                <div class="d-flex align-items-center">
-                    <!--begin::Logo wrapper-->
-                    <div class="btn btn-icon btn-color-gray-600 btn-active-color-primary ms-n3 d-flex d-lg-none me-2"
-                        id="kt_app_sidebar_toggle">
-                        <i class="ki-outline ki-abstract-14 fs-2"></i>
-                    </div>
-                    <!--end::Logo wrapper-->
-                    <!--begin::Logo image-->
-                    <a href="/" class="d-flex d-lg-none">
-                        <img alt="Logo" src="assets/media/logos/logo.png" class="h-20px theme-light-show" />
-                        <img alt="Logo" src="assets/media/logos/logo.png" class="h-20px theme-dark-show" />
-                    </a>
-                    <!--end::Logo image-->
+                <div v-if="$page.props.auth?.user" class="header-left d-none d-lg-flex">
+                    <span class="header-kicker">{{ isRtl ? 'اكتشف قصتك' : 'DISCOVER YOUR STORY' }}</span>
+                    <div class="header-rule"></div>
+                    <span class="header-context">{{ isRtl ? 'مكان لبدايات جميلة' : 'A place for meaningful beginnings' }}</span>
                 </div>
-                <!--end::Logo wrapper-->
-                <!--begin::Navbar-->
-                <div class="app-navbar flex-shrink-0">
-
-                    <!--begin::Notifications-->
-                    <div class="app-navbar-item ms-lg-3 ms-1 position-relative" v-if="$page.props.auth?.user">
-                        <div class="btn btn-icon btn-circle btn-color-gray-500 btn-active-color-primary btn-custom bg-body shadow-xs position-relative"
-                            @click.stop="toggleDropdown">
-                            <i class="ki-outline ki-notification-on fs-1"></i>
-                            <span v-if="unreadCount > 0"
-                                class="position-absolute badge badge-circle badge-sm bg-danger"
-                                style="font-size: 10px; min-width: 16px; min-height: 16px; top: 0; right: 0; transform: translate(40%, -40%);">
-                                {{ unreadCount > 99 ? '99+' : unreadCount }}
-                            </span>
-                        </div>
-
-                        <!--begin::Notification dropdown-->
-                        <div v-if="showNotifications" class="position-absolute bg-body shadow rounded-3 border"
-                            :style="{ top: '50px', [isRtl ? 'left' : 'right']: '0', width: '340px', maxHeight: '420px', zIndex: 1050 }">
-                            <!--header-->
-                            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
-                                <h6 class="mb-0 fw-bold text-gray-800">{{ trans('home.notifications') }}</h6>
-                                <button v-if="unreadCount > 0" class="btn btn-sm btn-light-primary py-1 px-3"
-                                    @click.stop="markAllAsRead">
-                                    {{ trans('home.mark_all_read') }}
+                <Link v-else href="/" class="guest-brand d-none d-lg-flex"><span aria-hidden="true">◎</span>{{ isRtl ? 'خطوبة' : 'Khotobah' }}</Link>
+                <nav class="header-nav d-none d-lg-flex" :aria-label="isRtl ? 'التنقل السريع' : 'Quick navigation'">
+                    <template v-if="$page.props.auth?.user">
+                        <Link :href="route('home')" :class="{ active: isActive('home') }">{{ trans('home.home') }}</Link>
+                        <Link :href="route('new-members')" :class="{ active: isActive('new-members') }">{{ trans('home.new-members') }}</Link>
+                        <Link :href="route('smart-search.index')" :class="{ active: isActive('smart-search.index') }">{{
+                            trans('home.search')
+                        }}</Link>
+                    </template>
+                    <template v-else
+                        ><Link :href="route('signup')">{{ isRtl ? 'إنشاء حساب' : 'Join now' }}</Link
+                        ><Link :href="route('login')">{{ trans('home.sign-in-title') }}</Link></template
+                    >
+                </nav>
+                <Link
+                    :href="isRtl ? '/language/en' : '/language/ar'"
+                    class="header-language"
+                    :aria-label="isRtl ? 'تغيير اللغة إلى الإنجليزية' : 'Switch language to Arabic'"
+                    :title="isRtl ? 'English' : 'العربية'"
+                >
+                    <i class="ki-outline ki-global" aria-hidden="true"></i>
+                    <span>{{ isRtl ? 'English' : 'العربية' }}</span>
+                </Link>
+                <div class="header-actions" v-if="$page.props.auth?.user">
+                    <Link :href="route('inbox.index')" class="header-icon" :aria-label="trans('sidebar.inbox')" :title="trans('sidebar.inbox')"
+                        ><i class="ki-outline ki-messages"></i
+                    ></Link>
+                    <div class="notification-wrap">
+                        <button
+                            type="button"
+                            class="header-icon"
+                            :aria-label="trans('home.notifications')"
+                            :aria-expanded="showNotifications"
+                            @click.stop="toggleDropdown"
+                        >
+                            <i class="ki-outline ki-notification-on"></i
+                            ><span v-if="unreadCount > 0" class="notification-count">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+                        </button>
+                        <div v-if="showNotifications" class="notification-popover">
+                            <div class="popover-head">
+                                <div>
+                                    <small>{{ isRtl ? 'آخر المستجدات' : 'YOUR UPDATES' }}</small
+                                    ><strong>{{ trans('home.notifications') }}</strong>
+                                </div>
+                                <button v-if="unreadCount > 0" type="button" @click.stop="markAllAsRead">{{ trans('home.mark_all_read') }}</button>
+                            </div>
+                            <div class="popover-body">
+                                <div v-if="loadingNotifications" class="popover-state"><span class="spinner-border spinner-border-sm"></span></div>
+                                <div v-else-if="notifications.length === 0" class="popover-state">{{ trans('home.no_notifications_yet') }}</div>
+                                <button
+                                    v-for="n in notifications"
+                                    v-else
+                                    :key="n.id"
+                                    type="button"
+                                    class="popover-item"
+                                    :class="{ unread: !n.read_at }"
+                                    @click="markAsRead(n)"
+                                >
+                                    <span class="popover-symbol"><i :class="getMeta(n.type).icon"></i></span
+                                    ><span class="popover-text"
+                                        ><strong v-if="n.actor">{{ n.actor.username }}</strong> {{ n.label }}<small>{{ n.created_at }}</small></span
+                                    ><span v-if="!n.read_at" class="unread-dot"></span>
                                 </button>
                             </div>
-
-                            <!--body-->
-                            <div class="overflow-auto" style="max-height: 350px;">
-                                <div v-if="loadingNotifications" class="text-center py-5">
-                                    <span class="spinner-border spinner-border-sm text-primary"></span>
-                                </div>
-
-                                <div v-else-if="notifications.length === 0" class="text-center py-5 text-muted fs-7">
-                                    {{ trans('home.no_notifications_yet') }}
-                                </div>
-
-                                <template v-else>
-                                    <div v-for="n in notifications" :key="n.id"
-                                        class="d-flex align-items-start gap-3 px-4 py-3 cursor-pointer notification-item"
-                                        :class="{ 'bg-light-primary': !n.read_at }" @click="markAsRead(n)">
-                                        <!--icon-->
-                                        <div class="flex-shrink-0 mt-1">
-                                            <i :class="[getMeta(n.type).icon, getMeta(n.type).color]"></i>
-                                        </div>
-                                        <!--content-->
-                                        <div class="flex-grow-1 min-w-0">
-                                            <div class="fs-7 text-gray-800">
-                                                <span class="fw-bold" v-if="n.actor">{{ n.actor.username }}</span>
-                                                <span class="mx-1"> {{ n.label }}</span>
-                                            </div>
-                                            <div class="text-muted fs-8 mt-1">{{ n.created_at }}</div>
-                                        </div>
-                                        <!--unread dot-->
-                                        <div v-if="!n.read_at" class="flex-shrink-0 mt-2">
-                                            <span class="bullet bullet-dot bg-primary h-6px w-6px"></span>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                        <!--end::Notification dropdown-->
-                    </div>
-                    <!--end::Notifications-->
-
-
-                    <!--begin::Header menu mobile toggle-->
-                    <div class="app-navbar-item d-lg-none me-n4 ms-2" title="Show header menu">
-                        <div class="btn btn-icon btn-color-gray-600 btn-active-color-primary"
-                            id="kt_app_header_menu_toggle">
-                            <i class="ki-outline ki-text-align-left fs-2 fw-bold"></i>
+                            <Link :href="route('notifications.index')" class="popover-footer" @click="closeDropdown"
+                                >{{ trans('home.view_all') }} <span aria-hidden="true">↗</span></Link
+                            >
                         </div>
                     </div>
-                    <!--end::Header menu mobile toggle-->
+                    <Link :href="route('profile')" class="header-avatar" :aria-label="trans('sidebar.My Profile')"
+                        ><img
+                            :src="
+                                ($page.props.auth as any)?.profile_image ||
+                                (($page.props.auth as any)?.user?.registration_type === 2
+                                    ? '/assets/media/auth/female_bgd.png'
+                                    : '/assets/media/auth/male_bgd.png')
+                            "
+                            :alt="($page.props.auth as any)?.user?.name || ''"
+                    /></Link>
                 </div>
-                <!--end::Navbar-->
             </div>
-            <!--end::Header wrapper-->
         </div>
-        <!--end::Header container-->
-    </div>
-
-    <!--click-away overlay to close notifications-->
-    <div v-if="showNotifications" class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1040;"
-        @click="closeDropdown"></div>
-
-    <UserProfileModal
-        :is-open="profileModalOpen"
-        :user-id="profileModalUserId"
-        @close="profileModalOpen = false"
-    />
-
+    </header>
+    <div v-if="showNotifications" class="notification-dismiss" @click="closeDropdown"></div>
+    <UserProfileModal :is-open="profileModalOpen" :user-id="profileModalUserId" @close="profileModalOpen = false" />
     <ChatDrawer
         :is-open="chatDrawerOpen"
         :conversation-id="chatConversationId"
         :recipient-id="chatRecipientId"
-        @close="chatDrawerOpen = false; chatConversationId = undefined; chatRecipientId = undefined"
+        @close="
+            chatDrawerOpen = false;
+            chatConversationId = undefined;
+            chatRecipientId = undefined;
+        "
     />
 </template>
 
 <style scoped>
-.notification-item:hover {
-    background-color: var(--bs-gray-100) !important;
+.refined-header {
+    position: relative;
+    z-index: 1045;
+    background: #fbf8f5;
+    border-bottom: 1px solid #efe5e7;
+    box-shadow: none;
 }
-
-.cursor-pointer {
+.header-container {
+    max-width: 1450px;
+}
+.header-inner {
+    width: 100%;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    justify-content: space-between;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0;
+    margin-inline-end: auto;
+}
+.header-kicker {
+    font-size: 10px;
+    color: #9e4165;
+    letter-spacing: 0.13em;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.header-rule {
+    height: 16px;
+    width: 1px;
+    background: #e7d8dd;
+}
+.header-context {
+    font-size: 11px;
+    color: #a18895;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.header-nav a {
+    text-decoration: none;
+    color: #816a75;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 9px 13px;
+    border-radius: 9px;
+    transition:
+        background 0.2s,
+        color 0.2s;
+    white-space: nowrap;
+}
+.header-nav a:hover,
+.header-nav a.active {
+    background: #f3e2e8;
+    color: #933d60;
+}
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border-inline-start: 1px solid #e9dfe1;
+    padding-inline-start: 19px;
+}
+.header-language {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex: none;
+    min-height: 36px;
+    padding: 7px 11px;
+    border: 1px solid #ead9df;
+    border-radius: 10px;
+    background: #fff;
+    color: #884562;
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .2s ease, transform .2s ease;
+}
+.header-language:hover {
+    background: #f5e6eb;
+    color: #783554;
+    transform: translateY(-2px);
+}
+.header-language i { font-size: 16px; }
+.header-icon {
+    position: relative;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #eee0e4;
+    border-radius: 10px;
+    background: #fff;
+    color: #765262;
+    text-decoration: none;
+    font-size: 19px;
     cursor: pointer;
+    transition:
+        background 0.2s,
+        transform 0.2s;
+}
+.header-icon:hover {
+    background: #f5e6eb;
+    color: #963d61;
+    transform: translateY(-2px);
+}
+.notification-count {
+    position: absolute;
+    top: -6px;
+    inset-inline-end: -6px;
+    height: 17px;
+    min-width: 17px;
+    padding: 1px 4px;
+    border-radius: 8px;
+    background: #a34268;
+    color: #fff;
+    font-size: 9px;
+    line-height: 15px;
+    font-weight: 800;
+}
+.header-avatar {
+    display: block;
+    margin-inline-start: 4px;
+}
+.header-avatar img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e9cbd6;
+}
+.notification-wrap {
+    position: relative;
+}
+.notification-popover {
+    position: absolute;
+    top: 47px;
+    inset-inline-end: 0;
+    width: min(360px, calc(100vw - 28px));
+    max-height: 465px;
+    z-index: 1050;
+    background: #fff;
+    border: 1px solid #efdee4;
+    border-radius: 17px;
+    box-shadow: 0 25px 65px #45213436;
+    overflow: hidden;
+}
+.popover-head {
+    padding: 17px 19px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1e9ea;
+    gap: 8px;
+}
+.popover-head div {
+    display: flex;
+    flex-direction: column;
+}
+.popover-head small {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    color: #ab6480;
+}
+.popover-head strong {
+    font-size: 17px;
+    color: #3d2734;
+}
+.popover-head button {
+    border: 0;
+    background: #f9ebf0;
+    color: #9d4265;
+    border-radius: 7px;
+    padding: 6px 9px;
+    font-size: 10px;
+    font-weight: 800;
+}
+.popover-body {
+    max-height: 333px;
+    overflow: auto;
+}
+.popover-state {
+    padding: 42px 18px;
+    text-align: center;
+    color: #9a8490;
+    font-size: 12px;
+}
+.popover-item {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid #f4edef;
+    background: white;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    text-align: start;
+    padding: 13px 17px;
+    color: #624c59;
+}
+.popover-item:hover,
+.popover-item.unread {
+    background: #fdf6f8;
+}
+.popover-symbol {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    background: #f7e6ed;
+    color: #a34569;
+    border-radius: 10px;
+    font-size: 17px;
+}
+.popover-text {
+    min-width: 0;
+    flex: 1;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.popover-text strong {
+    color: #3c2734;
+}
+.popover-text small {
+    display: block;
+    color: #ad98a2;
+    font-size: 10px;
+    margin-top: 3px;
+}
+.unread-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ad426c;
+}
+.popover-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 19px;
+    text-decoration: none;
+    color: #9c4164;
+    font-size: 11px;
+    font-weight: 800;
+}
+.notification-dismiss {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+}
+.guest-brand {
+    color: #46283a;
+    font-weight: 800;
+    font-size: 18px;
+    text-decoration: none;
+}
+.guest-brand span {
+    color: #a34569;
+    margin-inline-end: 8px;
+}
+.header-mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.mobile-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.mobile-brand-mark {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: #f9e6eb;
+    color: #a34569;
+}
+.mobile-brand-mark svg {
+    width: 31px;
+}
+.mobile-brand-type {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.08;
+}
+.mobile-brand-type strong {
+    color: #46283a;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+.mobile-brand-type small {
+    margin-top: 3px;
+    color: #ad6580;
+    font-size: 9px;
+    font-weight: 700;
+}
+@media (max-width: 991px) {
+    .header-inner {
+        min-height: 62px;
+    }
+    .header-actions {
+        border: 0;
+        padding: 0;
+    }
+    .header-avatar {
+        display: none;
+    }
+    .refined-header {
+        padding-inline: 3px;
+    }
+}
+@media (max-width: 430px) {
+    .header-inner { gap: 7px; }
+    .header-language { padding: 7px 8px; font-size: 10px; }
+    .header-actions {
+        gap: 5px;
+    }
+    .header-icon {
+        width: 34px;
+        height: 34px;
+    }
 }
 </style>

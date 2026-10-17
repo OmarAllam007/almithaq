@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import UserCard from '@/components/UserCard.vue';
-import UserProfileModal from '@/components/UserProfileModal.vue';
 import ChatDrawer from '@/components/Chat/ChatDrawer.vue';
 import Pagination from '@/components/Pagination.vue';
-import { ref } from 'vue';
-import axios from 'axios';
-import { router } from '@inertiajs/vue3';
-import { PaginationData } from '@/types/pagination';
+import UserCard from '@/components/UserCard.vue';
+import UserProfileModal from '@/components/UserProfileModal.vue';
 import { useLang } from '@/composables/useLang';
+import { PaginationData } from '@/types/pagination';
+import { router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, ref } from 'vue';
 
 const { trans } = useLang();
+const page = usePage();
+const isRtl = computed(() => page.props.locale === 'ar');
+declare const Swal: any;
 
 interface Props {
     users: PaginationData;
@@ -77,7 +80,7 @@ const removeInteraction = async (userId: number) => {
             } else {
                 await axios.post(`/users/${userId}/ignore`);
             }
-            router.reload({ preserveScroll: true });
+            router.reload();
         } catch (error) {
             console.error('Failed to remove interaction:', error);
         }
@@ -92,149 +95,77 @@ const mapUser = (user: any) => ({
 </script>
 
 <template>
-    <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
-        <div class="d-flex flex-column flex-column-fluid">
-            <!--begin::Toolbar-->
-            <div id="kt_app_toolbar" class="app-toolbar py-lg-0 py-3">
-                <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
-                    <div class="page-title d-flex flex-column justify-content-center me-3">
-                        <h1 class="page-heading d-flex fw-bold fs-3 flex-column justify-content-center my-0 text-gray-900">
-                            {{ trans('user_interactions.like_and_ignore_list') }}
-                        </h1>
-                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                            <li class="breadcrumb-item text-muted">
-                                <a href="/" class="text-muted text-hover-primary">{{ trans('user_interactions.home') }}</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <span class="bullet w-5px h-2px bg-gray-500 mx-2"></span>
-                            </li>
-                            <li class="breadcrumb-item text-muted">{{ trans('user_interactions.my_interactions') }}</li>
-                        </ul>
+    <div id="kt_app_content" class="app-content flex-column-fluid member-page interactions-page">
+        <div id="kt_app_content_container" class="app-container container-xxl member-container">
+            <section class="member-hero member-reveal">
+                <div class="member-hero-art"></div>
+                <div class="member-hero-copy">
+                    <div class="member-eyebrow">{{ isRtl ? 'إدارة تفاعلاتك' : 'YOUR CONNECTIONS' }}</div>
+                    <h1>{{ trans('user_interactions.my_interactions') }}<span>.</span></h1>
+                    <p>
+                        {{
+                            isRtl
+                                ? 'احتفظ بمن يهمك، وأدر تفضيلاتك في مكان واحد.'
+                                : 'Keep the people who matter close and manage your preferences in one place.'
+                        }}
+                    </p>
+                </div>
+                <div class="member-hero-stat">
+                    <strong>{{ users.total }}</strong
+                    ><span>{{
+                        activeTab === 'favorites' ? trans('user_interactions.total_favorites') : trans('user_interactions.total_ignored')
+                    }}</span>
+                </div>
+            </section>
+            <div class="member-section-head member-reveal">
+                <div>
+                    <small>{{ isRtl ? 'قوائمك' : 'YOUR LISTS' }}</small>
+                    <h2>{{ trans('user_interactions.like_and_ignore_list') }}</h2>
+                </div>
+                <span class="member-count"
+                    >{{ users.total }}
+                    {{ activeTab === 'favorites' ? trans('user_interactions.total_favorites') : trans('user_interactions.total_ignored') }}</span
+                >
+            </div>
+            <div class="interaction-tabs member-reveal" role="tablist" :aria-label="trans('user_interactions.my_interactions')">
+                <button
+                    type="button"
+                    role="tab"
+                    :aria-selected="activeTab === 'favorites'"
+                    :class="{ active: activeTab === 'favorites' }"
+                    @click="changeTab('favorites')"
+                >
+                    <i class="ki-outline ki-heart"></i>{{ trans('user_interactions.my_favorites') }}</button
+                ><button
+                    type="button"
+                    role="tab"
+                    :aria-selected="activeTab === 'ignored'"
+                    :class="{ active: activeTab === 'ignored' }"
+                    @click="changeTab('ignored')"
+                >
+                    <i class="ki-outline ki-eye-slash"></i>{{ trans('user_interactions.ignored_users') }}
+                </button>
+            </div>
+            <div v-if="users.data.length" class="member-grid">
+                <div v-for="user in users.data" :key="user.id" class="member-grid-item">
+                    <UserCard :user="mapUser(user)" @view-profile="openProfileModal" @message="handleMessageFromModal" />
+                    <div class="member-liked-date">
+                        <i :class="['ki-outline', activeTab === 'favorites' ? 'ki-heart' : 'ki-eye-slash']"></i>{{ user.created_at }}
                     </div>
+                    <button type="button" class="interaction-remove" @click="removeInteraction(user.id)">
+                        <i :class="['ki-outline', activeTab === 'favorites' ? 'ki-trash' : 'ki-eye']"></i
+                        >{{ activeTab === 'favorites' ? trans('user_interactions.remove_from_favorites') : trans('user_interactions.unignore_user') }}
+                    </button>
                 </div>
             </div>
-            <!--end::Toolbar-->
-
-            <!--begin::Content-->
-            <div id="kt_app_content" class="app-content flex-column-fluid">
-                <div id="kt_app_content_container" class="app-container container-xxl">
-                    <!--begin::Card-->
-                    <div class="card">
-                        <!--begin::Card header (tabs)-->
-                        <div class="card-header border-0 pt-6">
-                            <div class="card-toolbar w-100">
-                                <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold w-100">
-                                    <li class="nav-item flex-fill">
-                                        <button
-                                            @click="changeTab('favorites')"
-                                            :class="['nav-link text-center w-100', { active: activeTab === 'favorites' }]"
-                                        >
-                                            <i class="ki-outline ki-heart fs-3 me-2"></i>
-                                            {{ trans('user_interactions.my_favorites') }}
-                                        </button>
-                                    </li>
-                                    <li class="nav-item flex-fill">
-                                        <button
-                                            @click="changeTab('ignored')"
-                                            :class="['nav-link text-center w-100', { active: activeTab === 'ignored' }]"
-                                        >
-                                            <i class="ki-outline ki-cross-circle fs-3 me-2"></i>
-                                            {{ trans('user_interactions.ignored_users') }}
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <!--end::Card header-->
-
-                        <!--begin::Card body-->
-                        <div class="card-body">
-                            <!-- Total count -->
-                            <div class="d-flex align-items-center mb-5">
-                                <span class="fw-semibold text-gray-700 fs-6">
-                                    {{ activeTab === 'favorites' ? trans('user_interactions.total_favorites') : trans('user_interactions.total_ignored') }}: {{ users.total }}
-                                </span>
-                            </div>
-
-                            <!-- Empty state -->
-                            <div v-if="users.data.length === 0" class="text-center py-20">
-                                <div class="mb-6">
-                                    <i :class="['ki-outline fs-5x text-gray-400', activeTab === 'favorites' ? 'ki-heart' : 'ki-cross-circle']"></i>
-                                </div>
-                                <h3 class="text-gray-800 mb-3">{{ trans('user_interactions.no_users_found') }}</h3>
-                                <p class="text-gray-600 fs-5">
-                                    {{ activeTab === 'favorites' ? trans('user_interactions.no_favorites_yet') : trans('user_interactions.no_ignored_yet') }}
-                                </p>
-                            </div>
-
-                            <!-- Cards grid -->
-                            <div v-else class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3 mb-6">
-                                <div
-                                    v-for="user in users.data"
-                                    :key="user.id"
-                                    class="col d-flex flex-column gap-2"
-                                >
-                                    <UserCard
-                                        :user="mapUser(user)"
-                                        @view-profile="openProfileModal"
-                                        @message="handleMessageFromModal"
-                                    />
-
-                                    <!-- Action date -->
-                                    <div class="text-center text-muted fs-8">
-                                        <i
-                                            :class="['ki-outline fs-8 me-1', activeTab === 'favorites' ? 'ki-heart text-danger' : 'ki-cross-circle text-warning']"
-                                        ></i>
-                                        {{ user.created_at }}
-                                    </div>
-
-                                    <!-- Remove button -->
-                                    <button
-                                        @click.stop="removeInteraction(user.id)"
-                                        :class="['btn btn-sm w-100', activeTab === 'favorites' ? 'btn-light-danger' : 'mi-unignore-btn']"
-                                    >
-                                        <i :class="['ki-outline fs-7 me-1', activeTab === 'favorites' ? 'ki-trash' : 'ki-eye']"></i>
-                                        {{ activeTab === 'favorites' ? trans('user_interactions.remove_from_favorites') : trans('user_interactions.unignore_user') }}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Pagination -->
-                            <Pagination :data="users" />
-                        </div>
-                        <!--end::Card body-->
-                    </div>
-                    <!--end::Card-->
-                </div>
+            <div v-else class="member-empty">
+                <div class="member-empty-icon"><i :class="['ki-outline', activeTab === 'favorites' ? 'ki-heart' : 'ki-eye-slash']"></i></div>
+                <h3>{{ trans('user_interactions.no_users_found') }}</h3>
+                <p>{{ activeTab === 'favorites' ? trans('user_interactions.no_favorites_yet') : trans('user_interactions.no_ignored_yet') }}</p>
             </div>
-            <!--end::Content-->
+            <Pagination :data="users" />
         </div>
-
         <ChatDrawer :is-open="isChatDrawerOpen" :conversation-id="selectedConversationId" @close="closeChatDrawer" />
-
-        <UserProfileModal
-            :is-open="isProfileModalOpen"
-            :user-id="selectedUserId"
-            @close="closeProfileModal"
-            @message="handleMessageFromModal"
-        />
+        <UserProfileModal :is-open="isProfileModalOpen" :user-id="selectedUserId" @close="closeProfileModal" @message="handleMessageFromModal" />
     </div>
 </template>
-
-<style scoped>
-/* ─── Unignore button ──────────────────────────────────────── */
-.mi-unignore-btn {
-    background: rgba(255, 80, 80, 0.08);
-    color: #cc2222;
-    border: 1px solid rgba(255, 80, 80, 0.22);
-    font-weight: 600;
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.mi-unignore-btn:hover {
-    background: rgba(255, 80, 80, 0.15);
-    border-color: rgba(255, 80, 80, 0.45);
-    box-shadow: 0 3px 10px rgba(200, 30, 30, 0.18);
-    color: #aa1111;
-}
-</style>

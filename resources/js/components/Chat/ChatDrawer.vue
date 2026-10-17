@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import { useActiveChatStore } from '@/composables/useActiveChatStore';
+import { useLang } from '@/composables/useLang';
+import { useUnreadConversations } from '@/composables/useUnreadConversations';
+import { usePresenceStore } from '@/stores/useUserStore';
 import { usePage } from '@inertiajs/vue3';
 import { echo } from '@laravel/echo-vue';
+import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
-import MessageItem from './MessageItem.vue';
-import EmojiPicker from './EmojiPicker.vue';
-import { usePresenceStore } from '@/stores/useUserStore';
-import { useActiveChatStore } from '@/composables/useActiveChatStore';
-import { useUnreadConversations } from '@/composables/useUnreadConversations';
-import { useLang } from '@/composables/useLang';
 import { route } from 'ziggy-js';
+import EmojiPicker from './EmojiPicker.vue';
+import MessageItem from './MessageItem.vue';
 const { trans } = useLang();
 const { activeConversationId } = useActiveChatStore();
 const { markConversationRead } = useUnreadConversations();
@@ -96,7 +96,7 @@ const insertEmoji = (emoji: string) => {
 
 const otherUser = computed(() => conversationData.value?.other_user ?? pendingOtherUser.value);
 const isFemale = computed(() => otherUser.value?.registration_type === 2);
-const defaultAvatar = computed(() => isFemale.value ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png');
+const defaultAvatar = computed(() => (isFemale.value ? '/assets/media/auth/female_bgd.png' : '/assets/media/auth/male_bgd.png'));
 
 const presenceStore = usePresenceStore();
 const isOnline = computed(() => {
@@ -150,9 +150,7 @@ const loadConversation = async () => {
             nextTick(() => messageInput.value?.focus());
 
             if (conversationData.value?.id) {
-                const hasUnread = messages.value.some(
-                    (msg) => !msg.is_read && msg.sender_id !== currentUser.value.id,
-                );
+                const hasUnread = messages.value.some((msg) => !msg.is_read && msg.sender_id !== currentUser.value.id);
                 if (hasUnread) {
                     axios.post(`/conversations/${conversationData.value.id}/mark-as-read`).catch(() => {});
                     markConversationRead(conversationData.value.id);
@@ -161,9 +159,7 @@ const loadConversation = async () => {
         } else if (props.recipientId) {
             // Check if a conversation already exists before creating one
             const existingConvResponse = await axios.get('/conversations');
-            const existing = existingConvResponse.data.find(
-                (c: any) => c.other_user?.id === props.recipientId,
-            );
+            const existing = existingConvResponse.data.find((c: any) => c.other_user?.id === props.recipientId);
 
             if (existing) {
                 // Load the existing conversation
@@ -175,9 +171,7 @@ const loadConversation = async () => {
                 nextTick(() => messageInput.value?.focus());
 
                 if (conversationData.value?.id) {
-                    const hasUnread = messages.value.some(
-                        (msg) => !msg.is_read && msg.sender_id !== currentUser.value.id,
-                    );
+                    const hasUnread = messages.value.some((msg) => !msg.is_read && msg.sender_id !== currentUser.value.id);
                     if (hasUnread) {
                         axios.post(`/conversations/${conversationData.value.id}/mark-as-read`).catch(() => {});
                         markConversationRead(conversationData.value.id);
@@ -388,424 +382,566 @@ watch(
 </script>
 
 <template>
-    <!-- Drawer Overlay -->
     <Transition name="fade">
-        <div v-if="isOpen" @click="handleClose" class="position-fixed bg-dark bg-opacity-50 start-0 top-0 h-100 w-100" style="z-index: 1050"></div>
+        <div v-if="isOpen" class="chat-scrim" @click="handleClose"></div>
     </Transition>
-
-    <!-- Drawer -->
     <Transition name="slide">
-        <div v-if="isOpen" class="position-fixed d-flex flex-column end-0 top-0 h-100 bg-white shadow-lg" style="z-index: 1051; width: 450px">
-            <!-- Header -->
-            <div class="border-bottom px-6 py-4">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div v-if="otherUser" class="d-flex align-items-center flex-grow-1 gap-3">
-                        <div class="position-relative">
-                            <div class="symbol symbol-45px">
-                                <img
-                                    :src="otherUser.profile_image || defaultAvatar"
-                                    :alt="otherUser.name"
-                                    class="rounded-circle"
-                                    :class="{ 'cd-avatar--blurred': otherUser.can_view_images === false && !!otherUser.profile_image }"
-                                    @error="($event.target as HTMLImageElement).src = defaultAvatar"
-                                />
-                            </div>
-                            <div
-                                :class="['position-absolute rounded-circle border border-2 border-white h-10px w-10px', isOnline ? 'bg-success' : 'bg-secondary']"
-                                style="bottom: 0; right: 0"
-                            ></div>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h5 class="fw-bold mb-0 text-gray-900">{{ otherUser.name }}</h5>
-                            <Transition name="typing-status" mode="out-in">
-                                <span v-if="otherUserTyping" class="text-primary fs-7 fw-semibold">
-                                    {{ trans('chat.typing') }}<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
-                                </span>
-                                <span v-else class="text-muted fs-7">
-                                    {{ isOnline ? trans('chat.online') : lastSeenText }}
-                                </span>
-                            </Transition>
-                        </div>
-                    </div>
-                    <div v-else class="flex-grow-1">
-                        <div class="placeholder-glow">
-                            <span class="placeholder col-6"></span>
-                        </div>
-                    </div>
-                    <button @click="handleClose" class="btn btn-sm btn-icon btn-light btn-active-light-primary">
-                        <i class="ki-outline ki-cross fs-2"></i>
+        <section v-if="isOpen" class="chat-drawer" role="dialog" aria-modal="true" :aria-label="trans('chat.send_message')">
+            <header class="chat-header">
+                <div class="chat-header-top">
+                    <span class="chat-kicker"><span class="chat-kicker-dot"></span>{{ trans('chat.send_message') }}</span>
+                    <button type="button" class="chat-close" :aria-label="trans('profile.cancel')" @click="handleClose">
+                        <i class="ki-outline ki-cross"></i>
                     </button>
                 </div>
-            </div>
-
-            <!-- Blocked state when other user is ignored -->
-            <template v-if="otherUser?.is_ignored">
-                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-6 py-10 text-center" style="background-color: #f9f9f9; gap: 16px;">
-                    <div class="cd-blocked-icon">
-                        <i class="ki-outline ki-eye-slash"></i>
+                <div v-if="otherUser" class="chat-person">
+                    <div class="chat-avatar">
+                        <img
+                            :src="otherUser.profile_image || defaultAvatar"
+                            :alt="otherUser.name"
+                            :class="{ 'cd-avatar--blurred': otherUser.can_view_images === false && !!otherUser.profile_image }"
+                            @error="($event.target as HTMLImageElement).src = defaultAvatar"
+                        />
+                        <span class="chat-presence" :class="{ online: isOnline }"></span>
                     </div>
-                    <div>
-                        <p class="fw-bold text-gray-800 fs-5 mb-1">{{ trans('chat.you_blocked_this_user') }}</p>
-                        <p class="text-muted fs-7 mb-0">{{ trans('chat.unblock_to_message') }}</p>
-                    </div>
-                    <a
-                        :href="route('my-interactions') + '?tab=ignored'"
-                        class="cd-unblock-btn"
-                    >
-                        <i class="ki-outline ki-eye fs-6"></i>
-                        {{ trans('chat.go_to_ignored_list') }}
-                    </a>
-                </div>
-            </template>
-
-            <!-- Normal chat when not ignored -->
-            <template v-else>
-            <!-- Pinned safety notice -->
-            <div class="cd-safety-notice d-flex align-items-start gap-2 px-4 py-3 border-bottom">
-                <i class="ki-outline ki-shield-tick fs-5 text-warning mt-1 flex-shrink-0"></i>
-                <p class="mb-0 fs-7 text-gray-600 lh-sm font-bold">
-                    {{ trans('chat.safety_notice') }}
-                </p>
-            </div>
-
-            <!-- Messages Container -->
-            <div ref="messagesContainer" class="flex-grow-1 overflow-auto px-6 py-4" style="background-color: #f9f9f9">
-                <div v-if="isLoading" class="d-flex justify-content-center align-items-center h-100">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">{{ trans('chat.loading') }}</span>
-                    </div>
-                </div>
-
-                <div v-else-if="messages.length === 0" class="d-flex justify-content-center align-items-center h-100">
-                    <div class="text-muted text-center">
-                        <i class="ki-outline ki-message-text fs-3x mb-3"></i>
-                        <p>{{ trans('chat.no_messages_yet') }}</p>
-                    </div>
-                </div>
-
-                <div v-else>
-                    <MessageItem v-for="message in messages" :key="message.id" :message="message" :current-user-id="currentUser.id" />
-
-                    <!-- Typing Indicator Bubble -->
-                    <Transition name="typing-bubble">
-                        <div v-if="otherUserTyping" class="d-flex align-items-start gap-2 mt-3">
-                            <div class="typing-indicator">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                        </div>
-                    </Transition>
-                </div>
-            </div>
-
-            <!-- Message Input -->
-            <div class="border-top bg-white px-6 py-4">
-                <form @submit.prevent="sendMessage" class="d-flex gap-2 align-items-end">
-                    <div class="cd-emoji-wrap">
-                        <button
-                            type="button"
-                            class="cd-emoji-btn"
-                            :class="{ 'cd-emoji-btn--active': showEmojiPicker }"
-                            @click="toggleEmojiPicker"
-                            :title="'Emoji'"
-                        >😊</button>
-                        <Transition name="ep-pop">
-                            <EmojiPicker
-                                v-if="showEmojiPicker"
-                                @select="(e) => { insertEmoji(e); showEmojiPicker = false; }"
-                                @close="showEmojiPicker = false"
-                            />
+                    <div class="chat-person-copy">
+                        <h2>{{ otherUser.name }}</h2>
+                        <p>@{{ otherUser.username }}</p>
+                        <Transition name="typing-status" mode="out-in">
+                            <span v-if="otherUserTyping" class="chat-status typing"
+                                >{{ trans('chat.typing') }}<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></span
+                            >
+                            <span v-else class="chat-status"
+                                ><span class="chat-status-dot" :class="{ online: isOnline }"></span
+                                >{{ isOnline ? trans('chat.online') : lastSeenText }}</span
+                            >
                         </Transition>
                     </div>
-                    <div class="flex-grow-1">
+                </div>
+                <div v-else class="chat-person chat-person-placeholder">
+                    <div class="chat-avatar"></div>
+                    <div class="chat-person-copy"><span></span><span></span></div>
+                </div>
+            </header>
+
+            <div v-if="otherUser?.is_ignored" class="chat-blocked">
+                <div class="chat-empty-mark"><i class="ki-outline ki-eye-slash"></i></div>
+                <h3>{{ trans('chat.you_blocked_this_user') }}</h3>
+                <p>{{ trans('chat.unblock_to_message') }}</p>
+                <a :href="route('my-interactions') + '?tab=ignored'" class="chat-blocked-link"
+                    ><i class="ki-outline ki-eye"></i>{{ trans('chat.go_to_ignored_list') }}</a
+                >
+            </div>
+            <template v-else>
+                <div class="chat-safety">
+                    <i class="ki-outline ki-shield-tick"></i>
+                    <p>{{ trans('chat.safety_notice') }}</p>
+                </div>
+                <div ref="messagesContainer" class="chat-messages">
+                    <div v-if="isLoading" class="chat-empty">
+                        <span class="spinner-border" role="status"></span><span class="visually-hidden">{{ trans('chat.loading') }}</span>
+                    </div>
+                    <div v-else-if="messages.length === 0" class="chat-empty">
+                        <div class="chat-empty-mark"><i class="ki-outline ki-message-text"></i></div>
+                        <h3>{{ trans('chat.no_messages_yet') }}</h3>
+                        <p>{{ trans('chat.type_a_message') }}</p>
+                    </div>
+                    <div v-else class="chat-thread">
+                        <MessageItem v-for="message in messages" :key="message.id" :message="message" :current-user-id="currentUser.id" />
+                        <Transition name="typing-bubble"
+                            ><div v-if="otherUserTyping" class="typing-indicator"><span></span><span></span><span></span></div
+                        ></Transition>
+                    </div>
+                </div>
+                <div class="chat-composer">
+                    <form @submit.prevent="sendMessage" class="chat-compose-form">
+                        <div class="cd-emoji-wrap">
+                            <button
+                                type="button"
+                                class="cd-emoji-btn"
+                                :class="{ 'cd-emoji-btn--active': showEmojiPicker }"
+                                :aria-label="'Emoji'"
+                                @click="toggleEmojiPicker"
+                            >
+                                😊</button
+                            ><Transition name="ep-pop"
+                                ><EmojiPicker
+                                    v-if="showEmojiPicker"
+                                    @select="
+                                        (e) => {
+                                            insertEmoji(e);
+                                            showEmojiPicker = false;
+                                        }
+                                    "
+                                    @close="showEmojiPicker = false"
+                            /></Transition>
+                        </div>
                         <textarea
                             ref="messageInput"
                             v-model="newMessage"
                             @keydown.enter.exact.prevent="sendMessage"
                             :placeholder="trans('chat.type_a_message')"
                             rows="1"
-                            class="form-control form-control-flush resize-none"
                             :disabled="isSending || isLoading"
-                            style="min-height: 40px; max-height: 120px"
+                            class="chat-input"
                         ></textarea>
-                    </div>
-                    <button
-                        type="submit"
-                        :disabled="!newMessage.trim() || isSending || isLoading"
-                        class="btn btn-primary btn-icon"
-                        :title="trans('chat.send_message')"
-                    >
-                        <i v-if="!isSending" class="ki-outline ki-send fs-2"></i>
-                        <span v-else class="spinner-border spinner-border-sm" role="status"></span>
-                    </button>
-                </form>
-            </div>
+                        <button
+                            type="submit"
+                            class="chat-send"
+                            :disabled="!newMessage.trim() || isSending || isLoading"
+                            :title="trans('chat.send_message')"
+                        >
+                            <i v-if="!isSending" class="ki-outline ki-send"></i
+                            ><span v-else class="spinner-border spinner-border-sm" role="status"></span>
+                        </button>
+                    </form>
+                </div>
             </template>
-        </div>
+        </section>
     </Transition>
 </template>
-
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.26s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
 }
-
 .slide-enter-active,
 .slide-leave-active {
-    transition: transform 0.3s ease;
+    transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .slide-enter-from,
 .slide-leave-to {
-    transform: translateX(100%);
+    transform: translateX(105%);
 }
-
-.resize-none {
-    resize: none;
+.slide-enter-from:dir(rtl),
+.slide-leave-to:dir(rtl) {
+    transform: translateX(-105%);
 }
-
-.form-control-flush {
-    border: 1px solid #e4e6ef;
-    border-radius: 0.475rem;
+.chat-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(33, 18, 28, 0.48);
+    backdrop-filter: blur(4px);
 }
-
-.form-control-flush:focus {
-    border-color: #009ef7;
-    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.1);
+.chat-drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 1051;
+    display: flex;
+    flex-direction: column;
+    width: min(100vw, 500px);
+    background: #fcf8f6;
+    box-shadow: 0 0 70px #2f182c33;
+    overflow: hidden;
+    color: #4b3040;
 }
-
-/* Typing indicator bubble */
-.typing-indicator {
+.chat-header {
+    position: relative;
+    flex: none;
+    padding: 24px 28px 25px;
+    background: linear-gradient(116deg, #482138, #823b5b);
+    color: #fff;
+    overflow: hidden;
+}
+.chat-header::before {
+    content: '';
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    border: 1px solid #ffffff25;
+    border-radius: 50%;
+    inset-inline-end: -75px;
+    top: -115px;
+    pointer-events: none;
+}
+.chat-header::after {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 1px solid #ffffff1a;
+    border-radius: 50%;
+    inset-inline-end: -32px;
+    top: -85px;
+    pointer-events: none;
+}
+.chat-header-top,
+.chat-person {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+.chat-header-top {
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.chat-kicker {
     display: inline-flex;
     align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #f4d5de;
+}
+.chat-kicker-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #efad9e;
+    box-shadow: 0 0 0 5px #efad9e30;
+}
+.chat-close {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #ffffff40;
+    border-radius: 10px;
+    background: #ffffff15;
+    color: #fff;
+    font-size: 17px;
+    display: grid;
+    place-items: center;
+    transition: 0.2s;
+}
+.chat-close:hover {
+    background: #ffffff30;
+    transform: rotate(90deg);
+}
+.chat-person {
+    gap: 15px;
+    min-height: 76px;
+}
+.chat-avatar {
+    position: relative;
+    flex: none;
+    width: 72px;
+    height: 72px;
+    padding: 3px;
+    border: 1px solid #ffffff70;
+    border-radius: 19px;
+    background: #ffffff20;
+}
+.chat-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+}
+.chat-presence {
+    position: absolute;
+    bottom: -3px;
+    inset-inline-end: -3px;
+    width: 15px;
+    height: 15px;
+    border: 3px solid #743551;
+    border-radius: 50%;
+    background: #b8a4b0;
+}
+.chat-presence.online,
+.chat-status-dot.online {
+    background: #7ed3a6;
+}
+.chat-person-copy {
+    min-width: 0;
+}
+.chat-person h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 900;
+}
+.chat-person p {
+    margin: 1px 0 7px;
+    color: #eed0db;
+    font-size: 11px;
+}
+.chat-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #ead2db;
+    font-size: 11px;
+    font-weight: 700;
+}
+.chat-status.typing {
+    color: #ffd6bc;
+}
+.chat-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #bea8b2;
+}
+.chat-person-placeholder .chat-avatar,
+.chat-person-placeholder span {
+    background: #ffffff30;
+    animation: chat-shimmer 1.4s ease-in-out infinite;
+}
+.chat-person-placeholder span {
+    display: block;
+    width: 130px;
+    height: 12px;
+    margin: 8px 0;
+    border-radius: 5px;
+}
+.chat-person-placeholder span + span {
+    width: 78px;
+}
+.chat-safety {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    flex: none;
+    padding: 13px 26px;
+    background: #fff6e9;
+    border-bottom: 1px solid #f2e3d6;
+    color: #865b4d;
+}
+.chat-safety i {
+    font-size: 18px;
+    color: #bb8053;
+}
+.chat-safety p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.65;
+    font-weight: 700;
+}
+.chat-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 25px 25px 18px;
+    background: radial-gradient(circle at 10% 15%, #f7eef0 0, transparent 35%), #fcf8f6;
+    scrollbar-color: #e5cbd5 transparent;
+    scrollbar-width: thin;
+}
+.chat-thread {
+    max-width: 100%;
+}
+.chat-empty,
+.chat-blocked {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: 36px 26px;
+    color: #8b7380;
+}
+.chat-empty {
+    min-height: 100%;
+}
+.chat-empty-mark {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 18px;
+    border-radius: 22px;
+    background: #f4e5e9;
+    color: #a85072;
+    font-size: 31px;
+    box-shadow: 0 12px 30px #6b30421a;
+}
+.chat-empty h3,
+.chat-blocked h3 {
+    margin: 0;
+    color: #4f3542;
+    font-size: 16px;
+    font-weight: 900;
+}
+.chat-empty p,
+.chat-blocked p {
+    margin: 7px 0 0;
+    font-size: 12px;
+    line-height: 1.7;
+}
+.chat-blocked {
+    background: #fcf8f6;
+}
+.chat-blocked-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 21px;
+    padding: 11px 16px;
+    border-radius: 9px;
+    background: #8c3e60;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+.chat-blocked-link:hover {
+    color: #fff;
+    background: #71324e;
+}
+.chat-composer {
+    flex: none;
+    padding: 15px 21px 20px;
+    border-top: 1px solid #ebdfe2;
+    background: #fff;
+}
+.chat-compose-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 7px;
+    border: 1px solid #eadbe0;
+    border-radius: 14px;
+    background: #fdfaf9;
+    box-shadow: 0 4px 16px #6336490a;
+}
+.chat-compose-form:focus-within {
+    border-color: #bd829a;
+    box-shadow: 0 0 0 3px #a850721c;
+}
+.cd-emoji-wrap {
+    position: relative;
+    flex: none;
+}
+.cd-emoji-btn {
+    width: 37px;
+    height: 37px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    font-size: 19px;
+}
+.cd-emoji-btn:hover,
+.cd-emoji-btn--active {
+    background: #f5e8ec;
+}
+.chat-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 37px;
+    max-height: 120px;
+    padding: 8px 3px;
+    resize: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #4b3040;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.chat-input::placeholder {
+    color: #b09da6;
+}
+.chat-send {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 9px;
+    background: #a24469;
+    color: white;
+    font-size: 18px;
+    transition: 0.2s;
+}
+.chat-send:hover:not(:disabled) {
+    background: #843250;
+    transform: translateY(-2px);
+}
+.chat-send:disabled {
+    opacity: 0.45;
+}
+.cd-avatar--blurred {
+    filter: blur(6px) brightness(0.88);
+}
+.typing-indicator {
+    display: inline-flex;
     gap: 4px;
     padding: 12px 16px;
-    background-color: #e9ecef;
-    border-radius: 18px;
-    border-bottom-left-radius: 4px;
+    border-radius: 15px;
+    background: #f1e5e9;
 }
-
 .typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background-color: #6c757d;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
+    background: #a45270;
     animation: typing-bounce 1.4s ease-in-out infinite;
 }
-
-.typing-indicator span:nth-child(1) {
-    animation-delay: 0s;
-}
-
 .typing-indicator span:nth-child(2) {
     animation-delay: 0.2s;
 }
-
 .typing-indicator span:nth-child(3) {
     animation-delay: 0.4s;
 }
-
+.typing-dots span {
+    animation: typing-bounce 1.4s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
 @keyframes typing-bounce {
     0%,
     60%,
     100% {
+        opacity: 0.45;
         transform: translateY(0);
-        opacity: 0.6;
-    }
-    30% {
-        transform: translateY(-6px);
-        opacity: 1;
-    }
-}
-
-/* Typing dots in header */
-.typing-dots span {
-    animation: typing-dot 1.4s ease-in-out infinite;
-}
-
-.typing-dots span:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes typing-dot {
-    0%,
-    60%,
-    100% {
-        opacity: 0.3;
     }
     30% {
         opacity: 1;
+        transform: translateY(-4px);
     }
 }
-
-/* Typing status transition */
+@keyframes chat-shimmer {
+    50% {
+        opacity: 0.55;
+    }
+}
 .typing-status-enter-active,
 .typing-status-leave-active {
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s;
 }
-
 .typing-status-enter-from,
 .typing-status-leave-to {
     opacity: 0;
 }
-
-/* ─── Safety notice ─────────────────────────────────────── */
-.cd-avatar--blurred {
-    filter: blur(6px) brightness(0.88);
+@media (max-width: 550px) {
+    .chat-header {
+        padding: 20px 19px;
+    }
+    .chat-messages {
+        padding: 20px 15px;
+    }
+    .chat-composer {
+        padding: 12px;
+    }
+    .chat-safety {
+        padding: 12px 18px;
+    }
 }
-
-.cd-safety-notice {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    font-size: 0.76rem;
-}
-
-/* ─── Blocked state ──────────────────────────────────────── */
-.cd-blocked-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: rgba(255, 64, 64, 0.09);
-    border: 2px solid rgba(255, 64, 64, 0.22);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    color: #e03333;
-    box-shadow: 0 0 0 8px rgba(255, 64, 64, 0.05);
-    animation: cd-pulse-ring 2.4s ease-in-out infinite;
-}
-
-@keyframes cd-pulse-ring {
-    0%, 100% { box-shadow: 0 0 0 8px rgba(255, 64, 64, 0.05); }
-    50%       { box-shadow: 0 0 0 14px rgba(255, 64, 64, 0.0); }
-}
-
-.cd-unblock-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 22px;
-    border-radius: 12px;
-    background: rgba(255, 64, 64, 0.08);
-    border: 1px solid rgba(255, 64, 64, 0.24);
-    color: #cc2020;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cd-unblock-btn:hover {
-    background: rgba(255, 64, 64, 0.15);
-    border-color: rgba(255, 64, 64, 0.45);
-    box-shadow: 0 4px 14px rgba(200, 30, 30, 0.18);
-    color: #aa1010;
-}
-
-.cd-blocked-icon--unverified {
-    background: rgba(245, 158, 11, 0.09);
-    border-color: rgba(245, 158, 11, 0.28);
-    color: #b45309;
-    animation-name: cd-pulse-ring-amber;
-}
-
-@keyframes cd-pulse-ring-amber {
-    0%, 100% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.05); }
-    50%       { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0.0); }
-}
-
-.cd-unblock-btn--verify {
-    background: rgba(245, 158, 11, 0.08);
-    border-color: rgba(245, 158, 11, 0.28);
-    color: #92400e;
-}
-
-.cd-unblock-btn--verify:hover {
-    background: rgba(245, 158, 11, 0.16);
-    border-color: rgba(245, 158, 11, 0.5);
-    box-shadow: 0 4px 14px rgba(180, 83, 9, 0.18);
-    color: #78350f;
-}
-
-/* ─── Emoji button & wrapper ─────────────────────────────── */
-.cd-emoji-wrap {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.cd-emoji-btn {
-    width: 38px;
-    height: 38px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    background: #f9fafb;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.18s, border-color 0.18s, transform 0.18s;
-    padding: 0;
-}
-
-.cd-emoji-btn:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-    transform: scale(1.1);
-}
-
-.cd-emoji-btn--active {
-    background: #ede9fe;
-    border-color: #a78bfa;
-}
-
-/* Picker pop-in transition */
-.ep-pop-enter-active {
-    transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.ep-pop-leave-active {
-    transition: opacity 0.14s ease, transform 0.14s ease;
-}
-
-.ep-pop-enter-from,
-.ep-pop-leave-to {
-    opacity: 0;
-    transform: scale(0.92) translateY(6px);
-}
-
-/* ─── Typing bubble transition ───────────────────────────── */
-.typing-bubble-enter-active {
-    transition: all 0.3s ease-out;
-}
-
-.typing-bubble-leave-active {
-    transition: all 0.2s ease-in;
-}
-
-.typing-bubble-enter-from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.9);
-}
-
-.typing-bubble-leave-to {
-    opacity: 0;
-    transform: scale(0.9);
+@media (prefers-reduced-motion: reduce) {
+    .slide-enter-active,
+    .slide-leave-active,
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: none;
+    }
+    .typing-indicator span,
+    .typing-dots span {
+        animation: none;
+    }
 }
 </style>

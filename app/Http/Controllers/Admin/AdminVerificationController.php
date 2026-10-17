@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -46,11 +47,11 @@ class AdminVerificationController extends Controller
     {
         $admin = auth()->user();
 
-        if (!$admin->isAdmin()) {
+        if (! $admin->isAdmin()) {
             abort(403);
         }
 
-        if (!$user->verification_video_path || !Storage::disk('local')->exists($user->verification_video_path)) {
+        if (! $user->verification_video_path || ! Storage::disk('local')->exists($user->verification_video_path)) {
             abort(404, 'Video not found.');
         }
 
@@ -64,6 +65,7 @@ class AdminVerificationController extends Controller
     {
         $user->update([
             'is_verified' => true,
+            'verification_review_note' => null,
         ]);
 
         return redirect()->back()->with('success', "{$user->name} has been verified successfully.");
@@ -72,8 +74,9 @@ class AdminVerificationController extends Controller
     /**
      * Reject a user's verification — delete the video and reset so they can re-upload.
      */
-    public function reject(User $user)
+    public function reject(Request $request, User $user)
     {
+        $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:1000']]);
         // Delete the video file
         if ($user->verification_video_path && Storage::disk('local')->exists($user->verification_video_path)) {
             Storage::disk('local')->delete($user->verification_video_path);
@@ -83,6 +86,7 @@ class AdminVerificationController extends Controller
         $user->update([
             'verification_video_path' => null,
             'is_verified' => false,
+            'verification_review_note' => $data['note'],
         ]);
 
         return redirect()->back()->with('success', "{$user->name}'s verification has been rejected. They can re-upload.");

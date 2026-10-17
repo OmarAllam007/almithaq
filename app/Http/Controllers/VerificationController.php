@@ -14,13 +14,14 @@ class VerificationController extends Controller
     public function show()
     {
         $user = auth()->user();
-        if($user->isVerified()){
+        if ($user->isVerified()) {
             return redirect('/');
         }
 
         return Inertia::render('Verification/Upload', [
-            'hasVideo' => !empty($user->verification_video_path),
-            'isVerified' => (bool)$user->is_verified,
+            'hasVideo' => ! empty($user->verification_video_path),
+            'isVerified' => (bool) $user->is_verified,
+            'reviewNote' => $user->verification_review_note,
         ]);
     }
 
@@ -59,6 +60,7 @@ class VerificationController extends Controller
         $user->update([
             'verification_video_path' => $path,
             'is_verified' => false, // Reset verification status on new upload
+            'verification_review_note' => null,
         ]);
 
         return redirect()->route('verification.show')

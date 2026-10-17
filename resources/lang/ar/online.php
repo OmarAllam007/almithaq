@@ -4,6 +4,7 @@ return [
     'online_members' => 'الأعضاء المتصلين',
     'members_currently_active_on_the_platform' => 'الأعضاء المتصلين حاليا على المنصة',
     'nationality' => 'الجنسية',
+    'all_countries' => 'جميع الدول',
     'residence' => 'المنطقة',
     'all' => 'جميع الجنسيات',
     'clear_filters' => 'إعادة تعيين الفلاتر',

@@ -1,14 +1,15 @@
+import { createPinia } from 'pinia';
 import { ZiggyVue } from 'ziggy-js';
 import '../css/app.css';
-import { createPinia } from 'pinia';
 
+import AdminLayout from '@/pages/layout/AdminLayout.vue';
 import AppLayout from '@/pages/layout/AppLayout.vue';
 import LandingLayout from '@/pages/layout/LandingLayout.vue';
+import { enableSearchableSelects } from '@/utils/searchableSelects';
 import { createInertiaApp, Link, router } from '@inertiajs/vue3';
+import { configureEcho } from '@laravel/echo-vue';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
-import { configureEcho } from '@laravel/echo-vue';
-import AdminLayout from '@/pages/layout/AdminLayout.vue';
 
 configureEcho({
     broadcaster: 'reverb',
@@ -37,9 +38,14 @@ createInertiaApp({
             page.default.layout = AdminLayout;
         } else if (name.includes('Landing')) {
             page.default.layout = LandingLayout;
-        } else if (name.includes('Login') || name.includes('Register')
-            || name.includes('ForgotPassword') || name.includes('Auth/ResetPassword')
-            || name.includes('Verification') || name.includes('Auth/Signup')) {
+        } else if (
+            name.includes('Login') ||
+            name.includes('Register') ||
+            name.includes('ForgotPassword') ||
+            name.includes('Auth/ResetPassword') ||
+            name.includes('Verification') ||
+            name.includes('Auth/Signup')
+        ) {
             page.default.layout = null;
         } else {
             page.default.layout = AppLayout;
@@ -54,6 +60,7 @@ createInertiaApp({
             .use(createPinia())
             .component('ILink', Link)
             .mount(el);
+        enableSearchableSelects();
     },
     progress: {
         color: '#4B5563',

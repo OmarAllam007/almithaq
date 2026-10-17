@@ -1,88 +1,149 @@
 <script setup lang="ts">
 import { useLang } from '@/composables/useLang';
 const { trans } = useLang();
-interface Props {
-    profileViews: number;
-    likes: number;
-    conversations: number;
-    daysSinceJoined: number;
-}
-
-defineProps<Props>();
+defineProps<{ profileViews: number; likes: number; conversations: number; daysSinceJoined: number }>();
 </script>
 
 <template>
-    <div class="col-xl-12 mb-8">
-        <p class="fs-2 fw-bold mb-5">{{trans('home.stats')}}</p>
-        <div class="row g-4">
-            <div class="col-6 col-md-3">
-                <div class="stat-card rounded-3 bg-white px-6 py-5 shadow-sm d-flex align-items-center gap-4">
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#fff0f7;">
-                        <i class="ki-outline ki-eye fs-2" style="color:#d02e79;"></i>
-                    </div>
-                    <div>
-                        <span class="fw-bolder d-block fs-2x lh-1 text-gray-800">{{ profileViews }}</span>
-                        <span class="fw-bold fs-7 text-gray-500 mt-1 d-block">{{trans('home.profile_views')}}</span>
-                    </div>
-                </div>
+    <div class="stats-grid">
+        <div class="stat-tile">
+            <span class="stat-symbol rose"><i class="ki-outline ki-eye"></i></span>
+            <div>
+                <strong>{{ profileViews }}</strong
+                ><span>{{ trans('home.profile_views') }}</span>
             </div>
-
-            <div class="col-6 col-md-3">
-                <div class="stat-card rounded-3 bg-white px-6 py-5 shadow-sm d-flex align-items-center gap-4">
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#fff0f7;">
-                        <i class="ki-solid ki-heart-circle fs-2" style="color:#d02e79;"></i>
-                    </div>
-                    <div>
-                        <span class="fw-bolder d-block fs-2x lh-1 text-gray-800">{{ likes }}</span>
-                        <span class="fw-semibold fs-7 text-gray-500 mt-1 d-block">{{trans('home.liked_you')}}</span>
-                    </div>
-                </div>
+            <span class="stat-index">01</span>
+        </div>
+        <div class="stat-tile">
+            <span class="stat-symbol coral"><i class="ki-solid ki-heart-circle"></i></span>
+            <div>
+                <strong>{{ likes }}</strong
+                ><span>{{ trans('home.liked_you') }}</span>
             </div>
-
-            <div class="col-6 col-md-3">
-                <div class="stat-card rounded-3 bg-white px-6 py-5 shadow-sm d-flex align-items-center gap-4">
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#f0f4ff;">
-                        <i class="ki-outline ki-message-text-2 fs-2 text-primary"></i>
-                    </div>
-                    <div>
-                        <span class="fw-bolder d-block fs-2x lh-1 text-gray-800">{{ conversations }}</span>
-                        <span class="fw-semibold fs-7 text-gray-500 mt-1 d-block">{{trans('home.conversations')}}</span>
-                    </div>
-                </div>
+            <span class="stat-index">02</span>
+        </div>
+        <div class="stat-tile">
+            <span class="stat-symbol plum"><i class="ki-outline ki-message-text-2"></i></span>
+            <div>
+                <strong>{{ conversations }}</strong
+                ><span>{{ trans('home.conversations') }}</span>
             </div>
-
-            <div class="col-6 col-md-3">
-                <div class="stat-card rounded-3 bg-white px-6 py-5 shadow-sm d-flex align-items-center gap-4">
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#fffbf0;">
-                        <i class="ki-outline ki-calendar fs-2 text-warning"></i>
-                    </div>
-                    <div>
-                        <span class="fw-bolder d-block fs-2x lh-1 text-gray-800">{{ daysSinceJoined }}</span>
-                        <span class="fw-semibold fs-7 text-gray-500 mt-1 d-block">{{trans('home.days_since_joined')}}</span>
-                    </div>
-                </div>
+            <span class="stat-index">03</span>
+        </div>
+        <div class="stat-tile">
+            <span class="stat-symbol gold"><i class="ki-outline ki-calendar"></i></span>
+            <div>
+                <strong>{{ daysSinceJoined }}</strong
+                ><span>{{ trans('home.days_since_joined') }}</span>
             </div>
+            <span class="stat-index">04</span>
         </div>
     </div>
 </template>
 
 <style scoped>
-.stat-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    cursor: default;
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
 }
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(208, 46, 121, 0.15) !important;
+.stat-tile {
+    min-width: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 21px 20px;
+    background: #fff;
+    border: 1px solid #f1e8e8;
+    border-radius: 17px;
+    box-shadow: 0 8px 28px #6130480a;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
-
-.stat-card:hover .stat-icon {
-    transform: scale(1.12);
-    transition: transform 0.25s ease;
+.stat-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 13px 28px #61304819;
 }
-
-.stat-icon {
-    transition: transform 0.25s ease;
+.stat-symbol {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+}
+.rose {
+    background: #fce9ee;
+    color: #b94b72;
+}
+.coral {
+    background: #fff0e9;
+    color: #d46d5f;
+}
+.plum {
+    background: #f0e9f2;
+    color: #86507c;
+}
+.gold {
+    background: #fbf2e1;
+    color: #b98b44;
+}
+.stat-tile div {
+    min-width: 0;
+}
+.stat-tile strong {
+    display: block;
+    font-size: 24px;
+    line-height: 1.2;
+    color: #3e2735;
+    font-weight: 800;
+}
+.stat-tile div span {
+    display: block;
+    margin-top: 3px;
+    color: #8d7a84;
+    font-size: 11px;
+    line-height: 1.5;
+    font-weight: 700;
+}
+.stat-index {
+    position: absolute;
+    top: 13px;
+    inset-inline-end: 15px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #d5c8cc;
+}
+@media (max-width: 1199px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 500px) {
+    .stats-grid {
+        gap: 9px;
+    }
+    .stat-tile {
+        padding: 16px 12px;
+        gap: 9px;
+    }
+    .stat-symbol {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+        font-size: 17px;
+    }
+    .stat-tile strong {
+        font-size: 19px;
+    }
+    .stat-tile div span {
+        font-size: 10px;
+    }
+    .stat-index {
+        display: none;
+    }
 }
 </style>

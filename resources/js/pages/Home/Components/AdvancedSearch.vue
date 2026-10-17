@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import Select2Input from '@/components/Inputs/Select2Input.vue';
+import { useLang } from '@/composables/useLang';
+import { router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import noUiSlider from 'nouislider';
 import 'nouislider/dist/nouislider.css';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
-import axios from 'axios';
-import { useLang } from '@/composables/useLang';
-import Select2Input from '@/components/Inputs/Select2Input.vue';
 const { trans } = useLang();
 const page = usePage();
 const isRtl = computed(() => page.props.locale === 'ar');
@@ -69,7 +69,7 @@ const marriageStatusOptions = computed(() =>
 
 const parseCountryValue = (v: number | string): number | '' => (v === '' ? '' : Number(v));
 
-const ageSlider = ref<HTMLElement | null>(null);
+const ageSlider = ref<(HTMLElement & { noUiSlider?: any }) | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
 const initializeAgeSlider = (): void => {
@@ -81,7 +81,7 @@ const initializeAgeSlider = (): void => {
         start: [filters.value.age_min, filters.value.age_max],
         connect: true,
         direction: isRtl.value ? 'rtl' : 'ltr',
-        range: { min: 18, max: 80 },
+        range: { min: 18, max: 100 },
         step: 1,
     });
 
@@ -163,8 +163,8 @@ const resetFilters = () => {
 </script>
 
 <template>
-    <div class="col-xl-12 mb-8">
-        <div class="card card-flush">
+    <div class="search-panel">
+        <div class="card card-flush search-card">
             <div class="card-header border-0 pt-5">
                 <h3 class="card-title align-items-start flex-column">
                     <span class="card-label fw-bold text-gray-900">{{ trans('home.quick_search') }}</span>
@@ -173,8 +173,8 @@ const resetFilters = () => {
             </div>
 
             <div class="card-body pt-4">
-                <div class="row g-5">
-                    <div class="col-md-6 col-lg-3">
+                <div class="row g-4 quick-search-fields">
+                    <div class="col-md-6 col-lg-3 quick-search-field">
                         <label class="form-label fw-semibold text-gray-700">{{ trans('home.nationality') }}</label>
                         <Select2Input
                             :model-value="filters.nationality"
@@ -184,7 +184,7 @@ const resetFilters = () => {
                         />
                     </div>
 
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6 col-lg-3 quick-search-field">
                         <label class="form-label fw-semibold text-gray-700">{{ trans('home.residence') }}</label>
                         <Select2Input
                             :model-value="filters.residence"
@@ -194,7 +194,7 @@ const resetFilters = () => {
                         />
                     </div>
 
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6 col-lg-3 quick-search-field">
                         <label class="form-label fw-semibold text-gray-700">{{ trans('home.city') }}</label>
                         <Select2Input
                             :model-value="filters.city_id"
@@ -205,7 +205,7 @@ const resetFilters = () => {
                         />
                     </div>
 
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6 col-lg-3 quick-search-field">
                         <label class="form-label fw-semibold text-gray-700">{{ trans('home.marriage_status') }}</label>
                         <Select2Input
                             :model-value="filters.marriage_status"
@@ -215,21 +215,24 @@ const resetFilters = () => {
                         />
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold text-gray-700">
-                            {{ trans('home.age_range') }}:
-                            <span class="text-gray-800 fw-bold">{{ filters.age_min }} – {{ filters.age_max }}</span>
-                        </label>
-                        <div ref="ageSlider" class=" mt-3 mb-2"></div>
+                    <div class="quick-search-age col-12">
+                        <div class="quick-search-age__heading">
+                            <label class="form-label">{{ trans('home.age_range') }}</label>
+                            <span class="quick-search-age__values"
+                                ><b>{{ filters.age_min }}</b
+                                ><span>–</span><b>{{ filters.age_max }}</b></span
+                            >
+                        </div>
+                        <div ref="ageSlider" class="advanced-search-slider"></div>
                     </div>
 
                     <div class="col-12">
                         <div class="d-flex justify-content-end gap-3">
-                            <button type="button" class="btn btn-light" @click="resetFilters">
+                            <button type="button" class="btn btn-light search-reset" @click="resetFilters">
                                 <i class="ki-outline ki-arrows-circle fs-2"></i>
                                 {{ trans('home.reset') }}
                             </button>
-                            <button type="button" class="btn text-white" style="background-color:#d02e79;" @click="handleSearch">
+                            <button type="button" class="btn search-submit text-white" @click="handleSearch">
                                 <i class="ki-outline ki-magnifier fs-2 text-white"></i>
                                 {{ trans('home.search') }}
                             </button>
@@ -243,29 +246,29 @@ const resetFilters = () => {
 
 <style>
 .advanced-search-slider {
-    --bs-component-active-bg: rgb(208, 46, 121);
+    --bs-component-active-bg: #a34268;
 }
 
 .advanced-search-slider.noUi-target {
     border: none;
     box-shadow: none;
-    background: var(--bs-gray-200, #f1f1f4);
+    background: #f0e6e9;
     height: 6px;
     border-radius: 3px;
 }
 
 .advanced-search-slider .noUi-connect {
-    background: rgb(208, 46, 121);
+    background: #a34268;
     border-radius: 3px;
 }
 
 .advanced-search-slider.noUi-horizontal .noUi-handle {
     border-radius: 50%;
-    background: rgb(208, 46, 121) !important;
+    background: #a34268 !important;
     border: 2.5px solid #fff !important;
     box-shadow:
-        0 0 0 2px rgb(208, 46, 121),
-        0 2px 6px rgba(208, 46, 121, 0.35) !important;
+        0 0 0 2px #a34268,
+        0 2px 6px rgba(163, 66, 104, 0.35) !important;
     width: 18px !important;
     height: 18px !important;
     top: -7px !important;
@@ -286,5 +289,118 @@ const resetFilters = () => {
 .advanced-search-slider .noUi-handle::before,
 .advanced-search-slider .noUi-handle::after {
     display: none;
+}
+</style>
+
+<style scoped>
+.search-card {
+    border-radius: 19px;
+    border: 1px solid #f0e7e7;
+    box-shadow: 0 8px 28px #6130480b;
+    overflow: hidden;
+}
+.search-card :deep(.card-header) {
+    padding: 27px 30px 0;
+    min-height: 88px;
+}
+.search-card :deep(.card-label) {
+    color: #3d2734 !important;
+    font-size: 19px;
+}
+.search-card :deep(.card-body) {
+    padding: 22px 30px 28px;
+}
+.search-card .form-label {
+    display: block;
+    color: #765b68 !important;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    margin-bottom: 9px;
+}
+.search-card :deep(.form-control),
+.search-card :deep(.form-select) {
+    border-radius: 10px;
+    min-height: 44px;
+    border-color: #e9dce1;
+    background-color: #fffcfb;
+    color: #503845;
+    font-size: 12px;
+}
+.search-card :deep(.select2-container) {
+    width: 100% !important;
+}
+.search-card :deep(.select2-container--bootstrap5 .select2-selection) {
+    min-height: 44px;
+    border: 1px solid #e9dce1;
+    border-radius: 10px;
+    background: #fffcfb;
+    box-shadow: none;
+}
+.search-card :deep(.select2-container--bootstrap5.select2-container--focus .select2-selection),
+.search-card :deep(.select2-container--bootstrap5.select2-container--open .select2-selection) {
+    border-color: #b66183;
+    box-shadow: 0 0 0 3px #a342681c;
+}
+.search-card :deep(.select2-container--disabled .select2-selection) {
+    background: #f7f1f3;
+}
+.quick-search-age {
+    margin-top: 3px;
+    padding-top: 20px;
+    border-top: 1px solid #f2e8eb;
+}
+.quick-search-age__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.quick-search-age__heading .form-label {
+    margin: 0;
+}
+.quick-search-age__values {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #a34268;
+    font-size: 11px;
+}
+.quick-search-age__values b {
+    min-width: 30px;
+    padding: 3px 7px;
+    border-radius: 7px;
+    background: #f8e9ef;
+    text-align: center;
+    font-weight: 850;
+}
+.quick-search-age .advanced-search-slider {
+    margin: 21px 11px 11px;
+}
+.search-submit {
+    background: #a34268;
+    border-radius: 9px;
+    min-height: 42px;
+    padding-inline: 19px;
+}
+.search-submit:hover {
+    background: #843153;
+}
+.search-reset {
+    background: #f8e9ef;
+    color: #88405f;
+    border-radius: 9px;
+    min-height: 42px;
+}
+@media (max-width: 767px) {
+    .search-card :deep(.card-header) {
+        padding: 20px 18px 0;
+    }
+    .search-card :deep(.card-body) {
+        padding: 14px 18px 22px;
+    }
+    .quick-search-age {
+        margin-top: 0;
+    }
 }
 </style>
