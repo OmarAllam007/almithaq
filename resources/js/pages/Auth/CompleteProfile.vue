@@ -168,8 +168,6 @@ function getStepValidationErrors(step: number): string[] {
     } else if (step === 4) {
         if (!form.monthly_income) errors.push(__('complete_profile.validation-monthly-income'));
         if (!form.health_status) errors.push(__('complete_profile.validation-health-status'));
-        if (!form.about_partner) errors.push(__('complete_profile.validation-about-partner'));
-        if (!form.about_self) errors.push(__('complete_profile.validation-about-self'));
         if (!form.full_name) errors.push(__('complete_profile.validation-full-name'));
     }
 
@@ -208,7 +206,7 @@ function validateCurrentStep(): boolean {
         }
         return baseFields;
     } else if (step === 4) {
-        return !!(form.monthly_income && form.health_status && form.about_partner && form.about_self && form.full_name);
+        return !!(form.monthly_income && form.health_status && form.full_name);
     }
 
     return true;
@@ -578,12 +576,12 @@ function handleSubmit() {
                                     </div>
 
                                     <div class="fv-row mb-5">
-                                        <label class="required form-label">{{ __('complete_profile.about-partner') }}</label>
+                                        <label class="form-label">{{ __('complete_profile.about-partner') }}</label>
                                         <textarea class="form-control form-control-lg" rows="4" v-model="form.about_partner"></textarea>
                                     </div>
 
                                     <div class="fv-row mb-5">
-                                        <label class="required form-label">{{ __('complete_profile.about-self') }}</label>
+                                        <label class="form-label">{{ __('complete_profile.about-self') }}</label>
                                         <textarea class="form-control form-control-lg" rows="4" v-model="form.about_self"></textarea>
                                     </div>
                                 </div>

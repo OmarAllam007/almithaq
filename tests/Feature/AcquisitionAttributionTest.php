@@ -47,7 +47,7 @@ it('persists attribution across navigation until registration', function () {
     get('/?utm_source=facebook&utm_campaign=launch&utm_content=tunisia');
     get(route('signup'))->assertSuccessful();
 
-    post(route('signup.store'), signupPayload())->assertRedirect(route('verification.notice'));
+    post(route('signup.store'), signupPayload())->assertRedirect(route('complete-profile'));
 
     expect(User::firstWhere('email', 'omar@example.com')->acquisition)
         ->utm_source->toBe('facebook')
@@ -59,7 +59,7 @@ it('stores nothing when the visitor arrives without utm parameters', function ()
     Notification::fake();
 
     get('/')->assertSessionMissing(CaptureUtmParameters::SESSION_KEY);
-    post(route('signup.store'), signupPayload())->assertRedirect(route('verification.notice'));
+    post(route('signup.store'), signupPayload())->assertRedirect(route('complete-profile'));
 
     expect(UserAcquisition::count())->toBe(0);
     expect(User::firstWhere('email', 'omar@example.com'))->not->toBeNull();

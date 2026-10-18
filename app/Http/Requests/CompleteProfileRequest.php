@@ -46,8 +46,8 @@ class CompleteProfileRequest extends FormRequest
             // Additional Information
             'monthly_income' => ['required', 'integer'],
             'health_status' => ['required', 'integer'],
-            'about_partner' => ['required', 'string', 'max:5000'],
-            'about_self' => ['required', 'string', 'max:5000'],
+            'about_partner' => ['nullable', 'string', 'max:5000'],
+            'about_self' => ['nullable', 'string', 'max:5000'],
             'full_name' => ['required', 'string', 'max:255'],
         ];
     }

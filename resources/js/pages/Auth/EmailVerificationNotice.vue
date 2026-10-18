@@ -87,6 +87,8 @@ const resend = () => {
                         </span>
                     </button>
 
+                    <Link :href="route('home')" class="verify-skip">{{ trans('email_verification.continue_browsing') }}</Link>
+
                     <div class="verify-footer">
                         <div>
                             <strong>{{ trans('email_verification.wrong_email') }}</strong>

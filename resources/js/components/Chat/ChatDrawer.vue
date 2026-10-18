@@ -14,6 +14,7 @@ import MessageItem from './MessageItem.vue';
 const { trans } = useLang();
 const { activeConversationId } = useActiveChatStore();
 const { markConversationRead } = useUnreadConversations();
+const needsEmailVerification = ref(false);
 
 interface Message {
     id: number;
@@ -227,7 +228,11 @@ const sendMessage = async () => {
         messages.value.push(response.data.message);
         scrollToBottom();
     } catch (error) {
-        console.error('Failed to send message:', error);
+        if (axios.isAxiosError(error) && error.response?.data?.reason === 'email_unverified') {
+            needsEmailVerification.value = true;
+        } else {
+            console.error('Failed to send message:', error);
+        }
         newMessage.value = messageText;
     } finally {
         isSending.value = false;
@@ -452,6 +457,11 @@ watch(
                             ><div v-if="otherUserTyping" class="typing-indicator"><span></span><span></span><span></span></div
                         ></Transition>
                     </div>
+                </div>
+                <div v-if="needsEmailVerification" class="chat-verify-notice">
+                    <i class="ki-outline ki-sms"></i>
+                    <span>{{ trans('email_verification.verify_to_message') }}</span>
+                    <a :href="route('verification.notice')">{{ trans('email_verification.verify_cta') }}</a>
                 </div>
                 <div class="chat-composer">
                     <form @submit.prevent="sendMessage" class="chat-compose-form">
@@ -786,6 +796,22 @@ watch(
 .chat-blocked-link:hover {
     color: #fff;
     background: #71324e;
+}
+.chat-verify-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: #fef0f7;
+    border-top: 1px solid #f9a8d4;
+    color: #9d174d;
+    font-size: 13px;
+}
+.chat-verify-notice a {
+    color: #d02e79;
+    font-weight: 700;
+    text-decoration: underline;
 }
 .chat-composer {
     flex: none;

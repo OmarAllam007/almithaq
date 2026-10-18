@@ -44,6 +44,7 @@
                             <a href="{{ $verificationUrl }}" style="display:inline-block;padding:15px 28px;border:1px solid #963e62;border-radius:10px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;line-height:1.4;">{{ $isArabic ? 'تأكيد بريدي الإلكتروني' : 'Verify Email Address' }} &nbsp; ↗</a>
                         </td>
                     </tr></table>
+                    <p style="margin:22px 0 0;padding:12px 15px;border-radius:9px;background:#faf1f4;color:#765366;font-size:12px;line-height:1.8;">✦ &nbsp; {{ $isArabic ? 'إذا وجدت هذه الرسالة في مجلد الرسائل غير المرغوب فيها (Spam)، انقلها إلى صندوق الوارد حتى لا تفوتك رسائل خطوبة القادمة.' : 'If this email landed in Spam or Junk, move it to your inbox so you don’t miss future messages from Khotobah.' }}</p>
                     <p style="margin:22px 0 0;color:#907985;font-size:12px;line-height:1.8;">{{ $isArabic ? 'إذا لم تنشئ حساباً في خطوبة، يمكنك تجاهل هذه الرسالة.' : 'If you did not create a Khotobah account, you can safely ignore this email.' }}</p>
                 </td></tr>
                 <tr><td style="padding:25px 34px;border-top:1px solid #f0e5e8;background:#fffafa;">

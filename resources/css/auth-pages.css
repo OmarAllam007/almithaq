@@ -909,6 +909,15 @@
     color: #644b58;
     font-size: 12px;
 }
+.verify-skip {
+    display: block;
+    margin-top: 14px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #d02e79;
+    text-decoration: underline;
+}
 .verify-logout {
     display: inline-flex;
     align-items: center;
