@@ -106,8 +106,8 @@ const form = useForm({
     marriage_type: props.user.marriage_type ?? '',
     marriage_status: props.user.marriage_status ?? '',
     child_count: props.user.child_count ?? '',
-    religion: props.user.religion ?? '',
-    ethnicity: props.user.ethnicity ?? '',
+    religion: String(props.user.religion ?? 1),
+    ethnicity: String(props.user.ethnicity ?? 1),
     nationality: props.user.nationality ?? '',
     residence: props.user.residence ?? '',
     city: props.user.city ?? '',
@@ -127,6 +127,14 @@ const form = useForm({
     health_status: props.user.health_status ?? '',
     about_self: props.user.about_self ?? '',
     about_partner: props.user.about_partner ?? '',
+});
+
+const isHusband = computed(() => Number(form.registration_type) === 1);
+
+watch(isHusband, (husband) => {
+    if (!husband) {
+        form.beard = '';
+    }
 });
 
 const filteredCities = computed(() => {
@@ -428,27 +436,15 @@ const confirmAction = () => {
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Religion</label>
-                                    <input
-                                        v-model="form.religion"
-                                        type="number"
-                                        class="form-control"
-                                        min="1"
-                                        :class="{ 'is-invalid': form.errors.religion }"
-                                        placeholder="1 = Islam"
-                                    />
-                                    <div v-if="form.errors.religion" class="invalid-feedback">{{ form.errors.religion }}</div>
+                                    <select v-model="form.religion" class="form-select" disabled>
+                                        <option value="1">Islamic only</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Ethnicity</label>
-                                    <input
-                                        v-model="form.ethnicity"
-                                        type="number"
-                                        class="form-control"
-                                        min="1"
-                                        :class="{ 'is-invalid': form.errors.ethnicity }"
-                                        placeholder="Code"
-                                    />
-                                    <div v-if="form.errors.ethnicity" class="invalid-feedback">{{ form.errors.ethnicity }}</div>
+                                    <select v-model="form.ethnicity" class="form-select" disabled>
+                                        <option value="1">Arab</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -600,7 +596,7 @@ const confirmAction = () => {
                                     </select>
                                     <div v-if="form.errors.smoking" class="invalid-feedback">{{ form.errors.smoking }}</div>
                                 </div>
-                                <div class="col-md-3">
+                                <div v-if="isHusband" class="col-md-3">
                                     <label class="form-label">Beard</label>
                                     <select v-model="form.beard" class="form-select" :class="{ 'is-invalid': form.errors.beard }">
                                         <option value="">— Select —</option>

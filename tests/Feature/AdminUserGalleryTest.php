@@ -63,3 +63,21 @@ it('denies a non admin the original photo route', function () {
         ->get(route('admin.approvals.original', $image))
         ->assertForbidden();
 });
+
+it('does not store a beard value for a wife account', function () {
+    $admin = User::factory()->create(['is_admin' => true, 'profile_completed' => true]);
+    $member = User::factory()->create(['registration_type' => 2, 'beard' => true]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.users.update', $member), [
+            'username' => $member->username,
+            'email' => $member->email,
+            'registration_type' => 2,
+            'religion' => '1',
+            'ethnicity' => '1',
+            'beard' => null,
+        ])
+        ->assertRedirect();
+
+    expect($member->fresh()->beard)->toBeNull();
+});
