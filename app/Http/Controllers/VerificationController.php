@@ -14,9 +14,6 @@ class VerificationController extends Controller
     public function show()
     {
         $user = auth()->user();
-        if ($user->isVerified()) {
-            return redirect('/');
-        }
 
         return Inertia::render('Verification/Upload', [
             'hasVideo' => ! empty($user->verification_video_path),
@@ -59,11 +56,10 @@ class VerificationController extends Controller
         // Update user record
         $user->update([
             'verification_video_path' => $path,
-            'is_verified' => false, // Reset verification status on new upload
             'verification_review_note' => null,
         ]);
 
         return redirect()->route('verification.show')
-            ->with('success', 'Your verification video has been uploaded successfully. Please wait for admin approval.');
+            ->with('success', 'Your verification video has been uploaded successfully.');
     }
 }

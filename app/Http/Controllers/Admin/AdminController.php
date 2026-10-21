@@ -18,7 +18,7 @@ class AdminController extends Controller
             'stats' => [
                 'users' => User::count(),
                 'activeUsers' => User::where('is_locked', false)->count(),
-                'pendingVerifications' => User::whereNotNull('verification_video_path')->where('is_verified', false)->count(),
+                'pendingVerifications' => User::whereNotNull('verification_video_path')->count(),
                 'pendingImages' => ProfileImage::where('is_approved', false)->count(),
                 'payments' => Payment::count(),
                 'countries' => Country::count(),

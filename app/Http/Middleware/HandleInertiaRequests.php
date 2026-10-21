@@ -65,7 +65,7 @@ class HandleInertiaRequests extends Middleware
                 })
                 ->count() : 0,
             'pending_image_requests' => $user
-                ? ImageRequest::where('requested_user_id', $user->id)->where('status', 'pending')->count()
+                ? ImageRequest::where('requested_user_id', $user->id)->where('status', 'pending')->whereHas('requester')->count()
                 : 0,
         ];
     }

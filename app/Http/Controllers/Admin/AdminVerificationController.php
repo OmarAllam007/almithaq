@@ -11,13 +11,13 @@ use Inertia\Inertia;
 class AdminVerificationController extends Controller
 {
     /**
-     * List all users who have uploaded verification videos and are pending approval.
+     * List all users who have uploaded a verification video. Accounts are
+     * verified on signup, so this queue is an optional review, not a gate.
      */
     public function index()
     {
         $pendingUsers = User::query()
             ->whereNotNull('verification_video_path')
-            ->where('is_verified', false)
             ->orderBy('updated_at', 'desc')
             ->get()
             ->map(function (User $user) {

@@ -20,6 +20,7 @@ class ImageRequestController extends Controller
     {
         $receivedRequests = auth()->user()
             ->receivedImageRequests()
+            ->whereHas('requester')
             ->with(['requester.mainProfileImage'])
             ->latest()
             ->get()
