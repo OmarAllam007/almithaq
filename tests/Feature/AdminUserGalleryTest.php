@@ -74,7 +74,6 @@ it('does not store a beard value for a wife account', function () {
             'email' => $member->email,
             'registration_type' => 2,
             'religion' => '1',
-            'ethnicity' => '1',
             'beard' => null,
         ])
         ->assertRedirect();

@@ -55,7 +55,6 @@ const form = useForm({
     marriage_status: '',
     child_count: '',
     religion: '1',
-    ethnicity: '1',
     nationality: '',
     residence: '',
     city: '',
@@ -282,12 +281,6 @@ const submit = () => {
                                     <label class="form-label">Religion</label>
                                     <select v-model="form.religion" class="form-select" disabled>
                                         <option value="1">Islamic only</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Ethnicity</label>
-                                    <select v-model="form.ethnicity" class="form-select" disabled>
-                                        <option value="1">Arab</option>
                                     </select>
                                 </div>
                             </div>

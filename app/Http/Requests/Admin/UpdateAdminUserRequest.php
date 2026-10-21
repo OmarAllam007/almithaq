@@ -39,7 +39,6 @@ class UpdateAdminUserRequest extends FormRequest
             'marriage_status' => ['nullable', 'integer'],
             'child_count' => ['nullable', 'integer', 'min:0', 'max:50'],
             'religion' => ['nullable', 'string', 'max:255'],
-            'ethnicity' => ['nullable', 'string', 'max:255'],
 
             // Location
             'nationality' => ['nullable', 'integer', 'exists:countries,id'],

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Enums\MarriageStatus;
+use App\Models\Enums\MarriageType;
 use App\Models\ImageRequest;
 use App\Models\User;
 use Carbon\Carbon;
@@ -29,12 +30,16 @@ class UserInteractionService
 
             return [
                 'id' => $user->id,
+                'name' => $user->name,
                 'username' => $user->username,
                 'age' => $user->age,
+                'registration_type' => $user->registration_type,
                 'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
                 'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
                 'city' => City::find($user->city)?->only('id', 'name', 'ar_name'),
-                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_status' => $user->marriage_status,
+                'marriage_status_label' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_type_label' => MarriageType::tryFrom($user->marriage_type)?->label(),
                 'mainProfileImage' => $canViewImages
                     ? ($image?->original_url ?? $image?->thumbnail_url)
                     : $image?->thumbnail_url,
@@ -70,12 +75,16 @@ class UserInteractionService
 
             return [
                 'id' => $user->id,
+                'name' => $user->name,
                 'username' => $user->username,
                 'age' => $user->age,
+                'registration_type' => $user->registration_type,
                 'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
                 'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
                 'city' => City::find($user->city)?->only('id', 'name', 'ar_name'),
-                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_status' => $user->marriage_status,
+                'marriage_status_label' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_type_label' => MarriageType::tryFrom($user->marriage_type)?->label(),
                 'mainProfileImage' => $canViewImages
                     ? ($image?->original_url ?? $image?->thumbnail_url)
                     : $image?->thumbnail_url,
@@ -107,12 +116,16 @@ class UserInteractionService
 
             return [
                 'id' => $user->id,
+                'name' => $user->name,
                 'username' => $user->username,
                 'age' => $user->age,
+                'registration_type' => $user->registration_type,
                 'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
                 'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
                 'city' => City::find($user->city)?->only('id', 'name', 'ar_name'),
-                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_status' => $user->marriage_status,
+                'marriage_status_label' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_type_label' => MarriageType::tryFrom($user->marriage_type)?->label(),
                 'mainProfileImage' => $canViewImages
                     ? ($image?->original_url ?? $image?->thumbnail_url)
                     : $image?->thumbnail_url,
@@ -144,12 +157,16 @@ class UserInteractionService
 
             return [
                 'id' => $user->id,
+                'name' => $user->name,
                 'username' => $user->username,
                 'age' => $user->age,
+                'registration_type' => $user->registration_type,
                 'nationality' => Country::find($user->nationality)?->only('id', 'name', 'ar_name', 'flag'),
                 'residence' => Country::find($user->residence)?->only('id', 'name', 'ar_name', 'flag'),
                 'city' => City::find($user->city)?->only('id', 'name', 'ar_name'),
-                'marriage_status' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_status' => $user->marriage_status,
+                'marriage_status_label' => MarriageStatus::tryFrom($user->marriage_status)?->label(),
+                'marriage_type_label' => MarriageType::tryFrom($user->marriage_type)?->label(),
                 'mainProfileImage' => $canViewImages
                     ? ($image?->original_url ?? $image?->thumbnail_url)
                     : $image?->thumbnail_url,

@@ -47,7 +47,6 @@ interface AdminUser {
     marriage_status: number | null;
     child_count: number | null;
     religion: number | null;
-    ethnicity: number | null;
     nationality: number | null;
     residence: number | null;
     city: number | null;
@@ -107,7 +106,6 @@ const form = useForm({
     marriage_status: props.user.marriage_status ?? '',
     child_count: props.user.child_count ?? '',
     religion: String(props.user.religion ?? 1),
-    ethnicity: String(props.user.ethnicity ?? 1),
     nationality: props.user.nationality ?? '',
     residence: props.user.residence ?? '',
     city: props.user.city ?? '',
@@ -438,12 +436,6 @@ const confirmAction = () => {
                                     <label class="form-label">Religion</label>
                                     <select v-model="form.religion" class="form-select" disabled>
                                         <option value="1">Islamic only</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Ethnicity</label>
-                                    <select v-model="form.ethnicity" class="form-select" disabled>
-                                        <option value="1">Arab</option>
                                     </select>
                                 </div>
                             </div>

@@ -150,7 +150,6 @@ class AdminUserController extends Controller
                 'marriage_status' => $user->marriage_status,
                 'child_count' => $user->child_count,
                 'religion' => $user->religion,
-                'ethnicity' => $user->ethnicity,
                 'nationality' => $user->nationality,
                 'residence' => $user->residence,
                 'city' => $user->city,

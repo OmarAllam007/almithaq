@@ -33,7 +33,6 @@ class UserFactory extends Factory
             'nationality' => rand(1, 10),
             'city' => rand(1, 10),
             'religion' => 1, // always muslim
-            'ethnicity' => 1,
             'weight' => fake()->randomFloat(2, 50, 150),
             'height' => fake()->randomFloat(2, 150, 200),
             'skin_color' => rand(1, 6),

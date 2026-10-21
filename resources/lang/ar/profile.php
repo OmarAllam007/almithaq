@@ -61,7 +61,6 @@ return [
     'marriage_type' => 'نوع الزواج',
     'religious_and_social_details' => 'المعلومات الدينية والاجتماعية',
     'religion' => 'الدين',
-    'ethnicity' => 'العرق',
     'my_gallery' => 'معرضي',
     'gallery' => 'الصور',
     'profile_image_verification' => 'تحقق من الصور الشخصية',
