@@ -16,6 +16,7 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $notifications = UserNotification::where('user_id', $request->user()->id)
+            ->withPresentActor()
             ->with('actor:id,username')
             ->with('actor.mainProfileImage')
             ->latest()

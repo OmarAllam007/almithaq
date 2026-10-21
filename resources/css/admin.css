@@ -428,3 +428,36 @@
         grid-column: auto;
     }
 }
+
+.admin-photo {
+    width: 140px;
+}
+.admin-photo-button {
+    display: block;
+    width: 140px;
+    height: 140px;
+    padding: 0;
+    border: 1px solid #ebdce2;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #faf5f7;
+    cursor: pointer;
+}
+.admin-photo-button:hover {
+    border-color: #d02e79;
+}
+.admin-photo-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.admin-lightbox {
+    display: grid;
+    justify-items: center;
+}
+.admin-lightbox img {
+    max-width: min(90vw, 760px);
+    max-height: 80vh;
+    border-radius: 14px;
+    box-shadow: 0 30px 80px #20101a55;
+}

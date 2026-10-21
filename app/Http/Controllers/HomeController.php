@@ -73,6 +73,7 @@ class HomeController extends Controller
             });
 
         $notifications = UserNotification::where('user_id', $userId)
+            ->withPresentActor()
             ->with(['actor:id,name,username'])
             ->latest()
             ->limit(10)

@@ -21,6 +21,14 @@ interface City {
     ar_name: string;
 }
 
+interface ProfileImage {
+    id: number;
+    is_main: boolean;
+    is_approved: boolean;
+    thumbnail_url: string;
+    original_url: string;
+}
+
 interface AdminUser {
     id: number;
     name: string | null;
@@ -63,6 +71,7 @@ interface AdminUser {
 
 const props = defineProps<{
     user: AdminUser;
+    images: ProfileImage[];
     countries: Country[];
     cities: City[];
     marriage_types: EnumOption[];
@@ -77,6 +86,8 @@ const props = defineProps<{
     monthly_incomes: EnumOption[];
     health_statuses: EnumOption[];
 }>();
+
+const lightbox = ref<ProfileImage | null>(null);
 
 const form = useForm({
     name: props.user.name ?? '',
@@ -188,6 +199,34 @@ const confirmAction = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Profile Photos -->
+                <div class="card mb-5">
+                    <div class="card-header border-0 pt-6">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-900">
+                                <i class="ki-outline ki-picture fs-4 text-warning me-2"></i>Profile Photos
+                                <span class="text-gray-500 fw-semibold fs-7 ms-2">({{ images.length }})</span>
+                            </span>
+                        </h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div v-if="images.length" class="d-flex flex-wrap gap-5">
+                            <figure v-for="image in images" :key="image.id" class="admin-photo m-0">
+                                <button type="button" class="admin-photo-button" @click="lightbox = image">
+                                    <img :src="image.thumbnail_url" :alt="`Photo ${image.id}`" loading="lazy" />
+                                </button>
+                                <figcaption class="d-flex gap-2 mt-2">
+                                    <span v-if="image.is_main" class="admin-pill good">Main</span>
+                                    <span :class="['admin-pill', image.is_approved ? 'good' : 'warn']">{{
+                                        image.is_approved ? 'Approved' : 'Pending'
+                                    }}</span>
+                                </figcaption>
+                            </figure>
+                        </div>
+                        <div v-else class="text-gray-500 fs-6 py-4">This member has not uploaded any photos.</div>
                     </div>
                 </div>
 
@@ -692,6 +731,13 @@ const confirmAction = () => {
                 </form>
             </div>
         </div>
+        <div v-if="lightbox" class="admin-dialog-backdrop" @click.self="lightbox = null">
+            <div class="admin-lightbox" role="dialog" aria-modal="true" aria-label="Profile photo">
+                <img :src="lightbox.original_url" alt="Profile photo full size" />
+                <button type="button" class="admin-button mt-4" @click="lightbox = null">Close</button>
+            </div>
+        </div>
+
         <div v-if="action" class="admin-dialog-backdrop" @click.self="action = null">
             <div class="admin-dialog" role="alertdialog" aria-modal="true">
                 <h2>

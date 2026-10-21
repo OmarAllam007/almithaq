@@ -19,6 +19,7 @@ use App\Models\Enums\MarriageType;
 use App\Models\Enums\MonthlyIncomeType;
 use App\Models\Enums\PrayerType;
 use App\Models\Enums\SkinColor;
+use App\Models\ProfileImage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -124,6 +125,13 @@ class AdminUserController extends Controller
     public function edit(User $user)
     {
         return Inertia::render('Admin/Users/Edit', array_merge($this->formData(), [
+            'images' => $user->profileImages()->ordered()->get()->map(fn (ProfileImage $image) => [
+                'id' => $image->id,
+                'is_main' => $image->is_main,
+                'is_approved' => $image->is_approved,
+                'thumbnail_url' => route('admin.approvals.thumbnail', $image),
+                'original_url' => route('admin.approvals.original', $image),
+            ]),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,

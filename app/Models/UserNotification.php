@@ -41,6 +41,18 @@ class UserNotification extends Model
         return $query->whereNull('read_at');
     }
 
+    /**
+     * Hides notifications whose actor deleted their account. Users soft delete,
+     * so the actor_id survives and the relation resolves to null. Notifications
+     * that never had an actor (subscription renewals) stay visible.
+     */
+    public function scopeWithPresentActor(Builder $query): Builder
+    {
+        return $query->where(
+            fn (Builder $q) => $q->whereNull('actor_id')->orWhereHas('actor')
+        );
+    }
+
     public function markAsRead(): void
     {
         $this->update(['read_at' => now()]);

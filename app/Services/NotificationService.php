@@ -85,7 +85,7 @@ class NotificationService
 
     public function getUnreadCount(int $userId): int
     {
-        return UserNotification::where('user_id', $userId)->unread()->count();
+        return UserNotification::where('user_id', $userId)->unread()->withPresentActor()->count();
     }
 
     public function markAsRead(UserNotification $notification): void

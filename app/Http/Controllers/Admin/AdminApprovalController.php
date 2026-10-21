@@ -47,4 +47,11 @@ class AdminApprovalController extends Controller
 
         return Storage::disk('local')->response($image->thumbnail_path);
     }
+
+    public function original(ProfileImage $image)
+    {
+        abort_unless(Storage::disk('local')->exists($image->image_path), 404);
+
+        return Storage::disk('local')->response($image->image_path);
+    }
 }

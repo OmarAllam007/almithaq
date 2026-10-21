@@ -64,6 +64,7 @@ Route::group(['prefix' => 'control-center', 'middleware' => 'admin'], function (
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/approvals', [AdminApprovalController::class, 'index'])->name('admin.approvals.index');
     Route::get('/approvals/{image}/thumbnail', [AdminApprovalController::class, 'thumbnail'])->name('admin.approvals.thumbnail');
+    Route::get('/approvals/{image}/original', [AdminApprovalController::class, 'original'])->name('admin.approvals.original');
     Route::patch('/approvals/{image}/approve', [AdminApprovalController::class, 'approve'])->name('admin.approvals.approve');
     Route::patch('/approvals/{image}/reject', [AdminApprovalController::class, 'reject'])->name('admin.approvals.reject');
 });
